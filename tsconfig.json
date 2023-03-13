@@ -1,0 +1,13 @@
+{
+    "$schema": "http://json.schemastore.org/tsconfig",
+    "compilerOptions": {
+        "strict": true,
+        "sourceMap": true,
+        "declaration": true,
+        "lib": ["es2021"],
+        "target": "es2021",
+        "module": "CommonJS",
+        "moduleResolution": "node",
+        "skipLibCheck": true
+    }
+}

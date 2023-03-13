@@ -1,0 +1,49 @@
+{
+    "name": "@evoke-platform/create-package",
+    "version": "1.0.0-dev.0",
+    "description": "Scaffold a new Evoke platform package project",
+    "files": [
+        "README.md",
+        "bin",
+        "dist",
+        "src",
+        "!*/__tests__"
+    ],
+    "bin": {
+        "create-package": "./bin/create-package.js"
+    },
+    "keywords": [
+        "evoke"
+    ],
+    "devDependencies": {
+        "@types/yeoman-generator": "^5.0.0",
+        "commit-and-tag-version": "^10.0.1",
+        "copyfiles": "^2.4.1",
+        "mocha": "^10.2.0",
+        "typescript": "^4.9.5",
+        "yeoman-assert": "^3.1.1",
+        "yeoman-test": "^6.3.0"
+    },
+    "engines": {
+        "npm": ">= 4.0.0"
+    },
+    "dependencies": {
+        "mem-fs": "^2.0.0",
+        "mem-fs-editor": "^9.0.0",
+        "yeoman-environment": "^3.9.1",
+        "yeoman-generator": "^5.6.1"
+    },
+    "jest": {
+        "testEnvironment": "node",
+        "testPathIgnorePatterns": [
+            ".eslintrc.js"
+        ]
+    },
+    "scripts": {
+        "build": "tsc",
+        "postbuild": "copyfiles -a -u 1 src/**/templates/** dist",
+        "pretest": "npm run build",
+        "test": "mocha __tests__",
+        "release": "commit-and-tag-version --prerelease alpha-createpackage -m \"chore(release): v%s [skip ci]\" && npm publish"
+    }
+}

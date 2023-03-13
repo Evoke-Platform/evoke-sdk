@@ -1,0 +1,33 @@
+{
+    "pipeline": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["dist/**"]
+        },
+        "rebuild": {
+            "dependsOn": ["^rebuild"],
+            "outputs": ["dist/**"]
+        },
+        "lint": {
+            "dependsOn": ["^build"],
+            "outputs": []
+        },
+        "lint:fix": {
+            "dependsOn": ["^build"],
+            "outputs": []
+        },
+        "test": {
+            "dependsOn": ["build"]
+        },
+        "package": {
+            "dependsOn": ["test"],
+            "outputs": []
+        },
+        "deploy": {
+            "outputs": []
+        },
+        "release": {
+            "outputs": []
+        }
+    }
+}
