@@ -6,7 +6,7 @@
         "pkgmodule": "./bin/package-module.js"
     },
     "scripts": {
-        "release": "commit-and-tag-version --prerelease alpha-sdk -m \"chore(release): v%s [skip ci]\" && npm publish"
+        "release": "commit-and-tag-version -t sdk@ -m \"chore(release): sdk@%s [skip ci]\""
     },
     "author": "",
     "license": "MIT",

@@ -43,7 +43,8 @@
         "prettier": "prettier -c .",
         "prettier:fix": "prettier --write .",
         "build": "turbo run build",
-        "test": "turbo run test"
+        "test": "turbo run test",
+        "release": "turbo run release --concurrency 1 -- "
     },
     "lint-staged": {
         "*.{ts,js,json,md}": [

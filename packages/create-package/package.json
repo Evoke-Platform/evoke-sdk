@@ -44,6 +44,6 @@
         "postbuild": "copyfiles -a -u 1 src/**/templates/** dist",
         "pretest": "npm run build",
         "test": "mocha __tests__",
-        "release": "commit-and-tag-version --prerelease alpha-createpackage -m \"chore(release): v%s [skip ci]\" && npm publish"
+        "release": "commit-and-tag-version -t create-package@ -m \"chore(release): create-package@%s [skip ci]\""
     }
 }

@@ -27,6 +27,7 @@
             "outputs": []
         },
         "release": {
+            "dependsOn": ["build"],
             "outputs": []
         }
     }
