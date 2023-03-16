@@ -1,0 +1,55 @@
+# You can specify a custom docker image from Docker Hub as your build environment.
+
+image: node:18
+
+pipelines:
+    default:
+        - step:
+              name: Build
+              caches:
+                  - node
+              script:
+                  - yarn install
+                  - yarn test
+                  - yarn lint
+    branches:
+        main:
+            - step:
+                  name: Deploy
+                  deployment: test
+                  caches:
+                      - node
+                  script:
+                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:username=${NPM_USERNAME}" >> .npmrc
+                        # This is an unencrypted authentication token. Treat it like a password. DO NOT share this value with anyone, including Microsoft support.
+                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:_password=${NPM_PASSWORD}" >> .npmrc
+                        # The npm client won't use username and _password without an email set, but the service doesn't use the email value. The following is an arbitrarily made-up address.
+                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:email=dev@systemautomation.com" >> .npmrc
+                      - yarn install
+                      - git tag baseline HEAD^
+                      - yarn build --filter=...[baseline]
+                      - npx turbo run release --concurrency 1 --filter=...[baseline] -- --prerelease dev --skip.tag --skip.changelog
+                      - npx turbo run deploy --filter=...[baseline] -- --tag dev
+                      - git pull --no-rebase
+                      - git push
+        release:
+            - step:
+                  name: Deploy
+                  deployment: production
+                  caches:
+                      - node
+                  script:
+                      - git fetch origin refs/tags/latest:origin/refs/tags/latest
+                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:username=${NPM_USERNAME}" >> .npmrc
+                        # This is an unencrypted authentication token. Treat it like a password. DO NOT share this value with anyone, including Microsoft support.
+                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:_password=${NPM_PASSWORD}" >> .npmrc
+                        # The npm client won't use username and _password without an email set, but the service doesn't use the email value. The following is an arbitrarily made-up address.
+                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:email=dev@systemautomation.com" >> .npmrc
+                      - yarn install
+                      - yarn build --filter=...[latest]
+                      - npx turbo run release --concurrency 1 --filter=...[latest]
+                      - npx turbo run deploy --filter=...[latest]
+                      - git tag -f latest
+                      - git push -f origin refs/tags/latest
+                      - git pull --no-rebase
+                      - git push --follow-tags

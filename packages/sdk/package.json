@@ -6,7 +6,8 @@
         "pkgmodule": "./bin/package-module.js"
     },
     "scripts": {
-        "release": "commit-and-tag-version -t sdk@ -m \"chore(release): sdk@%s [skip ci]\""
+        "release": "commit-and-tag-version -t sdk@ --releaseCommitMessageFormat \"chore(release): sdk@{{currentTag}} [skip ci]\"",
+        "deploy": "npm publish"
     },
     "author": "",
     "license": "MIT",
