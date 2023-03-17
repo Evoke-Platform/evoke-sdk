@@ -16,6 +16,7 @@
         "evoke"
     ],
     "devDependencies": {
+        "@types/validate-npm-package-name": "^4.0.0",
         "@types/yeoman-generator": "^5.0.0",
         "commit-and-tag-version": "^10.0.1",
         "copyfiles": "^2.4.1",
@@ -30,6 +31,7 @@
     "dependencies": {
         "mem-fs": "^2.0.0",
         "mem-fs-editor": "^9.0.0",
+        "validate-npm-package-name": "^5.0.0",
         "yeoman-environment": "^3.9.1",
         "yeoman-generator": "^5.6.1"
     },

@@ -4,6 +4,7 @@
         "strict": true,
         "sourceMap": true,
         "declaration": true,
+        "esModuleInterop": true,
         "lib": ["es2021"],
         "target": "es2021",
         "module": "CommonJS",

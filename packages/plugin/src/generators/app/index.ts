@@ -1,17 +1,29 @@
-import * as Generator from 'yeoman-generator';
+import validatePackageName from 'validate-npm-package-name';
+import Generator from 'yeoman-generator';
+
+type Answers = {
+    projectName: string;
+    dirName: string;
+};
 
 export default class AppGenerator extends Generator {
-    answers: {
-        projectName: string;
-        dirName: string;
-    };
+    answers: Answers | undefined;
 
     async prompting() {
-        const prompts = [
+        const prompts: Generator.Questions = [
             {
                 type: 'input',
                 name: 'projectName',
                 message: 'Enter project name:',
+                validate: (name: string) => {
+                    const result = validatePackageName(name);
+
+                    if (result.validForNewPackages) {
+                        return true;
+                    }
+
+                    return result.errors?.[0] ?? result.warnings?.[0] ?? 'invalid name';
+                },
             },
             {
                 type: 'input',
@@ -20,10 +32,14 @@ export default class AppGenerator extends Generator {
             },
         ];
 
-        this.answers = await this.prompt(prompts);
+        this.answers = await this.prompt<Answers>(prompts);
     }
 
     writing() {
+        if (!this.answers) {
+            throw new Error('no answers collected');
+        }
+
         this.destinationRoot(this.answers.dirName);
         this.env.cwd = this.answers.dirName;
 
