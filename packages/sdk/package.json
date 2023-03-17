@@ -12,7 +12,8 @@
     "author": "",
     "license": "MIT",
     "dependencies": {
-        "jszip": "^3.10.0"
+        "jszip": "^3.10.0",
+        "mkdirp": "^2.1.5"
     },
     "devDependencies": {
         "commit-and-tag-version": "^10.0.1"

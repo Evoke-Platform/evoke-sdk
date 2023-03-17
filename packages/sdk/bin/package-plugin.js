@@ -5,6 +5,7 @@
 const fs = require('fs');
 const path = require('path');
 const JSZip = require('jszip');
+const { mkdirp } = require('mkdirp');
 
 async function generate() {
     const zip = new JSZip();
@@ -15,7 +16,7 @@ async function generate() {
     console.log(`Generating plugin from contents in ${distDir}`);
 
     await addContentsToZip(zip, distDir);
-    await fs.promises.mkdir(targetDir);
+    await mkdirp(targetDir);
 
     const zipStream = zip.generateNodeStream();
     const outStream = fs.createWriteStream(target);
