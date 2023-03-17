@@ -29,6 +29,7 @@ export default class AppGenerator extends Generator {
                 type: 'input',
                 name: 'dirName',
                 message: 'Enter project directory:',
+                default: (responses: Partial<Answers>) => responses.projectName?.split('/').pop() ?? '',
             },
         ];
 
