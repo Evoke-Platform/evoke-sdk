@@ -693,6 +693,11 @@
   resolved "https://registry.yarnpkg.com/@types/minimist/-/minimist-1.2.2.tgz#ee771e2ba4b3dc5b372935d549fd9617bf345b8c"
   integrity sha512-jhuKLIRrhvCPLqwPcx6INqmKeiA5EWrsCOPhrlFSrbrmU4ZMPjj5Ul/oLCMDO98XRUIwVm78xICz4EPCektzeQ==
 
+"@types/mocha@^10.0.1":
+  version "10.0.1"
+  resolved "https://registry.yarnpkg.com/@types/mocha/-/mocha-10.0.1.tgz#2f4f65bb08bc368ac39c96da7b2f09140b26851b"
+  integrity sha512-/fvYntiO1GeICvqbQ3doGDIP97vWmvFt83GKguJ6prmQM2iXZfFcq6YE8KteFyRtX2/h5Hf91BYvPodJKFYv5Q==
+
 "@types/ms@*":
   version "0.7.31"
   resolved "https://registry.yarnpkg.com/@types/ms/-/ms-0.7.31.tgz#31b7ca6407128a3d2bbc27fe2d21b345397f6197"
@@ -743,6 +748,11 @@
     "@types/expect" "^1.20.4"
     "@types/node" "*"
 
+"@types/yeoman-assert@^3.1.1":
+  version "3.1.1"
+  resolved "https://registry.yarnpkg.com/@types/yeoman-assert/-/yeoman-assert-3.1.1.tgz#d1f683e5f6e6b15d36bfb216221a19bd7e9735c6"
+  integrity sha512-ACDlMVhoLIA3VQPFKtJWlr3evUE3DaEbVxi1ukivBRNB1havMW+vo2J0+hNURF19yiqs7iu+yUHLG25bCi2xcw==
+
 "@types/yeoman-environment@*":
   version "2.10.8"
   resolved "https://registry.yarnpkg.com/@types/yeoman-environment/-/yeoman-environment-2.10.8.tgz#f9e9fea143ecd6e3358d759b366fddf869aa4e7a"
@@ -770,6 +780,16 @@
     "@types/mem-fs-editor" "*"
     "@types/yeoman-environment" "*"
     rxjs "^6.4.0"
+
+"@types/yeoman-test@^4.0.3":
+  version "4.0.3"
+  resolved "https://registry.yarnpkg.com/@types/yeoman-test/-/yeoman-test-4.0.3.tgz#58959764bec68844b9eecd76e9be589c75eff15b"
+  integrity sha512-CrR+wmWCVAmwU7/Px8WFlCFOi0wy/PoZUovkw4G0hiFNvQiGQn2I6xV4iHY9ebXlJ8w1u7sL9fnL9YkvB4Go0Q==
+  dependencies:
+    "@types/mem-fs" "*"
+    "@types/mem-fs-editor" "*"
+    "@types/yeoman-environment" "*"
+    "@types/yeoman-generator" "*"
 
 "@typescript-eslint/eslint-plugin@^5.54.1":
   version "5.54.1"
