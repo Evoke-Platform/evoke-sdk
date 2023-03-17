@@ -10,6 +10,7 @@ module.exports = {
         ecmaVersion: 'latest',
         sourceType: 'module',
     },
+    ignorePatterns: ['**/dist'],
     rules: {
         'prettier/prettier': 'error',
     },

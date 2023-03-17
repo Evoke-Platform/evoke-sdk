@@ -1,7 +1,7 @@
 {
-    "name": "@evoke-platform/plugin-package",
+    "name": "@evoke-platform/plugin",
     "version": "1.0.0-dev.0",
-    "description": "Scaffold a new Evoke platform package project",
+    "description": "Scaffold a new Evoke platform plugin project",
     "files": [
         "README.md",
         "bin",
@@ -10,7 +10,7 @@
         "!*/__tests__"
     ],
     "bin": {
-        "create-package": "./bin/create-package.js"
+        "create-plugin": "./bin/create-plugin.js"
     },
     "keywords": [
         "evoke"
