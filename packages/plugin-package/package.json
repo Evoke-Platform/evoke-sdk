@@ -1,6 +1,6 @@
 {
-    "name": "@evoke-platform/create-package",
-    "version": "1.0.0-dev.2",
+    "name": "@evoke-platform/plugin-package",
+    "version": "1.0.0-dev.0",
     "description": "Scaffold a new Evoke platform package project",
     "files": [
         "README.md",
@@ -44,7 +44,7 @@
         "postbuild": "copyfiles -a -u 1 src/**/templates/** dist",
         "pretest": "npm run build",
         "test": "mocha __tests__",
-        "release": "commit-and-tag-version -t create-package@ --releaseCommitMessageFormat \"chore(release): create-package@{{currentTag}} [skip ci]\"",
+        "release": "commit-and-tag-version -t plugin-package@ --releaseCommitMessageFormat \"chore(release): plugin-package@{{currentTag}} [skip ci]\"",
         "deploy": "npm publish"
     }
 }
