@@ -1,17 +1,22 @@
 'use strict';
 
 import path from 'path';
-import assert from 'yeoman-assert';
-import helpers from 'yeoman-test';
+import helpers, { RunResult } from 'yeoman-test';
 
 describe('create-plugin', () => {
-    before(() => {
-        return helpers
-            .run(path.join(__dirname, '../generators/app'))
-            .withPrompts({ projectName: 'test', dirName: 'testdir' });
+    const appGenerator = path.join(__dirname, '../generators/app');
+    let runResult: RunResult;
+
+    afterEach(() => {
+        runResult?.restore();
     });
 
-    it('creates files', () => {
-        assert.file(['testdir/package.json']);
+    it('uses prompt to name resulting package', async () => {
+        runResult = await helpers.run(appGenerator).withPrompts({ projectName: 'test', dirName: 'testdir' });
+
+        runResult.assertFile(['testdir/package.json']);
+        runResult.assertJsonFileContent('testdir/package.json', {
+            name: 'test',
+        });
     });
 });
