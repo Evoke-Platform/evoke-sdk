@@ -1,0 +1,31 @@
+name: Continuous Integration
+
+on:
+    push:
+        branches:
+            - main
+
+jobs:
+    publish:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v3
+            - uses: actions/setup-node@v3
+              with:
+                  node-version: 18
+            - name: Setup
+              run: |
+                  yarn install
+                  git tag baseline HEAD^
+            - name: Build
+              run: yarn build --filter=...[baseline]
+            - name: Publish
+              run: |
+                  npx turbo run release --concurrency 1 --filter=...[baseline] -- --prerelease dev --skip.tag --skip.changelog
+                  npx turbo run deploy --filter=...[baseline] -- --tag dev
+              env:
+                  NODE_AUTH_TOKEN: ${{secrets.npm_token}}
+            - name: Push Changes
+              run: |
+                  git pull --no-rebase
+                  git push
