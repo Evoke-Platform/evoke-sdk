@@ -44,7 +44,7 @@
         "postbuild": "copyfiles -a -u 1 src/**/templates/** dist",
         "pretest": "npm run build",
         "test": "mocha __tests__",
-        "release": "commit-and-tag-version -t plugin-package@ --releaseCommitMessageFormat \"chore(release): plugin-package@{{currentTag}} [skip ci]\"",
+        "release": "commit-and-tag-version -t plugin@ --releaseCommitMessageFormat \"chore(release): plugin@{{currentTag}} [skip ci]\"",
         "deploy": "npm publish"
     }
 }
