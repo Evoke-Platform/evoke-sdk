@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/sdk",
-    "version": "1.0.0-dev.0",
+    "version": "1.0.0-dev.1",
     "description": "SDK for Evoke platform",
     "bin": {
         "pkgplugin": "./bin/package-plugin.js"
