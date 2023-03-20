@@ -10,9 +10,9 @@ async function generate() {
     const zip = new JSZip();
     const distDir = path.resolve(process.cwd(), './dist');
     const targetDir = path.resolve(process.cwd(), './target');
-    const target = path.resolve(targetDir, './widgets.zip');
+    const target = path.resolve(targetDir, './plugin.zip');
 
-    console.log(`Generating package from contents in ${distDir}`);
+    console.log(`Generating plugin from contents in ${distDir}`);
 
     await addContentsToZip(zip, distDir);
     await fs.promises.mkdir(targetDir);
@@ -30,7 +30,7 @@ async function generate() {
         });
     });
 
-    console.log(`Package generated at ${target}`);
+    console.log(`Plugin generated at ${target}`);
 }
 
 async function addContentsToZip(zip, dir) {
