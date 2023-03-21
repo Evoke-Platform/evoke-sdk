@@ -1,5 +1,3 @@
-# You can specify a custom docker image from Docker Hub as your build environment.
-
 image: node:18
 
 pipelines:
@@ -20,11 +18,7 @@ pipelines:
                   caches:
                       - node
                   script:
-                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:username=${NPM_USERNAME}" >> .npmrc
-                        # This is an unencrypted authentication token. Treat it like a password. DO NOT share this value with anyone, including Microsoft support.
-                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:_password=${NPM_PASSWORD}" >> .npmrc
-                        # The npm client won't use username and _password without an email set, but the service doesn't use the email value. The following is an arbitrarily made-up address.
-                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:email=dev@systemautomation.com" >> .npmrc
+                      - npm config set //registry.npmjs.org/:_authToken ${NPM_REGISTRY_TOKEN}
                       - yarn install
                       - git tag baseline HEAD^
                       - yarn build --filter=...[baseline]
@@ -39,12 +33,8 @@ pipelines:
                   caches:
                       - node
                   script:
+                      - npm config set //registry.npmjs.org/:_authToken ${NPM_REGISTRY_TOKEN}
                       - git fetch origin refs/tags/latest:origin/refs/tags/latest
-                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:username=${NPM_USERNAME}" >> .npmrc
-                        # This is an unencrypted authentication token. Treat it like a password. DO NOT share this value with anyone, including Microsoft support.
-                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:_password=${NPM_PASSWORD}" >> .npmrc
-                        # The npm client won't use username and _password without an email set, but the service doesn't use the email value. The following is an arbitrarily made-up address.
-                      - echo "//pkgs.dev.azure.com/systemautomation/_packaging/systemautomation/npm/registry/:email=dev@systemautomation.com" >> .npmrc
                       - yarn install
                       - yarn build --filter=...[latest]
                       - npx turbo run release --concurrency 1 --filter=...[latest]
