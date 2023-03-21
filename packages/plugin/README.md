@@ -1,36 +1,28 @@
-# generator-cedar [![NPM version][npm-image]][npm-url] [![Build Status][travis-image]][travis-url] [![Dependency Status][daviddm-image]][daviddm-url]
+# Evoke Plugin Generator
 
-> Yeoman generator for Cedar
+Scaffold an Evoke platform plugin project.
 
-## Installation
+## Getting Started
 
-First, install [Yeoman](http://yeoman.io) and generator-cedar using [npm](https://www.npmjs.com/) (we assume you have pre-installed [node.js](https://nodejs.org/)).
+Run the generator with the following:
 
-```bash
-npm install -g yo
-npm install -g generator-cedar
+```sh
+npx @evoke-platform/plugin
 ```
 
-Then generate your new project:
+The generator will prompt you for a project name and a directory name. The project name must adhere to npm package [naming conventions][package-name].
 
-```bash
-yo cedar
+The scaffolded project includes a sample widget. Generate a deployable zip with:
+
+```sh
+cd plugindir
+npm run package
 ```
 
-## Getting To Know Yeoman
-
--   Yeoman has a heart of gold.
--   Yeoman is a person with feelings and opinions, but is very easy to work with.
--   Yeoman can be too opinionated at times but is easily convinced not to be.
--   Feel free to [learn more about Yeoman](http://yeoman.io/).
+A deployable zip will be created in the `target/` directory under the project root, which can be uploaded to an Evoke environment.
 
 ## License
 
-©
+[MIT](../../LICENSE)
 
-[npm-image]: https://badge.fury.io/js/generator-cedar.svg
-[npm-url]: https://npmjs.org/package/generator-cedar
-[travis-image]: https://travis-ci.com//generator-cedar.svg?branch=master
-[travis-url]: https://travis-ci.com//generator-cedar
-[daviddm-image]: https://david-dm.org//generator-cedar.svg?theme=shields.io
-[daviddm-url]: https://david-dm.org//generator-cedar
+[package-name]: https://docs.npmjs.com/cli/v9/configuring-npm/package-json#name

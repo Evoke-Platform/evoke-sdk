@@ -17,6 +17,14 @@
     ],
     "author": "System Automation Corp.",
     "license": "MIT",
+    "homepage": "https://bitbucket.org/evoke-platform/evoke-sdk/src/main/packages/plugin/README.md",
+    "repository": {
+        "type": "git",
+        "url": "https://bitbucket.org/evoke-platform/evoke-sdk"
+    },
+    "bugs": {
+        "url": "https://bitbucket.org/evoke-platform/evoke-sdk/issues"
+    },
     "devDependencies": {
         "@types/mocha": "^10.0.1",
         "@types/validate-npm-package-name": "^4.0.0",
