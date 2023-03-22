@@ -2,13 +2,14 @@
     "name": "@evoke-platform/sdk",
     "version": "1.0.0-dev.5",
     "description": "SDK for Evoke platform",
-    "homepage": "https://bitbucket.org/evoke-platform/evoke-sdk/src/main/packages/sdk/README.md",
+    "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/sdk/README.md",
     "repository": {
         "type": "git",
-        "url": "https://bitbucket.org/evoke-platform/evoke-sdk"
+        "url": "https://github.com/Evoke-Platform/evoke-sdk",
+        "directory": "packages/sdk"
     },
     "bugs": {
-        "url": "https://bitbucket.org/evoke-platform/evoke-sdk/issues"
+        "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
     },
     "bin": {
         "pkgplugin": "./bin/package-plugin.js"

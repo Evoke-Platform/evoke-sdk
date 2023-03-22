@@ -8,14 +8,14 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://bitbucket.org/evoke-platform/evoke-sdk"
+        "url": "https://github.com/Evoke-Platform/evoke-sdk"
     },
     "author": "System Automation Corp.",
     "license": "MIT",
     "bugs": {
-        "url": "https://bitbucket.org/evoke-platform/evoke-sdk/issues"
+        "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
     },
-    "homepage": "https://bitbucket.org/evoke-platform/evoke-sdk/src/main/README.md",
+    "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/README.md",
     "devDependencies": {
         "@commitlint/cli": "^17.4.4",
         "@commitlint/config-conventional": "^17.4.4",
