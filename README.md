@@ -6,8 +6,8 @@ This repository contains libraries and tooling used to create plugins for the Ev
 
 Resources to get you started:
 
--   [Plugin README](packages/plugin/README.md)
+-   [Plugin README](https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/plugin/README.md)
 
 ## License
 
-[MIT](LICENSE)
+[MIT](https://github.com/Evoke-Platform/evoke-sdk/blob/main/LICENSE)
