@@ -25,6 +25,6 @@
         "mkdirp": "^2.1.5"
     },
     "devDependencies": {
-        "commit-and-tag-version": "^10.0.1"
+        "commit-and-tag-version": "^11.2.0"
     }
 }
