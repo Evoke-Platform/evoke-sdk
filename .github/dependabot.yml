@@ -1,0 +1,34 @@
+version: 2
+updates:
+    - package-ecosystem: npm
+      directory: /
+      schedule:
+          interval: weekly
+      commit-message:
+          prefix: chore
+      reviewers:
+          - '@Evoke-Platform/evoke-team'
+    - package-ecosystem: npm
+      directory: /packages/plugin
+      schedule:
+          interval: weekly
+      commit-message:
+          prefix: chore
+      reviewers:
+          - '@Evoke-Platform/evoke-team'
+    - package-ecosystem: npm
+      directory: /packages/plugin/src/generators/app/templates
+      schedule:
+          interval: weekly
+      commit-message:
+          prefix: chore
+      reviewers:
+          - '@Evoke-Platform/evoke-team'
+    - package-ecosystem: npm
+      directory: /packages/sdk
+      schedule:
+          interval: weekly
+      commit-message:
+          prefix: chore
+      reviewers:
+          - '@Evoke-Platform/evoke-team'
