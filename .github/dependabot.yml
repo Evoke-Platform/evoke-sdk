@@ -10,6 +10,9 @@ updates:
           - '@Evoke-Platform/evoke-team'
     - package-ecosystem: npm
       directory: /packages/plugin
+      ignore:
+          - dependency-name: yeoman-test # v7 is ESM only
+            update-types: [version-update:semver-major]
       schedule:
           interval: weekly
       commit-message:
