@@ -22,7 +22,7 @@
     "license": "MIT",
     "dependencies": {
         "jszip": "^3.10.0",
-        "mkdirp": "^2.1.5"
+        "mkdirp": "^2.1.6"
     },
     "devDependencies": {
         "commit-and-tag-version": "^11.2.0"
