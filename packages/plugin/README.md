@@ -1,5 +1,7 @@
 # Evoke Plugin Generator
 
+[![CodeQL Status](https://github.com/Evoke-Platform/evoke-sdk/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Evoke-Platform/evoke-sdk/actions/workflows/github-code-scanning/codeql)
+
 Scaffold an Evoke platform plugin project.
 
 ## Getting Started

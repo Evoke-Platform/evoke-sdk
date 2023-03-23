@@ -1,5 +1,7 @@
 # Evoke Platform SDK
 
+[![CodeQL Status](https://github.com/Evoke-Platform/evoke-sdk/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Evoke-Platform/evoke-sdk/actions/workflows/github-code-scanning/codeql)
+
 This repository contains libraries and tooling used to create plugins for the Evoke platform.
 
 ## Getting Started
