@@ -26,6 +26,7 @@
     "bugs": {
         "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
     },
+    "types": "dist/generators/app/index.d.ts",
     "devDependencies": {
         "@types/mocha": "^10.0.1",
         "@types/validate-npm-package-name": "^4.0.0",
