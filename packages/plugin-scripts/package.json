@@ -1,0 +1,30 @@
+{
+    "name": "@evoke-platform/plugin-scripts",
+    "version": "1.0.0-dev.0",
+    "description": "Scripts for managing an Evoke platform plugin project",
+    "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/plugin-scripts/README.md",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Evoke-Platform/evoke-sdk",
+        "directory": "packages/plugin-scripts"
+    },
+    "bugs": {
+        "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
+    },
+    "bin": {
+        "pkgplugin": "./bin/package-plugin.js"
+    },
+    "scripts": {
+        "release": "commit-and-tag-version -t plugin-scripts@ --releaseCommitMessageFormat \"chore(release): plugin-scripts@{{currentTag}} [skip ci]\"",
+        "deploy": "npm publish --access=public"
+    },
+    "author": "System Automation Corp.",
+    "license": "MIT",
+    "dependencies": {
+        "jszip": "^3.10.0",
+        "mkdirp": "^2.1.6"
+    },
+    "devDependencies": {
+        "commit-and-tag-version": "^11.2.0"
+    }
+}

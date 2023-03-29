@@ -11,9 +11,6 @@
     "bugs": {
         "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
     },
-    "bin": {
-        "pkgplugin": "./bin/package-plugin.js"
-    },
     "scripts": {
         "release": "commit-and-tag-version -t sdk@ --releaseCommitMessageFormat \"chore(release): sdk@{{currentTag}} [skip ci]\"",
         "deploy": "npm publish --access=public"
@@ -22,9 +19,7 @@
     "license": "MIT",
     "dependencies": {
         "@evoke-platform/context": "latest",
-        "@evoke-platform/ui-components": "latest",
-        "jszip": "^3.10.0",
-        "mkdirp": "^2.1.6"
+        "@evoke-platform/ui-components": "latest"
     },
     "devDependencies": {
         "commit-and-tag-version": "^11.2.0"
