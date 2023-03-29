@@ -21,6 +21,8 @@
     "author": "System Automation Corp.",
     "license": "MIT",
     "dependencies": {
+        "@evoke-platform/context": "latest",
+        "@evoke-platform/ui-components": "latest",
         "jszip": "^3.10.0",
         "mkdirp": "^2.1.6"
     },

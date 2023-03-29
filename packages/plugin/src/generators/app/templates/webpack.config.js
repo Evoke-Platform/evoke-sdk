@@ -60,8 +60,10 @@ module.exports = {
             exposes: exposedWidgets,
             shared: [
                 {
-                    react: { singleton: true },
-                    'react-dom': { singleton: true },
+                    react: { singleton: true, requiredVersion: '>=18' },
+                    'react-dom': { singleton: true, requiredVersion: '>=18' },
+                    '@evoke-platform/context': { singleton: true, requiredVersion: '*' },
+                    '@evoke-platform/ui-components': { singleton: true, requiredVersion: '*' },
                 },
             ],
         }),

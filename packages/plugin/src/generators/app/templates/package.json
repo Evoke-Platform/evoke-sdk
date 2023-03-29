@@ -7,7 +7,6 @@
         "@babel/preset-env": "^7.17.0",
         "@babel/preset-react": "^7.17.0",
         "@babel/preset-typescript": "^7.17.0",
-        "@evoke-platform/sdk": "latest",
         "@testing-library/jest-dom": "^5.16.4",
         "@testing-library/react": "^14.0.0",
         "@testing-library/user-event": "^14.4.3",
@@ -33,6 +32,7 @@
         "package": "pkgplugin"
     },
     "dependencies": {
+        "@evoke-platform/sdk": "latest",
         "react": "^18.1.0",
         "react-dom": "^18.1.0"
     }
