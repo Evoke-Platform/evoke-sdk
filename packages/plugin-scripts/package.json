@@ -16,6 +16,7 @@
     },
     "scripts": {
         "release": "commit-and-tag-version -t plugin-scripts@ --releaseCommitMessageFormat \"chore(release): plugin-scripts@{{currentTag}} [skip ci]\"",
+        "predeploy": "cp ../../LICENSE .",
         "deploy": "npm publish --access=public"
     },
     "author": "System Automation Corp.",
