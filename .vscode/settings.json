@@ -26,5 +26,45 @@
         {
             "mode": "auto"
         }
+    ],
+    "psi-header.config": {
+        "blankLinesAfter": 1,
+        "company": "System Automation Corporation",
+        "forceToTop": true,
+        "license": "MIT"
+    },
+    "psi-header.changes-tracking": {
+        "autoHeader": "manualSave",
+        "include": ["javascript", "typescript", "typescriptreact"]
+    },
+    "psi-header.lang-config": [
+        {
+            "language": "javascript",
+            "begin": "",
+            "end": "",
+            "prefix": "// "
+        },
+        {
+            "language": "typescript",
+            "mapTo": "javascript"
+        },
+        {
+            "language": "typescriptreact",
+            "mapTo": "javascript"
+        }
+    ],
+    "psi-header.templates": [
+        {
+            "language": "javascript",
+            "template": ["Copyright (c) <<year>> <<company>>.", "This file is licensed under the <<licensename>>."]
+        },
+        {
+            "language": "typescript",
+            "mapTo": "javascript"
+        },
+        {
+            "language": "typescriptreact",
+            "mapTo": "javascript"
+        }
     ]
 }
