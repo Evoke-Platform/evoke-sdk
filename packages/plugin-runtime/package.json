@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/plugin-runtime",
-    "version": "1.0.0-dev.0",
+    "version": "1.0.0-dev.1",
     "description": "Runtime support for Evoke plugins",
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/plugin-runtime/README.md",
     "repository": {
