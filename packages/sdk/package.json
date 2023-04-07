@@ -26,11 +26,9 @@
     "license": "MIT",
     "dependencies": {
         "@evoke-platform/context": "latest",
-        "@evoke-platform/plugin-runtime": "^1.0.0-dev.0",
         "@evoke-platform/ui-components": "latest"
     },
     "devDependencies": {
-        "commit-and-tag-version": "^11.2.0",
-        "typescript": "^5.0.2"
+        "commit-and-tag-version": "^11.2.0"
     }
 }

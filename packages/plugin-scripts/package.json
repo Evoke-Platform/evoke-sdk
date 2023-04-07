@@ -12,7 +12,6 @@
         "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
     },
     "bin": {
-        "genmanifest": "./bin/generate-manifest.js",
         "pkgplugin": "./bin/package-plugin.js"
     },
     "main": "dist/index.js",
@@ -22,7 +21,6 @@
         "dist"
     ],
     "scripts": {
-        "build": "tsc",
         "release": "commit-and-tag-version -t plugin-scripts@ --releaseCommitMessageFormat \"chore(release): plugin-scripts@{{currentTag}} [skip ci]\"",
         "predeploy": "cp ../../LICENSE .",
         "deploy": "npm publish --access=public"
@@ -30,12 +28,8 @@
     "author": "System Automation Corp.",
     "license": "MIT",
     "dependencies": {
-        "@evoke-platform/plugin-runtime": "^1.0.0-dev.0",
-        "glob": "^9.3.2",
         "jszip": "^3.10.0",
-        "mkdirp": "^2.1.6",
-        "tmp-promise": "^3.0.3",
-        "typescript": "^5.0.2"
+        "mkdirp": "^2.1.6"
     },
     "devDependencies": {
         "commit-and-tag-version": "^11.2.0"
