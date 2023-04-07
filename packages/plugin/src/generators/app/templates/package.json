@@ -29,12 +29,14 @@
         "webpack-dev-server": "^4.9.2"
     },
     "scripts": {
+        "genmanifest": "genmanifest",
+        "prestart": "npm run genmanifest",
         "start": "webpack-cli serve",
+        "prebuild": "npm run genmanifest",
         "build": "webpack --mode production",
         "serve": "serve dist -p 3000",
         "clean": "rm -rf dist",
-        "genmanifest": "genmanifest",
-        "prepackage": "npm run build && npm run genmanifest",
+        "prepackage": "npm run build",
         "package": "pkgplugin"
     }
 }

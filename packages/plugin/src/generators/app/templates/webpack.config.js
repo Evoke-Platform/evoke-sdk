@@ -2,7 +2,7 @@
 // This file is licensed under the MIT License.
 
 const ModuleFederationPlugin = require('webpack').container.ModuleFederationPlugin;
-const manifest = require('./manifest.json');
+const manifest = require('./dist/manifest.json');
 const path = require('path');
 
 const exposedWidgets = {};
