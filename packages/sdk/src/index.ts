@@ -3,5 +3,6 @@
 
 export * from '@evoke-platform/context';
 export { Container as WidgetContainer } from '@evoke-platform/context';
+export * from '@evoke-platform/plugin-runtime';
 export * from '@evoke-platform/ui-components';
 export { Container } from '@evoke-platform/ui-components';

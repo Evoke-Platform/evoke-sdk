@@ -1,12 +1,12 @@
 {
-    "name": "@evoke-platform/sdk",
-    "version": "1.0.0-dev.32",
-    "description": "SDK for Evoke platform",
-    "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/sdk/README.md",
+    "name": "@evoke-platform/plugin-runtime",
+    "version": "1.0.0-dev.0",
+    "description": "Runtime support for Evoke plugins",
+    "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/plugin-runtime/README.md",
     "repository": {
         "type": "git",
         "url": "https://github.com/Evoke-Platform/evoke-sdk",
-        "directory": "packages/sdk"
+        "directory": "packages/plugin-runtime"
     },
     "bugs": {
         "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
@@ -18,19 +18,17 @@
     ],
     "scripts": {
         "build": "tsc",
-        "release": "commit-and-tag-version -t sdk@ --releaseCommitMessageFormat \"chore(release): sdk@{{currentTag}} [skip ci]\"",
+        "release": "commit-and-tag-version -t plugin-runtime@ --releaseCommitMessageFormat \"chore(release): plugin-runtime@{{currentTag}} [skip ci]\"",
         "predeploy": "cp ../../LICENSE .",
         "deploy": "npm publish --access=public"
     },
     "author": "System Automation Corp.",
     "license": "MIT",
-    "dependencies": {
-        "@evoke-platform/context": "latest",
-        "@evoke-platform/plugin-runtime": "^1.0.0-dev.0",
-        "@evoke-platform/ui-components": "latest"
-    },
     "devDependencies": {
         "commit-and-tag-version": "^11.2.0",
         "typescript": "^5.0.2"
+    },
+    "peerDependencies": {
+        "react": ">=18"
     }
 }

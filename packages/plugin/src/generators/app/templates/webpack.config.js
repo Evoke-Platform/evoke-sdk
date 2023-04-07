@@ -2,7 +2,6 @@
 // This file is licensed under the MIT License.
 
 const ModuleFederationPlugin = require('webpack').container.ModuleFederationPlugin;
-const CopyWebpackPlugin = require('copy-webpack-plugin');
 const manifest = require('./manifest.json');
 const path = require('path');
 
@@ -66,9 +65,6 @@ module.exports = {
                     '@evoke-platform/ui-components': { singleton: true, requiredVersion: '*' },
                 },
             ],
-        }),
-        new CopyWebpackPlugin({
-            patterns: ['manifest.json'],
         }),
     ],
 };
