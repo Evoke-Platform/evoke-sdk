@@ -15,6 +15,12 @@
         "genmanifest": "./bin/generate-manifest.js",
         "pkgplugin": "./bin/package-plugin.js"
     },
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "bin",
+        "dist"
+    ],
     "scripts": {
         "build": "tsc",
         "release": "commit-and-tag-version -t plugin-scripts@ --releaseCommitMessageFormat \"chore(release): plugin-scripts@{{currentTag}} [skip ci]\"",
