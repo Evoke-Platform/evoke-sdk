@@ -1976,10 +1976,10 @@ commander@^9.0.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-9.5.0.tgz#bc08d1eb5cedf7ccb797a96199d41c7bc3e60d30"
   integrity sha512-KRs7WVDKg86PWiuAqhDrAQnTXZKraVcCc6vFdL14qrZ/DcWwuRo7VoiYXalXO7S5GKpqYiVEwCbgFDfxNHKJBQ==
 
-commit-and-tag-version@^11.2.0:
-  version "11.2.0"
-  resolved "https://registry.npmjs.org/commit-and-tag-version/-/commit-and-tag-version-11.2.0.tgz#d9578c00270704b9c1ad1ca0f16d978aef8ac6e7"
-  integrity sha512-cPMEvxIayRCTGw3k9WyRhGcI1snPNoXLXtOxKIS/hCGgVQZJ/Jn2zT8wMrTJw7kfqbWNA/kOukeIOHAJ+ZWy8g==
+commit-and-tag-version@^11.2.1:
+  version "11.2.1"
+  resolved "https://registry.npmjs.org/commit-and-tag-version/-/commit-and-tag-version-11.2.1.tgz#e4e0ccc26ffb774c3398dd5aa9ffc83f27cbefc3"
+  integrity sha512-ruYCGsYtevfA+sueDJoMlb//v9IL2+WTjjqIX/IoAmd4SKilOz4HZHAl4QnxuDZN2Npvv0A8RgE97DfwzYxwDw==
   dependencies:
     chalk "^2.4.2"
     conventional-changelog "3.1.25"
@@ -1993,7 +1993,6 @@ commit-and-tag-version@^11.2.0:
     find-up "^5.0.0"
     git-semver-tags "^4.0.0"
     semver "^7.1.1"
-    stringify-package "^1.0.1"
     yargs "^17.0.0"
 
 common-ancestor-path@^1.0.1:
@@ -5230,11 +5229,6 @@ string_decoder@~1.1.1:
   integrity sha512-n/ShnvDi6FHbbVfviro+WojiFzv+s8MPMHBczVePfUpDJLwoLT0ht1l4YwBCbi8pJAveEEdnkHyPyTP/mzRfwg==
   dependencies:
     safe-buffer "~5.1.0"
-
-stringify-package@^1.0.1:
-  version "1.0.1"
-  resolved "https://registry.yarnpkg.com/stringify-package/-/stringify-package-1.0.1.tgz#e5aa3643e7f74d0f28628b72f3dad5cecfc3ba85"
-  integrity sha512-sa4DUQsYciMP1xhKWGuFM04fB0LG/9DlluZoSVywUMRNvzid6XucHK0/90xGxRoHrAaROrcHK1aPKaijCtSrhg==
 
 strip-ansi@^6.0.0, strip-ansi@^6.0.1:
   version "6.0.1"

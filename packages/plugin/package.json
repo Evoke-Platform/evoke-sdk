@@ -32,7 +32,7 @@
         "@types/validate-npm-package-name": "^4.0.0",
         "@types/yeoman-generator": "^5.0.0",
         "@types/yeoman-test": "^4.0.3",
-        "commit-and-tag-version": "^11.2.0",
+        "commit-and-tag-version": "^11.2.1",
         "copyfiles": "^2.4.1",
         "mocha": "^10.2.0",
         "typescript": "^5.0.3",
