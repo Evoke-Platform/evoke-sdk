@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/plugin-scripts",
-    "version": "1.0.0-dev.8",
+    "version": "1.0.0-dev.9",
     "description": "Scripts for managing an Evoke platform plugin project",
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/plugin-scripts/README.md",
     "repository": {
