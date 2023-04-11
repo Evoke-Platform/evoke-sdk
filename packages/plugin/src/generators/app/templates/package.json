@@ -34,7 +34,8 @@
         "build": "webpack --mode production",
         "serve": "serve dist -p 3000",
         "clean": "rm -rf dist",
-        "prepackage": "npm run build",
+        "prepackage": "npm run manifest-gen && npm run build",
+        "manifest-gen": "node ./scripts/generate-manifest.js",
         "package": "pkgplugin"
     }
 }
