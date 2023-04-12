@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/sdk",
-    "version": "1.0.0-dev.37",
+    "version": "1.0.0-dev.39",
     "description": "SDK for Evoke platform",
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/sdk/README.md",
     "repository": {
@@ -11,6 +11,7 @@
     "bugs": {
         "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
     },
+    "type": "module",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
     "files": [
@@ -29,6 +30,6 @@
         "@evoke-platform/ui-components": "latest"
     },
     "devDependencies": {
-        "commit-and-tag-version": "^11.2.0"
+        "commit-and-tag-version": "^11.2.1"
     }
 }

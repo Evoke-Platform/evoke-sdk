@@ -7,7 +7,7 @@
             "name": "Sample widget",
             "description": "Description of the Sample Widget",
             "version": "1.0.0",
-            "src": "src/widgets/Widget",
+            "src": "src/widgets/SampleWidget",
             "properties": [
                 {
                     "id": "message",

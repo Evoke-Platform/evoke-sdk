@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/plugin-scripts",
-    "version": "1.0.0-dev.10",
+    "version": "1.0.0-dev.12",
     "description": "Scripts for managing an Evoke platform plugin project",
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/plugin-scripts/README.md",
     "repository": {
@@ -29,9 +29,9 @@
     "license": "MIT",
     "dependencies": {
         "jszip": "^3.10.0",
-        "mkdirp": "^2.1.6"
+        "mkdirp": "^3.0.0"
     },
     "devDependencies": {
-        "commit-and-tag-version": "^11.2.0"
+        "commit-and-tag-version": "^11.2.1"
     }
 }
