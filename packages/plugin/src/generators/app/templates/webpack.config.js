@@ -5,6 +5,8 @@ const ModuleFederationPlugin = require('webpack').container.ModuleFederationPlug
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const manifest = require('./manifest.json');
 const path = require('path');
+const ProvidePlugin = require('webpack').ProvidePlugin;
+const Dotenv = require('dotenv-webpack');
 
 const exposedWidgets = {};
 
@@ -14,7 +16,6 @@ for (const widget of manifest.widgets ?? []) {
 
 module.exports = {
     mode: 'development',
-    devtool: 'inline-source-map',
     devServer: {
         static: {
             directory: path.join(__dirname, 'dist'),
@@ -69,6 +70,12 @@ module.exports = {
         }),
         new CopyWebpackPlugin({
             patterns: ['manifest.json'],
+        }),
+        new ProvidePlugin({
+            process: 'process/browser',
+        }),
+        new Dotenv({
+            systemvars: true,
         }),
     ],
 };

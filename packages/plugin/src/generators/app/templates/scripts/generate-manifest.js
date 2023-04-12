@@ -9,7 +9,7 @@
         for await (const widget of widgetsList) {
             try {
                 const widget_folder_path = folderName + '/' + widget;
-                //eslint-disable-next-line
+                // eslint-disable-next-line node/no-unsupported-features/es-syntax
                 let WidgetProperties = await import('../' + widget_folder_path + '/WidgetProperties.json', {
                     assert: { type: 'json' },
                 });
