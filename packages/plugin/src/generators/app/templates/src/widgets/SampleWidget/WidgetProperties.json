@@ -8,7 +8,7 @@
         {
             "id": "message",
             "name": "Message",
-            "type": "string",
+            "type": "text",
             "optional": true
         }
     ]

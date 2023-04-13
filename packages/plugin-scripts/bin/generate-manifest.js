@@ -19,8 +19,7 @@ const packageJson = require(path.resolve(process.cwd(), './package.json'));
         for await (const widget of widgetsList) {
             try {
                 const widget_folder_path = path.join(folderName, widget);
-                const widgetProps = require(`${widget_folder_path}/WidgetProperties.json`);
-                let WidgetProperties = JSON.parse(JSON.stringify(widgetProps));
+                const WidgetProperties = require(`${widget_folder_path}/WidgetProperties.json`);
                 WidgetProperties.src = 'src/widgets/' + widget;
                 temp.push(WidgetProperties);
                 console.info(WidgetProperties.name + ' widget -- READ');
