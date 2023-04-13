@@ -3,9 +3,8 @@
 
 const ModuleFederationPlugin = require('webpack').container.ModuleFederationPlugin;
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const manifest = require('./manifest.json');
+const manifest = require('./dist/manifest.json');
 const path = require('path');
-const ProvidePlugin = require('webpack').ProvidePlugin;
 const Dotenv = require('dotenv-webpack');
 
 const exposedWidgets = {};
@@ -69,10 +68,7 @@ module.exports = {
             ],
         }),
         new CopyWebpackPlugin({
-            patterns: ['manifest.json'],
-        }),
-        new ProvidePlugin({
-            process: 'process/browser',
+            patterns: ['./dist/manifest.json'],
         }),
         new Dotenv({
             systemvars: true,

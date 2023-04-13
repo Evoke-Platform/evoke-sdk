@@ -1,21 +1,25 @@
+#!/usr/bin/env node
+'use strict';
+
+const path = require('path');
+const packageJson = require(path.resolve(process.cwd(), './package.json'));
+
 (async () => {
     const fs = require('fs');
 
     //1. Read from the "widgets" folder
-    const folderName = 'src/widgets';
+    const folderName = path.resolve(process.cwd(), 'src/widgets');
     const getWidgetProperties = async (widgetsList) => {
         const temp = [];
         console.log('');
         for await (const widget of widgetsList) {
             try {
-                const widget_folder_path = folderName + '/' + widget;
-                // eslint-disable-next-line node/no-unsupported-features/es-syntax
-                let WidgetProperties = await import('../' + widget_folder_path + '/WidgetProperties.json', {
-                    assert: { type: 'json' },
-                });
-                WidgetProperties.default.src = widget_folder_path;
-                temp.push(WidgetProperties.default);
-                console.info(WidgetProperties.default.name + ' widget -- READ');
+                const widget_folder_path = path.join(folderName, widget);
+                const widgetProps = require(`${widget_folder_path}/WidgetProperties.json`);
+                let WidgetProperties = JSON.parse(JSON.stringify(widgetProps));
+                WidgetProperties.src = 'src/widgets/' + widget;
+                temp.push(WidgetProperties);
+                console.info(WidgetProperties.name + ' widget -- READ');
             } catch (e) {
                 if (e.code === 'ERR_MODULE_NOT_FOUND')
                     console.error(widget + ' widget -- WidgetProperties not defined.');
@@ -25,6 +29,7 @@
         }
         return temp;
     };
+
     try {
         let widgetsList = [];
         fs.accessSync(folderName, fs.constants.R_OK);
@@ -32,11 +37,14 @@
         let WidgetProperties = await getWidgetProperties(widgetsList);
         console.log('');
         const outputJSON = {
-            name: '<%= projectName %>',
+            name: packageJson.name,
             description: '',
             widgets: WidgetProperties,
         };
-        fs.writeFileSync('manifest.json', JSON.stringify(outputJSON, null, 2), 'utf-8', (err) => {
+        if (!fs.existsSync('./dist')) {
+            fs.mkdirSync('./dist');
+        }
+        fs.writeFileSync('./dist/manifest.json', JSON.stringify(outputJSON, null, 2), 'utf-8', (err) => {
             if (err) console.error('Manifest generation error::', err);
         });
     } catch (error) {

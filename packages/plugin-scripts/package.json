@@ -12,7 +12,8 @@
         "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
     },
     "bin": {
-        "pkgplugin": "./bin/package-plugin.js"
+        "pkgplugin": "./bin/package-plugin.js",
+        "manifestgen": "./bin/generate-manifest.js"
     },
     "main": "dist/index.js",
     "types": "dist/index.d.ts",

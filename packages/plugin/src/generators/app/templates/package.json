@@ -43,8 +43,7 @@
         "build": "webpack --mode production",
         "serve": "serve dist -p 3000",
         "clean": "rm -rf dist",
-        "prepackage": "npm run manifest-gen && npm run build",
-        "manifest-gen": "node ./scripts/generate-manifest.js",
+        "prepackage": "manifestgen && npm run build",
         "package": "pkgplugin",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
