@@ -1,7 +1,7 @@
 {
-    "name": "@evoke-platform/plugin",
+    "name": "@evoke-platform/create-widgets-package",
     "version": "1.0.0-dev.44",
-    "description": "Scaffold a new Evoke platform plugin project",
+    "description": "Scaffold a new Evoke platform widget project",
     "files": [
         "README.md",
         "bin",
@@ -10,18 +10,18 @@
         "!*/__tests__"
     ],
     "bin": {
-        "create-plugin": "./bin/create-plugin.js"
+        "create-widgets-package": "./bin/create-widgets-package.js"
     },
     "keywords": [
         "evoke"
     ],
     "author": "System Automation Corp.",
     "license": "MIT",
-    "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/plugin/README.md",
+    "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/create-widgets-package/README.md",
     "repository": {
         "type": "git",
         "url": "https://github.com/Evoke-Platform/evoke-sdk",
-        "directory": "packages/plugin"
+        "directory": "packages/create-widgets-package"
     },
     "bugs": {
         "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
