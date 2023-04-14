@@ -50,9 +50,9 @@ const packageJson = require(path.resolve(process.cwd(), './package.json'));
         fs.writeFileSync('./dist/manifest.json', JSON.stringify(outputJSON, null, 2), 'utf-8', (err) => {
             if (err) console.error('Manifest generation error::', err);
         });
+
+        console.info('manifest.json created');
     } catch (error) {
         console.error('Error while generating manifest.json::', error);
-    } finally {
-        console.info('manifest.json created');
     }
 })();
