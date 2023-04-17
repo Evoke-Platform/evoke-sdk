@@ -21,7 +21,7 @@ jobs:
                   private_key: ${{ secrets.TOKEN_APP_PRIVATE_KEY }}
             - uses: actions/checkout@v3
               with:
-                  fetch-depth: 2
+                  fetch-depth: 5
                   token: ${{ steps.generate_token.outputs.token }}
             - uses: actions/setup-node@v3
               with:
@@ -30,6 +30,8 @@ jobs:
               run: |
                   yarn install
                   git tag baseline HEAD^
+                  echo Using baseline:
+                  git log -1 --oneline baseline
             - name: Build
               run: yarn build --filter=...[baseline]
             - name: Publish
