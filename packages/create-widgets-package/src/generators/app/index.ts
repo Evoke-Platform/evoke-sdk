@@ -1,6 +1,7 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
+import chalk from 'chalk';
 import validatePackageName from 'validate-npm-package-name';
 import Generator from 'yeoman-generator';
 
@@ -50,5 +51,23 @@ export default class AppGenerator extends Generator {
         this.fs.copyTpl(this.templatePath('**'), this.destinationPath(), this.answers, undefined, {
             globOptions: { dot: true },
         });
+    }
+
+    end() {
+        if (!this.answers) {
+            throw new Error('no answers collected');
+        }
+
+        const prompt = chalk.cyan('     > ');
+
+        this.log.writeln();
+        this.log.ok('Plugin generated successfully!');
+        this.log.writeln();
+        this.log.writeln('The generated plugin contains a sample widget. You can create a');
+        this.log.writeln('deployable package by typing:');
+        this.log.writeln();
+        this.log.write(prompt).writeln(`cd ${this.answers.dirName}`);
+        this.log.write(prompt).writeln('npm run package');
+        this.log.writeln();
     }
 }
