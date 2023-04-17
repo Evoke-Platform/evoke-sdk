@@ -1,15 +1,15 @@
-# Evoke Plugin Generator
+# Evoke Widget Generator
 
 [![CodeQL Status](https://github.com/Evoke-Platform/evoke-sdk/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/Evoke-Platform/evoke-sdk/actions/workflows/github-code-scanning/codeql)
 
-Scaffold an Evoke platform plugin project.
+Scaffold an Evoke platform Widget project.
 
 ## Getting Started
 
 Run the generator with the following:
 
 ```sh
-npx @evoke-platform/plugin
+npx @evoke-platform/create-widgets-package
 ```
 
 The generator will prompt you for a project name and a directory name. The project name must adhere to npm

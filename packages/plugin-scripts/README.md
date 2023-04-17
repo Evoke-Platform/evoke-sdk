@@ -9,4 +9,4 @@ the [plugin generator][plugin].
 
 [MIT](https://github.com/Evoke-Platform/evoke-sdk/blob/main/LICENSE)
 
-[plugin]: https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/plugin
+[plugin]: https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/create-widgets-package

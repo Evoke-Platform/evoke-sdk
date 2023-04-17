@@ -3,10 +3,11 @@
 
 'use strict';
 
-import path from 'path';
 import helpers, { RunResult } from 'yeoman-test';
 
-describe('create-plugin', () => {
+import path from 'path';
+
+describe('create-widgets-package', () => {
     const appGenerator = path.join(__dirname, '../generators/app');
     let runResult: RunResult;
 
