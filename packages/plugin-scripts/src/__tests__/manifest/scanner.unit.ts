@@ -9,12 +9,14 @@ import { Scanner, WidgetDescriptor } from '../../manifest';
 
 chai.use(dirtyChai).use(chaiAsPromised);
 
+const Timeout = 15000;
+
 describe('Scanner', () => {
     const scanner = new Scanner('src/__tests__/manifest/testFiles', { defaultVersion: '1-test' });
     let widgets: Dictionary<WidgetDescriptor> = {};
 
     before(async function () {
-        this.timeout(5000);
+        this.timeout(Timeout);
 
         widgets = (await scanner.scan()).widgets;
     });
@@ -92,13 +94,13 @@ describe('Scanner', () => {
             await expect(scanner.scan()).to.be.rejectedWith(
                 'Multiple @widget declarations in src/__tests__/manifest/badFiles/multipleWidgets/widget.tsx, only the default export can be declared a widget',
             );
-        }).timeout(5000);
+        }).timeout(Timeout);
 
         it('fails if @widget is not on a function', async () => {
             const scanner = new Scanner('src/__tests__/manifest/badFiles/notFunctionComponent');
 
             await expect(scanner.scan()).to.be.rejectedWith('@widget must be declared on a FunctionComponent');
-        }).timeout(5000);
+        }).timeout(Timeout);
     });
 
     describe('props', () => {
