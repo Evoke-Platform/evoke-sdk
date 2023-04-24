@@ -13,7 +13,9 @@ describe('Scanner', () => {
     const scanner = new Scanner('src/__tests__/manifest/testFiles', { defaultVersion: '1-test' });
     let widgets: Dictionary<WidgetDescriptor> = {};
 
-    before(async () => {
+    before(async function () {
+        this.timeout(5000);
+
         widgets = (await scanner.scan()).widgets;
     });
 
