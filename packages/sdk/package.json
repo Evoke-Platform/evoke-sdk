@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/sdk",
-    "version": "1.0.0-dev.46",
+    "version": "1.0.0-dev.47",
     "description": "SDK for Evoke platform",
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/sdk/README.md",
     "repository": {
