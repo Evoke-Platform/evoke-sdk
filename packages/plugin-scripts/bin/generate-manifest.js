@@ -7,42 +7,52 @@
 
 const path = require('path');
 const packageJson = require(path.resolve(process.cwd(), './package.json'));
+const { Scanner } = require('../dist');
 
 (async () => {
+    const scanner = new Scanner('src', { defaultVersion: packageJson.version });
+    const widgets = (await scanner.scan()).widgets;
+
     const fs = require('fs');
 
     //1. Read from the "widgets" folder
     const folderName = path.resolve(process.cwd(), 'src/widgets');
     const getWidgetProperties = async (widgetsList) => {
-        const temp = [];
         console.log('');
-        for await (const widget of widgetsList) {
+        for (const widget of widgetsList) {
             try {
                 const widget_folder_path = path.join(folderName, widget);
                 const WidgetProperties = require(`${widget_folder_path}/WidgetProperties.json`);
+
+                if (!WidgetProperties.id) {
+                    console.error(`Missing widget id in ${widget_folder_path}/WidgetProperties.json`);
+
+                    continue;
+                }
+
                 WidgetProperties.src = 'src/widgets/' + widget;
-                temp.push(WidgetProperties);
+
+                widgets[WidgetProperties.id] = WidgetProperties;
+
                 console.info(WidgetProperties.name + ' widget -- READ');
             } catch (e) {
-                if (e.code === 'ERR_MODULE_NOT_FOUND')
-                    console.error(widget + ' widget -- WidgetProperties not defined.');
-                else console.error('ERROR while reading properties for ' + widget + ':: ', e);
-                continue;
+                if (e.code !== 'MODULE_NOT_FOUND') {
+                    console.error('ERROR while reading properties for ' + widget + ':: ', e);
+                }
             }
         }
-        return temp;
     };
 
     try {
         let widgetsList = [];
         fs.accessSync(folderName, fs.constants.R_OK);
         widgetsList = fs.readdirSync(folderName).map((widget) => widget);
-        let WidgetProperties = await getWidgetProperties(widgetsList);
+        await getWidgetProperties(widgetsList);
         console.log('');
         const outputJSON = {
             name: packageJson.name,
             description: '',
-            widgets: WidgetProperties,
+            widgets: Object.values(widgets),
         };
         if (!fs.existsSync('./dist')) {
             fs.mkdirSync('./dist');
