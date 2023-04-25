@@ -13,6 +13,12 @@ updates:
       ignore:
           - dependency-name: yeoman-test # v7 is ESM only
             update-types: [version-update:semver-major]
+          - dependency-name: chalk #v5 is ESM only
+            update-types: [version-update:semver-major]
+          - dependency-name: mem-fs #v2 needed by yeoman-environment
+            update-types: [version-update:semver-major]
+          - dependency-name: mem-fs-editor #v9 needed by yeoman-environment
+            update-types: [version-update:semver-major]
       schedule:
           interval: weekly
       commit-message:
