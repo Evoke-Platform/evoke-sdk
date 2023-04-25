@@ -438,9 +438,9 @@
   integrity sha512-kf9RB0Fg7NZfap83B3QOqOGg9QmD9yBudqQXzzOtn3i4y7ZUXe5ONeW34Gwi+TxhH4mvj72R1Zc300KUMa9Bng==
 
 "@evoke-platform/context@latest":
-  version "1.0.0-SNAPSHOT.1681149389483"
-  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.0.0-SNAPSHOT.1681149389483.tgz#81d59a3c9e7ce68ab4cfe5e22bcb78430ee95150"
-  integrity sha512-wb2M6Bhy/5VRkl73t26pIEmwKTGl66B1rvev8Xa5az4ZrkITHWbW8Qo+H3kbEPjYAcchqmjRQMBLIEbT10XD0w==
+  version "1.0.0-SNAPSHOT.1682107025949"
+  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.0.0-SNAPSHOT.1682107025949.tgz#66044e47038519465421dd0fa999a8d3ca3439e9"
+  integrity sha512-ghaepP7Hws0KA/7/2rveIyNxfRT8vFaNscOGy7ER/3ktHqGGqWUSTkG0xWV/gzCApzKqkLceixfpt7fEQzjxcQ==
   dependencies:
     axios "^1.3.4"
 
