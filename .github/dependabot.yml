@@ -7,7 +7,7 @@ updates:
       commit-message:
           prefix: chore
       reviewers:
-          - '@Evoke-Platform/evoke-team'
+          - '@Evoke-Platform/maintainers'
     - package-ecosystem: npm
       directory: /packages/plugin
       ignore:
