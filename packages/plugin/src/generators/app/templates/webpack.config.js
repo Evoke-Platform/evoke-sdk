@@ -4,6 +4,7 @@
 const ModuleFederationPlugin = require('webpack').container.ModuleFederationPlugin;
 const manifest = require('./dist/manifest.json');
 const path = require('path');
+const packageJson = require('./package.json');
 
 const exposedWidgets = {};
 
@@ -49,10 +50,10 @@ module.exports = {
     },
     plugins: [
         new ModuleFederationPlugin({
-            name: '<%= projectName %>',
+            name: packageJson.name,
             filename: 'remoteEntry.js',
             library: {
-                name: '<%= projectName %>',
+                name: packageJson.name,
                 type: 'window',
             },
             exposes: exposedWidgets,
