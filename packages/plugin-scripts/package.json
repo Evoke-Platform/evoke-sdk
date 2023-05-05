@@ -37,7 +37,7 @@
         "glob": "^10.2.1",
         "jszip": "^3.10.0",
         "lodash": "^4.17.21",
-        "mkdirp": "^3.0.0",
+        "mkdirp": "^3.0.1",
         "typescript": "^5.0.4"
     },
     "devDependencies": {
