@@ -12,8 +12,8 @@ export type WidgetDescriptor = {
 
 export type WidgetPropertyDescriptor = {
     name: string;
-    displayName: string;
+    displayName?: string;
     type: string;
-    optional?: boolean;
+    isOptional?: boolean;
     [key: string]: unknown;
 };
