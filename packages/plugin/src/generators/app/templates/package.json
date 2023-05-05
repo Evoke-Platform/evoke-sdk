@@ -38,10 +38,11 @@
     },
     "scripts": {
         "start": "webpack-cli serve",
+        "prebuild": "manifestgen",
         "build": "webpack --mode production",
         "serve": "serve dist -p 3000",
         "clean": "rm -rf dist",
-        "prepackage": "manifestgen && npm run build",
+        "prepackage": "npm run build",
         "package": "pkgplugin",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"

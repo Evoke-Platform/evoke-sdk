@@ -1,6 +1,3 @@
-// Copyright (c) 2023 System Automation Corporation.
-// This file is licensed under the MIT License.
-
 const ModuleFederationPlugin = require('webpack').container.ModuleFederationPlugin;
 const manifest = require('./dist/manifest.json');
 const path = require('path');
