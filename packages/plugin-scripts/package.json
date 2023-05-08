@@ -41,7 +41,7 @@
         "typescript": "^5.0.4"
     },
     "devDependencies": {
-        "@types/chai": "^4.3.4",
+        "@types/chai": "^4.3.5",
         "@types/chai-as-promised": "^7.1.5",
         "@types/dirty-chai": "^2.0.2",
         "@types/lodash": "^4.14.194",
