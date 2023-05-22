@@ -6337,10 +6337,10 @@ yargs@^17.0.0:
     y18n "^5.0.5"
     yargs-parser "^21.1.1"
 
-yeoman-environment@^3.16.2:
-  version "3.16.2"
-  resolved "https://registry.npmjs.org/yeoman-environment/-/yeoman-environment-3.16.2.tgz#f50cdac9f55ca5c62b5f2577070a43f8c31ee4de"
-  integrity sha512-QJuZhQmSBm0ZdTkk5TyafvJldZtFZWXj9/i+7yFpSxRGuQuTrJ1B8daXNCvQeVidVhcAxzGV9l57W/iWzP6+AQ==
+yeoman-environment@^3.18.3:
+  version "3.18.3"
+  resolved "https://registry.npmjs.org/yeoman-environment/-/yeoman-environment-3.18.3.tgz#fb735dfaeb091217182e917f9e06122c6d1b36be"
+  integrity sha512-OF5C87D7QUDOe4Lo2QucPnqFz0V3dNvC7D5Up6kVxUZKrY3LtNM7JIFAb/rhfEp/lKlZ28Olrb/BYFTDHcJ2og==
   dependencies:
     "@npmcli/arborist" "^4.0.4"
     are-we-there-yet "^2.0.0"
