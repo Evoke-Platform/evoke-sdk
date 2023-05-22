@@ -44,7 +44,7 @@
     "dependencies": {
         "chalk": "^4.1.0",
         "mem-fs": "^2.0.0",
-        "mem-fs-editor": "^9.0.0",
+        "mem-fs-editor": "^10.0.2",
         "validate-npm-package-name": "^5.0.0",
         "yeoman-environment": "^3.16.2",
         "yeoman-generator": "^5.9.0"
