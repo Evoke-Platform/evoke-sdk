@@ -1,5 +1,8 @@
-import React, { useState, createContext, useEffect, useContext } from 'react';
+// Copyright (c) 2023 System Automation Corporation.
+// This file is licensed under the MIT License.
+
 import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr/dist/esm/index.js';
+import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useApiServices } from '../api/index.js';
 
 export type SignalRConnectionInfo = {
