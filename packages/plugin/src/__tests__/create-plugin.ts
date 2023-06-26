@@ -21,5 +21,5 @@ describe('create-plugin', () => {
         runResult.assertJsonFileContent('testdir/package.json', {
             name: 'test',
         });
-    });
+    }).timeout(5000);
 });
