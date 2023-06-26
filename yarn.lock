@@ -453,9 +453,9 @@
     axios "^1.3.4"
 
 "@evoke-platform/ui-components@latest":
-  version "1.0.0-dev.124"
-  resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.0.0-dev.124.tgz#6ad0339434e06c1840f3dbac611590b08ae14451"
-  integrity sha512-ISW0lmu0oumxPwveIMGtYxhUmAddV5ozGXhHRtCf+7UluksKYeW4xPSwbT0NLoiv0BJCdBtgFWeIoWUEwfUW8g==
+  version "1.0.0-dev.125"
+  resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.0.0-dev.125.tgz#bb73ba39b5374cf84c11a99ae41c55a859222cf8"
+  integrity sha512-Qof7vIwTVzlvPm0AdJbtjtMj6zpQbe+mrvnp5WpC3XS/AVYc6i1MhoNQS8CpZNqKBWflzJE9qGLLVjdexLC7xg==
   dependencies:
     "@date-io/js-joda" "^2.16.1"
     "@dnd-kit/core" "^6.0.6"
@@ -463,6 +463,7 @@
     "@dnd-kit/sortable" "^7.0.1"
     "@emotion/react" "^11.9.0"
     "@emotion/styled" "^11.8.1"
+    "@formio/react" "^5.2.4-rc.1"
     "@js-joda/core" "^3.2.0"
     "@js-joda/locale_en-us" "^3.2.2"
     "@mui/icons-material" "^5.8.4"
@@ -495,6 +496,17 @@
     deepmerge "^4.2.2"
     fuse.js "^6.6.2"
     redux "^4.2.0"
+
+"@formio/react@^5.2.4-rc.1":
+  version "5.2.4-rc.1"
+  resolved "https://registry.npmjs.org/@formio/react/-/react-5.2.4-rc.1.tgz#252c89a3176213cd4cc3771f5ca9845de1c22cb6"
+  integrity sha512-I/dvmRuQr0/I0MEZlU/5zDp1jNhFkOcwv3Ai5fxyfmjyJDzC+3J/OyPwQL92Njbl5ogTlfo4/frtSHMXcrJtow==
+  dependencies:
+    babel-polyfill "^6.26.0"
+    core-js "^3.21.1"
+    eventemitter2 "^6.4.5"
+    lodash "^4.17.21"
+    prop-types "^15.8.1"
 
 "@formio/semantic@2.6.1-rc.1":
   version "2.6.1-rc.1"
@@ -1825,6 +1837,23 @@ babel-plugin-macros@^3.1.0:
     cosmiconfig "^7.0.0"
     resolve "^1.19.0"
 
+babel-polyfill@^6.26.0:
+  version "6.26.0"
+  resolved "https://registry.npmjs.org/babel-polyfill/-/babel-polyfill-6.26.0.tgz#379937abc67d7895970adc621f284cd966cf2153"
+  integrity sha512-F2rZGQnAdaHWQ8YAoeRbukc7HS9QgdgeyJ0rQDd485v9opwuPvjpPFcOOT/WmkKTdgy9ESgSPXDcTNpzrGr6iQ==
+  dependencies:
+    babel-runtime "^6.26.0"
+    core-js "^2.5.0"
+    regenerator-runtime "^0.10.5"
+
+babel-runtime@^6.26.0:
+  version "6.26.0"
+  resolved "https://registry.npmjs.org/babel-runtime/-/babel-runtime-6.26.0.tgz#965c7058668e82b55d7bfe04ff2337bc8b5647fe"
+  integrity sha512-ITKNuq2wKlW1fJg9sSW52eepoYgZBggvOAHC0u/CYu/qxQ9EVzThCgR69BnSXLHjy2f7SY5zaQ4yt7H9ZVxY2g==
+  dependencies:
+    core-js "^2.4.0"
+    regenerator-runtime "^0.11.0"
+
 balanced-match@^1.0.0:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/balanced-match/-/balanced-match-1.0.2.tgz#e83e3a7e3f300b34cb9d87f615fa0cbf357690ee"
@@ -2572,7 +2601,12 @@ copyfiles@^2.4.1:
     untildify "^4.0.0"
     yargs "^16.1.0"
 
-core-js@^3.26.1:
+core-js@^2.4.0, core-js@^2.5.0:
+  version "2.6.12"
+  resolved "https://registry.npmjs.org/core-js/-/core-js-2.6.12.tgz#d9333dfa7b065e347cc5682219d6f690859cc2ec"
+  integrity sha512-Kb2wC0fvsWfQrgk8HU5lW6U/Lcs8+9aaYcy4ZFc6DDlo4nZ7n70dEgE5rtR0oG6ufKDUnrwfWL1mXR5ljDatrQ==
+
+core-js@^3.21.1, core-js@^3.26.1:
   version "3.31.0"
   resolved "https://registry.npmjs.org/core-js/-/core-js-3.31.0.tgz#4471dd33e366c79d8c0977ed2d940821719db344"
   integrity sha512-NIp2TQSGfR6ba5aalZD+ZQ1fSxGhDo/s1w0nx3RYzf2pnJxt7YynxFlFScP6eV7+GZsKO95NSjGxyJsU3DZgeQ==
@@ -3126,6 +3160,11 @@ event-target-shim@^5.0.0:
   version "5.0.1"
   resolved "https://registry.npmjs.org/event-target-shim/-/event-target-shim-5.0.1.tgz#5d4d3ebdf9583d63a5333ce2deb7480ab2b05789"
   integrity sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==
+
+eventemitter2@^6.4.5:
+  version "6.4.9"
+  resolved "https://registry.npmjs.org/eventemitter2/-/eventemitter2-6.4.9.tgz#41f2750781b4230ed58827bc119d293471ecb125"
+  integrity sha512-JEPTiaOt9f04oa6NOkc4aH+nVp5I3wEjpHbIPqfgCdD5v5bUzy7xQqwcVO2aDQgOWhI28da57HksMrzK9HlRxg==
 
 eventemitter3@^4.0.0, eventemitter3@^4.0.4, eventemitter3@^4.0.7:
   version "4.0.7"
@@ -6069,6 +6108,16 @@ redux@^4.2.0:
   integrity sha512-LAUYz4lc+Do8/g7aeRa8JkyDErK6ekstQaqWQrNRW//MY1TvCEpMtpTWvlQ+FPbWCx+Xixu/6SHt5N0HR+SB4w==
   dependencies:
     "@babel/runtime" "^7.9.2"
+
+regenerator-runtime@^0.10.5:
+  version "0.10.5"
+  resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.10.5.tgz#336c3efc1220adcedda2c9fab67b5a7955a33658"
+  integrity sha512-02YopEIhAgiBHWeoTiA8aitHDt8z6w+rQqNuIftlM+ZtvSl/brTouaU7DW6GO/cHtvxJvS4Hwv2ibKdxIRi24w==
+
+regenerator-runtime@^0.11.0:
+  version "0.11.1"
+  resolved "https://registry.npmjs.org/regenerator-runtime/-/regenerator-runtime-0.11.1.tgz#be05ad7f9bf7d22e056f9726cee5017fbf19e2e9"
+  integrity sha512-MguG95oij0fC3QV3URf4V2SDYGJhJnJGqvIIgdECeODCT98wSWDAJ94SSuVpYQUoTcGUIL6L4yNB7j1DFFHSBg==
 
 regenerator-runtime@^0.13.11:
   version "0.13.11"
