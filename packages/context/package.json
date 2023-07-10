@@ -35,7 +35,7 @@
         "!dist/tests"
     ],
     "devDependencies": {
-        "@azure/msal-browser": "^2.37.1",
+        "@azure/msal-browser": "^2.38.0",
         "@azure/msal-react": "^1.5.8",
         "@types/chai": "^4.3.4",
         "@types/dirty-chai": "^2.0.2",
