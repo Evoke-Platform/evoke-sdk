@@ -27,6 +27,7 @@
     "license": "MIT",
     "dependencies": {
         "@evoke-platform/context": "latest",
+        "@evoke-platform/payment": "^1.0.0-dev.0",
         "@evoke-platform/ui-components": "latest"
     },
     "devDependencies": {
