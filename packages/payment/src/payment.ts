@@ -8,6 +8,7 @@ export type PaymentMethod = 'CreditCard' | 'eCheck' | 'Cash' | 'Check';
 export type CreditCardType = 'Visa' | 'Mastercard' | 'Discover' | 'AmericanExpress';
 
 export type PaymentReference = { id: string; name: string };
+
 export interface PaymentItem {
     id: string;
 
@@ -16,6 +17,7 @@ export interface PaymentItem {
      */
     name: string;
 
+    status: PaymentStatus;
     contextObjectId?: string;
     contextInstanceId?: string;
 
@@ -39,24 +41,8 @@ export interface PaymentItem {
     customField4?: string;
     customField5?: string;
 }
-export interface PaymentResult {
-    status: PaymentStatus;
 
-    method?: PaymentMethod;
-    cardType?: CreditCardType;
-    amountPaid?: number;
-
-    /**
-     * Name of the person paying for the transaction.
-     */
-    payer?: string;
-
-    gatewayTransactionId?: string;
-    gatewayResultCode?: string;
-    gatewayResultMessage?: string;
-    authorizationCode?: string;
-}
-export interface Payment extends PaymentResult {
+export interface Payment {
     id: string;
 
     /**
@@ -103,4 +89,21 @@ export interface Payment extends PaymentResult {
     customField8?: string;
     customField9?: string;
     customField10?: string;
+
+    /**
+     * Below fields store the payment result.
+     */
+    method?: PaymentMethod;
+    cardType?: CreditCardType;
+    amountPaid?: number;
+
+    /**
+     * Name of the person paying for the transaction.
+     */
+    payer?: string;
+
+    gatewayTransactionId?: string;
+    gatewayResultCode?: string;
+    gatewayResultMessage?: string;
+    authorizationCode?: string;
 }
