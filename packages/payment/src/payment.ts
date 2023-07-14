@@ -17,7 +17,6 @@ export interface PaymentItem {
      */
     name: string;
 
-    status: PaymentStatus;
     contextObjectId?: string;
     contextInstanceId?: string;
 
@@ -55,6 +54,7 @@ export interface Payment {
      */
     userId: string;
 
+    status: PaymentStatus;
     contextObjectId?: string;
     contextInstanceId?: string;
 
