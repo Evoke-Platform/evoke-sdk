@@ -1,0 +1,34 @@
+{
+    "name": "@evoke-platform/payment",
+    "version": "1.0.0-dev.0",
+    "description": "Support for payment gateway integrations in Evoke",
+    "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/payment/README.md",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Evoke-Platform/evoke-sdk",
+        "directory": "packages/payment"
+    },
+    "bugs": {
+        "url": "https://github.com/Evoke-Platform/evoke-sdk/issues"
+    },
+    "main": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "files": [
+        "dist"
+    ],
+    "publishConfig": {
+        "access": "public"
+    },
+    "scripts": {
+        "build": "tsc",
+        "release": "commit-and-tag-version -t payment@ --releaseCommitMessageFormat \"chore(release): payment@{{currentTag}} [skip ci]\"",
+        "predeploy": "cp ../../LICENSE .",
+        "deploy": "npm publish"
+    },
+    "author": "System Automation Corp.",
+    "license": "MIT",
+    "devDependencies": {
+        "commit-and-tag-version": "^11.2.2",
+        "typescript": "^5.1.6"
+    }
+}
