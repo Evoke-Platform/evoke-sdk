@@ -90,9 +90,7 @@ export interface Payment {
     customField9?: string;
     customField10?: string;
 
-    /**
-     * Below fields store the payment result.
-     */
+    // Below fields store the payment result.
     method?: PaymentMethod;
     cardType?: CreditCardType;
     amountPaid?: number;
