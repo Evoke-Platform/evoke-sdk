@@ -7,15 +7,68 @@ export type PaymentMethod = 'CreditCard' | 'eCheck' | 'Cash' | 'Check';
 
 export type CreditCardType = 'Visa' | 'Mastercard' | 'Discover' | 'AmericanExpress';
 
-export interface Payment {
+export type PaymentReference = { id: string; name: string };
+export interface PaymentItem {
     id: string;
+
+    /**
+     * Description of the payment item.
+     */
+    name: string;
+
+    contextObjectId?: string;
+    contextInstanceId?: string;
+
+    quantity: number;
+    unitPrice: number;
+    sku: string;
+
+    /**
+     * Total amount for the item based on the quantity and unit price.
+     */
+    totalAmount?: number;
+
+    /**
+     * Refernce to the payment that this item is associated with.
+     */
+    payment?: PaymentReference;
+
+    customField1?: string;
+    customField2?: string;
+    customField3?: string;
+    customField4?: string;
+    customField5?: string;
+}
+export interface PaymentResult {
+    status: PaymentStatus;
+
+    method?: PaymentMethod;
+    cardType?: CreditCardType;
+    amountPaid?: number;
+
+    /**
+     * Name of the person paying for the transaction.
+     */
+    payer?: string;
+
+    gatewayTransactionId?: string;
+    gatewayResultCode?: string;
+    gatewayResultMessage?: string;
+    authorizationCode?: string;
+}
+export interface Payment extends PaymentResult {
+    id: string;
+
+    /**
+     * Payment number associted with the transaction.
+     */
+    name: string;
 
     /**
      * User initiating the payment transaction.
      */
     userId: string;
 
-    status: PaymentStatus;
     contextObjectId?: string;
     contextInstanceId?: string;
 
@@ -30,6 +83,16 @@ export interface Payment {
      */
     transactionEnd?: string;
 
+    /**
+     * Total fees associated with the payment based on the payment items.
+     */
+    feeTotal?: number;
+
+    paymentItems?: PaymentItem[];
+
+    successUrl?: string;
+    cancelUrl?: string;
+
     customField1?: string;
     customField2?: string;
     customField3?: string;
@@ -40,8 +103,4 @@ export interface Payment {
     customField8?: string;
     customField9?: string;
     customField10?: string;
-
-    paymentMethod?: PaymentMethod;
-    cardType?: CreditCardType;
-    amountPaid?: number;
 }
