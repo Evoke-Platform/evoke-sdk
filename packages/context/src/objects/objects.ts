@@ -33,7 +33,7 @@ export type Action = {
     name: string;
     type: ActionType;
     outputEvent: string;
-    inputProperties?: Property[];
+    inputProperties?: Record<string, unknown>[];
 };
 
 export type ObjectInstance = {
