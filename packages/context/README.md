@@ -199,8 +199,8 @@ absolute URL.
 ### SignalR Connection
 
 -   [useSignalRConnection](#usesignalrconnection)
-    -   [documentChanges](#documentchanges)
-    -   [instanceChanges](#instancechanges)
+    -   [documentChanges](#documentchangessubscribeobjectidinstanceid-data-documentchange)
+    -   [instanceChanges](#instancechangessubscribeobjectid-instanceids-instancechange)
 
 #### `useSignalRConnection()`
 
@@ -217,6 +217,18 @@ documentChanges.subscribe('myObjectId/myInstanceId', (data) => {
     console.log(data);
 });
 ```
+
+The data provided to the callback will be an array of `DocumentChange` which contains the
+following data:
+
+-   `objectId`
+    -   Object describing the instance associated with the updated document.
+-   `instanceId`
+    -   Instance that the updated document is associated with.
+-   `documentId`
+    -   Document that was updated.
+-   `type`
+    -   The type of update. Possible values are `BlobCreated`, `BlobDeleted`, and `BlobMetadataUpdated`.
 
 ##### `documentChanges.unsubscribe('{objectId}/{instanceId}', (data: DocumentChange[]) => {})`
 
@@ -249,6 +261,8 @@ instanceChanges.subscribe('myObjectId', (instanceIds) => {
     console.log(instanceIds);
 });
 ```
+
+The data provided to the callback will be an array of instance IDs that were updated.
 
 ##### `instanceChanges.unsubscribe('{objectId}', (instanceIds: InstanceChange[]) => {})`
 
