@@ -607,10 +607,10 @@
   resolved "https://registry.npmjs.org/@js-joda/locale_en-us/-/locale_en-us-3.2.2.tgz#e953add780a0b7ee32a81cdbeb15d80cc6c6b8cf"
   integrity sha512-/3KCf1BD0V9N5ffFCm7Q4VpWHty8hABAdtkIoyCf2VjxAYelTebw7Vq6L1rtrMyWU2Ltb7n00S1FWb5dewNjHg==
 
-"@microsoft/signalr@^7.0.5":
-  version "7.0.5"
-  resolved "https://registry.npmjs.org/@microsoft/signalr/-/signalr-7.0.5.tgz#e7a984ac1f1b6a488170e9cb2f2f46a5d97d5f80"
-  integrity sha512-j84syCKlXkQAOQhyrzRmW7w/M2UXQ6OKcXXFIVNjmiiZbEGIvSvJDRAuyMFjArdQOXz+etJgd58H/prTbyTCrA==
+"@microsoft/signalr@^7.0.5", "@microsoft/signalr@^7.0.9":
+  version "7.0.9"
+  resolved "https://registry.npmjs.org/@microsoft/signalr/-/signalr-7.0.9.tgz#bc0ba8f38b0cb3621c5f18b56d8096190689a3ca"
+  integrity sha512-aGfBLAYTh+6ydYvLXV/jcocWr8KKmTOgWyl/mDx5Hzrii1aAfrn+bpBNzrl5sto5ehsHCdTIzTCuOCT3baIjOw==
   dependencies:
     abort-controller "^3.0.0"
     eventsource "^2.0.2"
@@ -5509,14 +5509,7 @@ nise@^5.0.1, nise@^5.1.4:
     just-extend "^4.0.2"
     path-to-regexp "^1.7.0"
 
-node-fetch@^2.6.7:
-  version "2.6.9"
-  resolved "https://registry.yarnpkg.com/node-fetch/-/node-fetch-2.6.9.tgz#7c7f744b5cc6eb5fd404e0c7a9fec630a55657e6"
-  integrity sha512-DJm/CJkZkRjKKj4Zi4BsKVZh3ValV5IR5s7LVZnW+6YMh0W1BfNA8XSs6DLMGYlId5F3KnA70uu2qepcR08Qqg==
-  dependencies:
-    whatwg-url "^5.0.0"
-
-node-fetch@~2.6.1:
+node-fetch@^2.6.7, node-fetch@~2.6.1:
   version "2.6.11"
   resolved "https://registry.npmjs.org/node-fetch/-/node-fetch-2.6.11.tgz#cde7fc71deef3131ef80a738919f999e6edfff25"
   integrity sha512-4I6pdBY1EthSqDmJkiNk3JIT8cswwR9nfeW/cPdUagJYEQG7R95WRH74wpz7ma8Gh/9dI9FP+OU+0E4FvtA55w==
