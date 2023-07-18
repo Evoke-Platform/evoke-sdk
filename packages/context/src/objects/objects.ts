@@ -47,8 +47,30 @@ export type FormioInputTypes = {
     label: string;
     type: string;
     key: string;
-    defaultValue?: any;
+    initialValue?: any;
     property?: Property;
+    input?: boolean;
+    placeholder?: string;
+    description?: string;
+    tooltip?: string;
+    prefix?: string;
+    suffix?: string;
+    showCharCount?: boolean;
+    readOnly?: boolean;
+    isMultiLineText?: boolean;
+    widget?: string;
+    tableView?: boolean;
+    verticalLayout?: boolean;
+    data?: {
+        resource?: string;
+        values?: [];
+    };
+    dataSrc?: string;
+    validate?: {
+        required: boolean;
+        operator: any;
+    };
+    components: FormioInputTypes[];
     [key: string]: unknown;
 };
 
