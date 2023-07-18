@@ -33,13 +33,22 @@ export type Action = {
     name: string;
     type: ActionType;
     outputEvent: string;
-    inputProperties?: Record<string, unknown>[];
+    inputProperties?: Property[];
 };
 
 export type ObjectInstance = {
     id: string;
     objectId: string;
     name: string;
+    [key: string]: unknown;
+};
+
+export type FormioInputTypes = {
+    label: string;
+    type: string;
+    key: string;
+    defaultValue?: any;
+    property?: Property;
     [key: string]: unknown;
 };
 
