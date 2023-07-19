@@ -43,17 +43,24 @@ export type ObjectInstance = {
     [key: string]: unknown;
 };
 
+export type RegexValidation = {
+    regex: string;
+    errorMessage: string;
+};
+
+export type SelectOption = {
+    label: string;
+    value: string;
+};
+
 /**
- * @typedef {object} FormioInput - creates a new type named 'FormioInput'
- * This will be used if a form field needs to be configured for custom widget
- * @property { FormioInput } components - a property of FormioInput type groups different sets of fields together into separate sections.
+ * Represents an object action inputProperty object.
  */
 export type FormioInput = {
     label: string;
     type: string;
     key: string;
     initialValue?: unknown;
-    property?: Property;
     input?: boolean;
     placeholder?: string;
     description?: string;
@@ -63,16 +70,20 @@ export type FormioInput = {
     showCharCount?: boolean;
     readOnly?: boolean;
     isMultiLineText?: boolean;
+    /**
+     * An array of values required for select options.
+     */
     data?: {
-        resource?: string;
-        values?: [];
+        values?: SelectOption[];
     };
-    dataSrc?: string;
     validate?: {
         required: boolean;
         operator: 'any' | 'all';
-        regexes: [];
+        regexes: RegexValidation[];
     };
+    /**
+     * An array of sub-components to be rendered inside sections.
+     */
     components?: FormioInput[];
     [key: string]: unknown;
 };
