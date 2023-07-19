@@ -33,7 +33,7 @@ export type Action = {
     name: string;
     type: ActionType;
     outputEvent: string;
-    inputProperties?: FormioInputTypes[];
+    inputProperties?: FormioInput[];
 };
 
 export type ObjectInstance = {
@@ -43,11 +43,16 @@ export type ObjectInstance = {
     [key: string]: unknown;
 };
 
-export type FormioInputTypes = {
+/**
+ * @typedef {object} FormioInput - creates a new type named 'FormioInput'
+ * This will be used if a form field needs to be configured for custom widget
+ * @property { FormioInput } components - a property of FormioInput type groups different sets of fields together into separate sections.
+ */
+export type FormioInput = {
     label: string;
     type: string;
     key: string;
-    initialValue?: any;
+    initialValue?: unknown;
     property?: Property;
     input?: boolean;
     placeholder?: string;
@@ -58,9 +63,6 @@ export type FormioInputTypes = {
     showCharCount?: boolean;
     readOnly?: boolean;
     isMultiLineText?: boolean;
-    widget?: string;
-    tableView?: boolean;
-    verticalLayout?: boolean;
     data?: {
         resource?: string;
         values?: [];
@@ -68,9 +70,10 @@ export type FormioInputTypes = {
     dataSrc?: string;
     validate?: {
         required: boolean;
-        operator: any;
+        operator: 'any' | 'all';
+        regexes: [];
     };
-    components: FormioInputTypes[];
+    components?: FormioInput[];
     [key: string]: unknown;
 };
 
