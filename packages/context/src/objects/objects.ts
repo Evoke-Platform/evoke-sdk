@@ -56,7 +56,7 @@ export type SelectOption = {
 /**
  * Represents an object action inputProperty object.
  */
-export type FormioInput = {
+export type ActionInput = {
     label: string;
     type: string;
     key: string;
@@ -83,7 +83,7 @@ export type FormioInput = {
     /**
      * An array of sub-components to be rendered inside sections.
      */
-    components?: FormioInput[];
+    components?: ActionInput[];
     [key: string]: unknown;
 };
 
