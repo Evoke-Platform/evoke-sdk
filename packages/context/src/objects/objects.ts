@@ -33,13 +33,57 @@ export type Action = {
     name: string;
     type: ActionType;
     outputEvent: string;
-    inputProperties?: Property[];
+    inputProperties?: ActionInput[];
 };
 
 export type ObjectInstance = {
     id: string;
     objectId: string;
     name: string;
+    [key: string]: unknown;
+};
+
+export type RegexValidation = {
+    regex: string;
+    errorMessage: string;
+};
+
+export type SelectOption = {
+    label: string;
+    value: string;
+};
+
+/**
+ * Represents an object action inputProperty object.
+ */
+export type ActionInput = {
+    label: string;
+    type: string;
+    key: string;
+    initialValue?: unknown;
+    placeholder?: string;
+    description?: string;
+    tooltip?: string;
+    prefix?: string;
+    suffix?: string;
+    showCharCount?: boolean;
+    readOnly?: boolean;
+    isMultiLineText?: boolean;
+    data?: {
+        /**
+         * An array of values required for select options.
+         */
+        values?: SelectOption[];
+    };
+    validate?: {
+        required?: boolean;
+        operator?: 'any' | 'all';
+        regexes?: RegexValidation[];
+    };
+    /**
+     * An array of sub-components to be rendered inside sections.
+     */
+    components?: ActionInput[];
     [key: string]: unknown;
 };
 
