@@ -61,7 +61,6 @@ export type FormioInput = {
     type: string;
     key: string;
     initialValue?: unknown;
-    input?: boolean;
     placeholder?: string;
     description?: string;
     tooltip?: string;
