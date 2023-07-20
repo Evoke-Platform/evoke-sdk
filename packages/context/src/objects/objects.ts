@@ -33,7 +33,7 @@ export type Action = {
     name: string;
     type: ActionType;
     outputEvent: string;
-    inputProperties?: FormioInput[];
+    inputProperties?: ActionInput[];
 };
 
 export type ObjectInstance = {
