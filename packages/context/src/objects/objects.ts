@@ -70,16 +70,16 @@ export type FormioInput = {
     showCharCount?: boolean;
     readOnly?: boolean;
     isMultiLineText?: boolean;
-    /**
-     * An array of values required for select options.
-     */
     data?: {
+        /**
+         * An array of values required for select options.
+         */
         values?: SelectOption[];
     };
     validate?: {
-        required: boolean;
-        operator: 'any' | 'all';
-        regexes: RegexValidation[];
+        required?: boolean;
+        operator?: 'any' | 'all';
+        regexes?: RegexValidation[];
     };
     /**
      * An array of sub-components to be rendered inside sections.
