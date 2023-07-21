@@ -76,8 +76,8 @@ export interface Payment {
 
     paymentItems?: PaymentItem[];
 
-    successUrl?: string;
-    cancelUrl?: string;
+    successPage?: string;
+    cancelPage?: string;
 
     customField1?: string;
     customField2?: string;
