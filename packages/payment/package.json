@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/payment",
-    "version": "1.0.0-dev.2",
+    "version": "1.0.0-dev.3",
     "description": "Support for payment gateway integrations in Evoke",
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/payment/README.md",
     "repository": {
