@@ -76,6 +76,7 @@ export interface Payment {
 
     paymentItems?: PaymentItem[];
 
+    appId: string;
     successPage?: string;
     cancelPage?: string;
 
