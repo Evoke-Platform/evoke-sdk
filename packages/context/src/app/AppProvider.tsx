@@ -1,7 +1,7 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import { createContext, ReactNode, useContext } from 'react';
+import {createContext, ReactNode, useContext} from 'react';
 
 export type AppType = 'public' | 'portal' | 'private';
 
@@ -20,6 +20,7 @@ export type App = {
 export type Page = {
     id: string;
     name: string;
+    slug: string;
     children?: PageElement[];
 };
 
@@ -48,7 +49,7 @@ export type NavigationItem = {
     pageName: string;
 };
 
-const defaultApp: App = { id: '_evoke', name: 'Evoke Platform', type: 'public' };
+const defaultApp: App = {id: '_evoke', name: 'Evoke Platform', type: 'public'};
 const AppContext = createContext<App>(defaultApp);
 
 AppContext.displayName = 'AppContext';
@@ -59,7 +60,7 @@ export type AppProviderProps = {
 };
 
 function AppProvider(props: AppProviderProps) {
-    const { app, children } = props;
+    const {app, children} = props;
 
     return <AppContext.Provider value={app}>{children}</AppContext.Provider>;
 }
