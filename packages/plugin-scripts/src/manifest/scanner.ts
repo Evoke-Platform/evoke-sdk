@@ -17,6 +17,7 @@ export class Scanner {
     async scan() {
         const files = await glob(`${this.sourceRoot}/**/*.{ts,tsx}`);
         const widgets: ItemDescriptor[] = [];
+        const paymentGateways: ItemDescriptor[] = [];
         const program = ts.createProgram(files, {});
 
         for (const file of files) {
@@ -26,10 +27,13 @@ export class Scanner {
             if (widget) {
                 widgets.push(widget);
             }
+
+            paymentGateways.push(...fileScanner.scanForPaymentGateways());
         }
 
         return {
             widgets: keyBy(widgets, (widget) => widget.id),
+            paymentGateways: keyBy(paymentGateways, (gateway) => gateway.id),
         };
     }
 }

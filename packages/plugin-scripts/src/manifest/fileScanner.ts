@@ -3,7 +3,10 @@
 
 import { Spec } from 'comment-parser';
 import {
+    ClassDeclaration,
+    ConstructorDeclaration,
     FunctionDeclaration,
+    FunctionLikeDeclaration,
     Program,
     PropertySignature,
     SyntaxKind,
@@ -27,14 +30,19 @@ export class FileScanner {
 
     constructor(private program: Program, private file: string, private options?: FileScannerOptions) {}
 
+    private parse() {
+        if (!this.parsedSource) {
+            this.parsedSource = parseFile(this.program, this.file);
+        }
+    }
+
     scanForWidget() {
-        const parsed = parseFile(this.program, this.file);
+        this.parse();
+
         let widget: ItemDescriptor | undefined;
 
-        if (parsed) {
-            this.parsedSource = parsed;
-
-            const widgetDeclarations = parsed.comments.filter(this.hasWidgetModifier);
+        if (this.parsedSource) {
+            const widgetDeclarations = this.parsedSource.comments.filter(this.hasWidgetModifier);
 
             if (widgetDeclarations.length > 1) {
                 throw new SyntaxError(
@@ -51,8 +59,28 @@ export class FileScanner {
         return widget;
     }
 
+    scanForPaymentGateways() {
+        this.parse();
+
+        const paymentGateways: ItemDescriptor[] = [];
+
+        if (this.parsedSource) {
+            const declarations = this.parsedSource.comments.filter(this.hasPaymentGatewayModifier);
+
+            paymentGateways.push(...declarations.map(this.processPaymentGateway.bind(this)));
+        }
+
+        return paymentGateways;
+    }
+
     private hasWidgetModifier(comment: Comment) {
         return comment.commentBlock.tags.some((tag) => tag.tag === 'widget' || tag.tag === 'widgetName');
+    }
+
+    private hasPaymentGatewayModifier(comment: Comment) {
+        return comment.commentBlock.tags.some(
+            (tag) => tag.tag === 'paymentGateway' || tag.tag === 'paymentGatewayName',
+        );
     }
 
     private getTagValue(tags: Spec[], tagName: string, fullText?: boolean) {
@@ -106,6 +134,47 @@ export class FileScanner {
         }
 
         return widget;
+    }
+
+    private processPaymentGateway(declaration: Comment) {
+        if (declaration.compilerNode.kind !== SyntaxKind.ClassDeclaration) {
+            throw new SyntaxError('@paymentGateway must be declared on a class', declaration.compilerNode);
+        }
+
+        const classDeclaration = declaration.compilerNode as ClassDeclaration;
+        const tags = declaration.commentBlock.tags;
+        const gatewayId = this.getTagValue(tags, 'paymentGateway') || classDeclaration.name?.text;
+
+        if (!gatewayId) {
+            throw new SyntaxError(
+                'Unable to determine payment gateway id, no explicit id provided and unable to determine class name',
+                declaration.compilerNode,
+            );
+        }
+
+        const gatewayName = this.getTagValue(tags, 'paymentGatewayName', true) || gatewayId;
+        const gatewayVersion = this.options?.defaultVersion;
+
+        const gateway: ItemDescriptor = {
+            id: gatewayId,
+            name: gatewayName,
+            description: declaration.commentBlock.description,
+            version: gatewayVersion,
+            src: this.file,
+            properties: [],
+        };
+
+        const constructorDeclaration = this.getConstructor(classDeclaration);
+
+        if (constructorDeclaration) {
+            const propsType = this.getPropsType(constructorDeclaration);
+
+            if (propsType) {
+                gateway.properties = this.processProperties(propsType);
+            }
+        }
+
+        return gateway;
     }
 
     private processProperties(propsType: TypeLiteralNode) {
@@ -217,7 +286,7 @@ export class FileScanner {
         return false;
     }
 
-    private getPropsType(funcDeclaration: FunctionDeclaration) {
+    private getPropsType(funcDeclaration: FunctionLikeDeclaration) {
         const propsParam = funcDeclaration.parameters[0];
         let propsType: TypeLiteralNode | undefined;
 
@@ -258,5 +327,11 @@ export class FileScanner {
         }
 
         return propsType;
+    }
+
+    private getConstructor(classDeclaration: ClassDeclaration) {
+        return classDeclaration.members.find((member) => member.kind === SyntaxKind.Constructor) as
+            | ConstructorDeclaration
+            | undefined;
     }
 }
