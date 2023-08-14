@@ -14,11 +14,15 @@ const Timeout = 15000;
 describe('Scanner', () => {
     const scanner = new Scanner('src/__tests__/manifest/testFiles', { defaultVersion: '1-test' });
     let widgets: Dictionary<ItemDescriptor> = {};
+    let paymentGateways: Dictionary<ItemDescriptor> = {};
 
     before(async function () {
         this.timeout(Timeout);
 
-        widgets = (await scanner.scan()).widgets;
+        const scanResults = await scanner.scan();
+
+        widgets = scanResults.widgets;
+        paymentGateways = scanResults.paymentGateways;
     });
 
     describe('widget', () => {
@@ -101,6 +105,105 @@ describe('Scanner', () => {
 
             await expect(scanner.scan()).to.be.rejectedWith('@widget must be declared on a FunctionComponent');
         }).timeout(Timeout);
+    });
+
+    describe('paymentGateway', () => {
+        it('detects classes marked with @paymentGateway', () => {
+            expect(paymentGateways['BasicGateway']).to.eql({
+                id: 'BasicGateway',
+                name: 'BasicGateway',
+                description: '',
+                version: '1-test',
+                properties: [],
+            });
+        });
+
+        it('detects classes marked with @paymentGatewayName', () => {
+            expect(paymentGateways['BasicGateway2']).to.eql({
+                id: 'BasicGateway2',
+                name: 'BasicGateway2',
+                description: '',
+                version: '1-test',
+                properties: [],
+            });
+        });
+
+        it('allows overriding payment gateway id', () => {
+            expect(paymentGateways['CustomId']).to.eql({
+                id: 'CustomId',
+                name: 'CustomId',
+                description: '',
+                version: '1-test',
+                properties: [],
+            });
+        });
+
+        it('allows setting payment gateway name', () => {
+            expect(paymentGateways['PaymentGatewayName']).to.eql({
+                id: 'PaymentGatewayName',
+                name: 'Test Gateway Name',
+                description: '',
+                version: '1-test',
+                properties: [],
+            });
+        });
+
+        it('allows setting payment gateway description', () => {
+            expect(paymentGateways['PaymentGatewayDescription']).to.eql({
+                id: 'PaymentGatewayDescription',
+                name: 'PaymentGatewayDescription',
+                description: 'This is a sample description for a payment gateway. It may wrap to multiple lines.',
+                version: '1-test',
+                properties: [],
+            });
+        });
+
+        it('detects multiple payment gateways in same file', () => {
+            expect(paymentGateways['PaymentGatewayMultiple1']).to.eql({
+                id: 'PaymentGatewayMultiple1',
+                name: 'PaymentGatewayMultiple1',
+                description: '',
+                version: '1-test',
+                properties: [],
+            });
+
+            expect(paymentGateways['PaymentGatewayMultiple2']).to.eql({
+                id: 'PaymentGatewayMultiple2',
+                name: 'PaymentGatewayMultiple2',
+                description: '',
+                version: '1-test',
+                properties: [],
+            });
+        });
+
+        it('fails if @paymentGateway is not on a class', async () => {
+            const scanner = new Scanner('src/__tests__/manifest/badFiles/paymentGateways/notClass');
+
+            await expect(scanner.scan()).to.be.rejectedWith('@paymentGateway must be declared on a class');
+        }).timeout(Timeout);
+
+        it('detects payment gateway properties', () => {
+            expect(paymentGateways['TestGatewayProperties']).to.eql({
+                id: 'TestGatewayProperties',
+                name: 'TestGatewayProperties',
+                description: '',
+                version: '1-test',
+                properties: [
+                    {
+                        name: 'text',
+                        displayName: 'text',
+                        type: 'text',
+                        optional: false,
+                    },
+                    {
+                        name: 'num',
+                        displayName: 'num',
+                        type: 'number',
+                        optional: true,
+                    },
+                ],
+            });
+        });
     });
 
     describe('props', () => {
