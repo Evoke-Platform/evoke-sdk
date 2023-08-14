@@ -6,7 +6,6 @@ export type ItemDescriptor = {
     name: string;
     description?: string;
     version?: string;
-    src: string;
     properties: PropertyDescriptor[];
 };
 
@@ -18,6 +17,9 @@ export type PropertyDescriptor = {
     [key: string]: unknown;
 };
 
+export type WidgetDescriptor = ItemDescriptor & {
+    src: string;
+};
+
 // For backwards compatibility.
-export type WidgetDescriptor = ItemDescriptor;
 export type WidgetPropertyDescriptor = PropertyDescriptor;

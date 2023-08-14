@@ -4,7 +4,7 @@
 import { glob } from 'glob';
 import { keyBy } from 'lodash';
 import ts from 'typescript';
-import { ItemDescriptor } from './descriptors';
+import { ItemDescriptor, WidgetDescriptor } from './descriptors';
 import { FileScanner } from './fileScanner';
 
 export type ScannerOptions = {
@@ -16,7 +16,7 @@ export class Scanner {
 
     async scan() {
         const files = await glob(`${this.sourceRoot}/**/*.{ts,tsx}`);
-        const widgets: ItemDescriptor[] = [];
+        const widgets: WidgetDescriptor[] = [];
         const paymentGateways: ItemDescriptor[] = [];
         const program = ts.createProgram(files, {});
 

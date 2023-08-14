@@ -17,7 +17,7 @@ import {
     UnionTypeNode,
 } from 'typescript';
 import debug from './debug';
-import { ItemDescriptor, PropertyDescriptor } from './descriptors';
+import { ItemDescriptor, PropertyDescriptor, WidgetDescriptor } from './descriptors';
 import { SyntaxError, locationString } from './errors';
 import { Comment, ParsedSource, parseFile } from './parser';
 
@@ -39,7 +39,7 @@ export class FileScanner {
     scanForWidget() {
         this.parse();
 
-        let widget: ItemDescriptor | undefined;
+        let widget: WidgetDescriptor | undefined;
 
         if (this.parsedSource) {
             const widgetDeclarations = this.parsedSource.comments.filter(this.hasWidgetModifier);
@@ -118,7 +118,7 @@ export class FileScanner {
         const widgetName = this.getTagValue(tags, 'widgetName', true) || widgetId;
         const widgetVersion = this.getTagValue(tags, 'widgetVersion') || this.options?.defaultVersion;
 
-        const widget: ItemDescriptor = {
+        const widget: WidgetDescriptor = {
             id: widgetId,
             name: widgetName,
             description: widgetDeclaration.commentBlock.description,
@@ -160,7 +160,6 @@ export class FileScanner {
             name: gatewayName,
             description: declaration.commentBlock.description,
             version: gatewayVersion,
-            src: this.file,
             properties: [],
         };
 
