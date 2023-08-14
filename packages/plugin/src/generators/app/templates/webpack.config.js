@@ -1,6 +1,5 @@
 const ModuleFederationPlugin = require('webpack').container.ModuleFederationPlugin;
 const manifest = require('./dist/manifest.json');
-const path = require('path');
 const packageJson = require('./package.json');
 
 const exposedWidgets = {};
@@ -11,14 +10,11 @@ for (const widget of manifest.widgets ?? []) {
 
 module.exports = {
     mode: 'development',
-    devServer: {
-        static: {
-            directory: path.join(__dirname, 'dist'),
-        },
-        port: 3002,
-    },
+    target: 'node',
     output: {
-        publicPath: 'auto',
+        library: {
+            type: 'commonjs2',
+        },
     },
     module: {
         rules: [
