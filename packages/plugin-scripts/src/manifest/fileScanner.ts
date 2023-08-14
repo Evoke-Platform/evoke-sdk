@@ -14,7 +14,7 @@ import {
     UnionTypeNode,
 } from 'typescript';
 import debug from './debug';
-import { WidgetDescriptor, WidgetPropertyDescriptor } from './descriptors';
+import { ItemDescriptor, PropertyDescriptor } from './descriptors';
 import { SyntaxError, locationString } from './errors';
 import { Comment, ParsedSource, parseFile } from './parser';
 
@@ -29,7 +29,7 @@ export class FileScanner {
 
     scanForWidget() {
         const parsed = parseFile(this.program, this.file);
-        let widget: WidgetDescriptor | undefined;
+        let widget: ItemDescriptor | undefined;
 
         if (parsed) {
             this.parsedSource = parsed;
@@ -90,7 +90,7 @@ export class FileScanner {
         const widgetName = this.getTagValue(tags, 'widgetName', true) || widgetId;
         const widgetVersion = this.getTagValue(tags, 'widgetVersion') || this.options?.defaultVersion;
 
-        const widget: WidgetDescriptor = {
+        const widget: ItemDescriptor = {
             id: widgetId,
             name: widgetName,
             description: widgetDeclaration.commentBlock.description,
@@ -109,7 +109,7 @@ export class FileScanner {
     }
 
     private processProperties(propsType: TypeLiteralNode) {
-        const properties: WidgetPropertyDescriptor[] = [];
+        const properties: PropertyDescriptor[] = [];
 
         for (const member of propsType.members) {
             const name = member.name;

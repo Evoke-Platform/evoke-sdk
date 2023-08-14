@@ -5,7 +5,7 @@ import chai, { expect } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import dirtyChai from 'dirty-chai';
 import { Dictionary } from 'lodash';
-import { Scanner, WidgetDescriptor } from '../../manifest';
+import { ItemDescriptor, Scanner } from '../../manifest';
 
 chai.use(dirtyChai).use(chaiAsPromised);
 
@@ -13,7 +13,7 @@ const Timeout = 15000;
 
 describe('Scanner', () => {
     const scanner = new Scanner('src/__tests__/manifest/testFiles', { defaultVersion: '1-test' });
-    let widgets: Dictionary<WidgetDescriptor> = {};
+    let widgets: Dictionary<ItemDescriptor> = {};
 
     before(async function () {
         this.timeout(Timeout);
