@@ -4,7 +4,7 @@
 import { glob } from 'glob';
 import { keyBy } from 'lodash';
 import ts from 'typescript';
-import { WidgetDescriptor } from './descriptors';
+import { ItemDescriptor, WidgetDescriptor } from './descriptors';
 import { FileScanner } from './fileScanner';
 
 export type ScannerOptions = {
@@ -17,6 +17,7 @@ export class Scanner {
     async scan() {
         const files = await glob(`${this.sourceRoot}/**/*.{ts,tsx}`);
         const widgets: WidgetDescriptor[] = [];
+        const paymentGateways: ItemDescriptor[] = [];
         const program = ts.createProgram(files, {});
 
         for (const file of files) {
@@ -26,10 +27,13 @@ export class Scanner {
             if (widget) {
                 widgets.push(widget);
             }
+
+            paymentGateways.push(...fileScanner.scanForPaymentGateways());
         }
 
         return {
             widgets: keyBy(widgets, (widget) => widget.id),
+            paymentGateways: keyBy(paymentGateways, (gateway) => gateway.id),
         };
     }
 }

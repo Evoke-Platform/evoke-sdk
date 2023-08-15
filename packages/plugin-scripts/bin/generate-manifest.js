@@ -11,7 +11,7 @@ const { Scanner } = require('../dist');
 
 (async () => {
     const scanner = new Scanner('src', { defaultVersion: packageJson.version });
-    const widgets = (await scanner.scan()).widgets;
+    const { widgets, paymentGateways } = await scanner.scan();
 
     const fs = require('fs');
 
@@ -53,6 +53,7 @@ const { Scanner } = require('../dist');
             name: packageJson.name,
             description: '',
             widgets: Object.values(widgets),
+            paymentGateways: Object.values(paymentGateways),
         };
         if (!fs.existsSync('./dist')) {
             fs.mkdirSync('./dist');

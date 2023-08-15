@@ -154,7 +154,6 @@ export function parseFile(program: ts.Program, file: string): ParsedSource | und
     program.getSemanticDiagnostics();
 
     const sourceFile = program.getSourceFile(file);
-    sourceFile?.getLineAndCharacterOfPosition;
 
     if (!sourceFile) {
         debug('unable to get source file %s', file);
