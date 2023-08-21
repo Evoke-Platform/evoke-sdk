@@ -475,9 +475,9 @@
     axios "^1.3.4"
 
 "@evoke-platform/ui-components@latest":
-  version "1.0.0-dev.131"
-  resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.0.0-dev.131.tgz#90d54928ea8f99ba60572f7bddf68e8ec3bcaee0"
-  integrity sha512-65yQ2h+XRg8deLAd/hLoTQx6ENsXZRkGT+XvkDtXbvrzLe8ALk8s/niDQdUhanRhbNxLHtPaO8blOLKFuAlCzg==
+  version "1.0.0-dev.134"
+  resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.0.0-dev.134.tgz#102d6524a8215ef028854f8460f98b44aaf72734"
+  integrity sha512-LOMx8ileYN4ZUX5KpfXMNCWfRNTOAxKvzVFTJGUH6MOTs52yxjgs7xTmlcdwhbPgaDDShRYHKSq/PHtIlH3Qmw==
   dependencies:
     "@date-io/js-joda" "^2.16.1"
     "@dnd-kit/core" "^6.0.6"
