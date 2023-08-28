@@ -45,7 +45,7 @@
         "@types/chai-as-promised": "^7.1.5",
         "@types/dirty-chai": "^2.0.2",
         "@types/lodash": "^4.14.197",
-        "chai": "^4.3.7",
+        "chai": "^4.3.8",
         "chai-as-promised": "^7.1.1",
         "commit-and-tag-version": "^11.2.2",
         "dirty-chai": "^2.0.1",
