@@ -151,11 +151,11 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}`, config, cb);
     }
 
-    findInstances(filter?: Filter): Promise<ObjectInstance[]>;
-    findInstances(cb: Callback<ObjectInstance[]>): void;
-    findInstances(filter: Filter, cb: Callback<ObjectInstance[]>): void;
+    findInstances<T extends ObjectInstance = ObjectInstance>(filter?: Filter): Promise<T[]>;
+    findInstances<T extends ObjectInstance = ObjectInstance>(cb: Callback<T[]>): void;
+    findInstances<T extends ObjectInstance = ObjectInstance>(filter: Filter, cb: Callback<T[]>): void;
 
-    findInstances(filterOrCallback?: Filter | Callback<ObjectInstance[]>, cb?: Callback<ObjectInstance[]>) {
+    findInstances<T extends ObjectInstance>(filterOrCallback?: Filter | Callback<T[]>, cb?: Callback<T[]>) {
         let filter: Filter | undefined;
 
         if (cb) {
@@ -179,12 +179,12 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances`, config, cb);
     }
 
-    getInstance(id: string): Promise<ObjectInstance>;
-    getInstance(id: string, cb: Callback<ObjectInstance>): void;
+    getInstance<T extends ObjectInstance = ObjectInstance>(id: string): Promise<T>;
+    getInstance<T extends ObjectInstance = ObjectInstance>(id: string, cb: Callback<T>): void;
 
-    getInstance(id: string, cb?: Callback<ObjectInstance>) {
+    getInstance<T extends ObjectInstance>(id: string, cb?: Callback<T>) {
         if (!cb) {
-            return this.services.get<ObjectInstance, unknown>(`data/objects/${this.objectId}/instances/${id}`);
+            return this.services.get<T, unknown>(`data/objects/${this.objectId}/instances/${id}`);
         }
 
         this.services.get(`data/objects/${this.objectId}/instances/${id}`, cb);
@@ -201,29 +201,23 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances/${id}/history`, cb);
     }
 
-    newInstance(input: ActionRequest): Promise<ObjectInstance>;
-    newInstance(input: ActionRequest, cb: Callback<ObjectInstance>): void;
+    newInstance<T extends ObjectInstance = ObjectInstance>(input: ActionRequest): Promise<T>;
+    newInstance<T extends ObjectInstance = ObjectInstance>(input: ActionRequest, cb: Callback<T>): void;
 
-    newInstance(input: ActionRequest, cb?: Callback<ObjectInstance>) {
+    newInstance<T extends ObjectInstance>(input: ActionRequest, cb?: Callback<T>) {
         if (!cb) {
-            return this.services.post<ObjectInstance, ActionRequest>(
-                `data/objects/${this.objectId}/instances/actions`,
-                input,
-            );
+            return this.services.post<T, ActionRequest>(`data/objects/${this.objectId}/instances/actions`, input);
         }
 
         this.services.post(`data/objects/${this.objectId}/instances/actions`, input, cb);
     }
 
-    instanceAction(id: string, input: ActionRequest): Promise<ObjectInstance>;
-    instanceAction(id: string, input: ActionRequest, cb: Callback<ObjectInstance>): void;
+    instanceAction<T extends ObjectInstance = ObjectInstance>(id: string, input: ActionRequest): Promise<T>;
+    instanceAction<T extends ObjectInstance = ObjectInstance>(id: string, input: ActionRequest, cb: Callback<T>): void;
 
-    instanceAction(id: string, input: ActionRequest, cb?: Callback<ObjectInstance>) {
+    instanceAction<T extends ObjectInstance>(id: string, input: ActionRequest, cb?: Callback<T>) {
         if (!cb) {
-            return this.services.post<ObjectInstance, ActionRequest>(
-                `data/objects/${this.objectId}/instances/${id}/actions`,
-                input,
-            );
+            return this.services.post<T, ActionRequest>(`data/objects/${this.objectId}/instances/${id}/actions`, input);
         }
 
         this.services.post(`data/objects/${this.objectId}/instances/${id}/actions`, input, cb);
