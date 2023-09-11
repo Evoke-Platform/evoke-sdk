@@ -37,7 +37,7 @@
     "devDependencies": {
         "@azure/msal-browser": "^2.38.1",
         "@azure/msal-react": "^1.5.9",
-        "@types/chai": "^4.3.4",
+        "@types/chai": "^4.3.6",
         "@types/dirty-chai": "^2.0.2",
         "@types/mocha": "^10.0.1",
         "@types/node": "^18.15.7",
