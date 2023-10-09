@@ -28,7 +28,7 @@
     "author": "System Automation Corp.",
     "license": "MIT",
     "devDependencies": {
-        "commit-and-tag-version": "^11.2.2",
+        "commit-and-tag-version": "^11.2.4",
         "typescript": "^5.2.2"
     }
 }
