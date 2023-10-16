@@ -10,7 +10,6 @@ for (const widget of manifest.widgets ?? []) {
 
 module.exports = {
     mode: 'development',
-    target: 'node',
     output: {
         library: {
             type: 'commonjs2',
