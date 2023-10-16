@@ -61,7 +61,7 @@
         "react-router-dom": ">=6"
     },
     "dependencies": {
-        "@microsoft/signalr": "^7.0.10",
+        "@microsoft/signalr": "^7.0.12",
         "axios": "^1.5.0"
     }
 }
