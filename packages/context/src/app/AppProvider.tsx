@@ -15,6 +15,7 @@ export type App = {
     iconColor?: string;
     pages?: Page[];
     navigation?: NavigationMenu;
+    defaultPages?: Record<string, string>;
 };
 
 export type Page = {
