@@ -13,7 +13,19 @@ export type Obj = {
     actions?: Action[];
 };
 
-export type PropertyType = 'array' | 'boolean' | 'date' | 'date-time' | 'integer' | 'number' | 'object' | 'string';
+export type PropertyType =
+    | 'address'
+    | 'array'
+    | 'boolean'
+    | 'collection'
+    | 'date'
+    | 'date-time'
+    | 'image'
+    | 'integer'
+    | 'number'
+    | 'object'
+    | 'string'
+    | 'time';
 
 export type Property = {
     id: string;
