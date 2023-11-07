@@ -68,7 +68,8 @@ const results = await applications.findInstances();
 
 ##### `get(options)`
 
-Get the object definition for this store's object.
+Get the object definition for this store's object. The returned object includes inherited properties and actions if
+this object is derived from another object.
 
 -   `options` _[object]_ - _optional_
     -   `sanitized` _[boolean]_

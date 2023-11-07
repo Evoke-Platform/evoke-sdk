@@ -6,9 +6,16 @@ import { useMemo } from 'react';
 import { ApiServices, Callback, useApiServices } from '../api/index.js';
 import { Filter } from './filters.js';
 
+export type BaseObjReference = {
+    objectId: string;
+    discriminatorValue: unknown;
+};
+
 export type Obj = {
     id: string;
     name: string;
+    typeDiscriminatorProperty?: string;
+    baseObject?: BaseObjReference;
     properties?: Property[];
     actions?: Action[];
 };
@@ -160,10 +167,10 @@ export class ObjectStore {
         };
 
         if (!cb) {
-            return this.services.get(`data/objects/${this.objectId}`, config);
+            return this.services.get(`data/objects/${this.objectId}/effective`, config);
         }
 
-        this.services.get(`data/objects/${this.objectId}`, config, cb);
+        this.services.get(`data/objects/${this.objectId}/effective`, config, cb);
     }
 
     findInstances<T extends ObjectInstance = ObjectInstance>(filter?: Filter): Promise<T[]>;
