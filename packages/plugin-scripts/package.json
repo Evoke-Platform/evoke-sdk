@@ -41,11 +41,11 @@
         "typescript": "^5.3.2"
     },
     "devDependencies": {
-        "@types/chai": "^4.3.6",
+        "@types/chai": "^4.3.11",
         "@types/chai-as-promised": "^7.1.5",
         "@types/dirty-chai": "^2.0.4",
         "@types/lodash": "^4.14.202",
-        "chai": "^4.3.8",
+        "chai": "^4.3.10",
         "chai-as-promised": "^7.1.1",
         "commit-and-tag-version": "^11.2.4",
         "dirty-chai": "^2.0.1",
