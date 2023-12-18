@@ -28,7 +28,7 @@
     },
     "types": "dist/generators/app/index.d.ts",
     "devDependencies": {
-        "@types/mocha": "^10.0.4",
+        "@types/mocha": "^10.0.6",
         "@types/validate-npm-package-name": "^4.0.0",
         "@types/yeoman-generator": "^5.2.12",
         "@types/yeoman-test": "^4.0.3",
