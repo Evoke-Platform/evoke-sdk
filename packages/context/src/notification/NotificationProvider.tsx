@@ -1,6 +1,6 @@
-import React, { useState, createContext, useEffect, useContext } from 'react';
-import { HttpTransportType, HubConnection, HubConnectionBuilder, LogLevel } from '@microsoft/signalr/dist/esm/index.js';
-import { useApiServices } from '../api/index.js';
+import {HttpTransportType, HubConnection, HubConnectionBuilder, IHttpConnectionOptions, LogLevel} from '@microsoft/signalr/dist/esm/index.js';
+import React, {createContext, useContext, useEffect, useState} from 'react';
+import {useApiServices} from '../api/index.js';
 
 export type NotificationConnectionInfo = {
     url: string;
@@ -9,8 +9,8 @@ export type NotificationConnectionInfo = {
 
 export type Subscription<T> = {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribe: (topic: string, callback: (...args: T[]) => any) => void;
-    unsubscribe: (topic: string, callback?: (...args: T[]) => void) => void;
+    subscribe: (objectId: string, instanceId: string | undefined, callback: (...args: T[]) => any) => void;
+    unsubscribe: (objectId: string, instanceId: string | undefined, callback?: (...args: T[]) => void) => void;
 };
 
 export type DocumentChange = {
@@ -20,7 +20,10 @@ export type DocumentChange = {
     type: string;
 };
 
-export type InstanceChange = string;
+export type InstanceChange = {
+    objectId: string;
+    instanceId: string;
+};;
 
 export type NotificationContextType = {
     documentChanges?: Subscription<DocumentChange>;
@@ -31,7 +34,7 @@ export const NotificationContext = createContext<NotificationContextType>({});
 
 NotificationContext.displayName = 'NotificationContext';
 
-function NotificationProvider({ children }: { children: React.ReactNode }) {
+function NotificationProvider({children}: {children: React.ReactNode}) {
     const [instancesNotification, setInstancesNotification] = useState<HubConnection>();
     const [documentsNotification, setDocumentsNotification] = useState<HubConnection>();
 
@@ -48,18 +51,14 @@ function NotificationProvider({ children }: { children: React.ReactNode }) {
                 const documentsConnectionInfo = await getConnectionInfo('documentChanges');
 
                 if (instancesConnectionInfo) {
-                    const options = {
-                        accessTokenFactory: async () => {
-                            if (instancesConnectionInfo.accessToken) {
-                                return instancesConnectionInfo.accessToken;
-                            } else {
-                                return getConnection();
-                            }
+                    const options: IHttpConnectionOptions = {
+                        accessTokenFactory: () => {
+                            return instancesConnectionInfo.accessToken ?? '';
                         },
                     };
 
                     const connection = new HubConnectionBuilder()
-                        .withUrl(instancesConnectionInfo.url, options as unknown as HttpTransportType)
+                        .withUrl(instancesConnectionInfo.url, options)
                         .configureLogging(LogLevel.Error)
                         .withAutomaticReconnect()
                         .build();
@@ -69,12 +68,8 @@ function NotificationProvider({ children }: { children: React.ReactNode }) {
 
                 if (documentsConnectionInfo) {
                     const options = {
-                        accessTokenFactory: async () => {
-                            if (documentsConnectionInfo.accessToken) {
-                                return documentsConnectionInfo.accessToken;
-                            } else {
-                                return getConnection();
-                            }
+                        accessTokenFactory: () => {
+                            return documentsConnectionInfo.accessToken ?? '';
                         },
                     };
 
@@ -87,7 +82,7 @@ function NotificationProvider({ children }: { children: React.ReactNode }) {
                     setDocumentsNotification(connection);
                 }
                 // eslint-disable-next-line no-empty
-            } catch (err) {}
+            } catch (err) { }
         };
 
         getConnection();
@@ -152,21 +147,21 @@ function NotificationProvider({ children }: { children: React.ReactNode }) {
             value={{
                 documentChanges: documentsNotification
                     ? {
-                          subscribe: (topicName, callback) => documentsNotification.on(topicName, callback),
-                          unsubscribe: (topicName, callback) =>
-                              callback
-                                  ? documentsNotification.off(topicName, callback)
-                                  : documentsNotification.off(topicName),
-                      }
+                        subscribe: (objectId, instanceId, callback) => documentsNotification.on(`${objectId}/${instanceId}`, callback),
+                        unsubscribe: (objectId, instanceId, callback) =>
+                            callback
+                                ? documentsNotification.off(`${objectId}/${instanceId}`, callback)
+                                : documentsNotification.off(`${objectId}/${instanceId}`),
+                    }
                     : undefined,
                 instanceChanges: instancesNotification
                     ? {
-                          subscribe: (topicName, callback) => instancesNotification.on(topicName, callback),
-                          unsubscribe: (topicName, callback) =>
-                              callback
-                                  ? instancesNotification.off(topicName, callback)
-                                  : instancesNotification.off(topicName),
-                      }
+                        subscribe: (objectId, instanceId, callback) => instancesNotification.on(objectId, callback),
+                        unsubscribe: (objectId, instanceId, callback) =>
+                            callback
+                                ? instancesNotification.off(objectId, callback)
+                                : instancesNotification.off(objectId),
+                    }
                     : undefined,
             }}
         >
