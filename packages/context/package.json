@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/context",
-    "version": "1.0.0-dev.55",
+    "version": "1.0.0-dev.78",
     "description": "Utilities that provide context to Evoke platform widgets",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -37,22 +37,22 @@
     "devDependencies": {
         "@azure/msal-browser": "^2.38.2",
         "@azure/msal-react": "^1.5.9",
-        "@types/chai": "^4.3.6",
-        "@types/dirty-chai": "^2.0.2",
-        "@types/mocha": "^10.0.1",
+        "@types/chai": "^4.3.11",
+        "@types/dirty-chai": "^2.0.4",
+        "@types/mocha": "^10.0.6",
         "@types/node": "^18.15.7",
         "@types/react": "^18.2.28",
-        "@types/sinon": "^10.0.17",
-        "chai": "^4.3.8",
-        "commit-and-tag-version": "^11.2.4",
+        "@types/sinon": "^17.0.3",
+        "chai": "^4.3.10",
+        "commit-and-tag-version": "^12.1.0",
         "dirty-chai": "^2.0.1",
         "eslint-plugin-react": "^7.33.2",
         "mocha": "^10.2.0",
         "msw": "^1.3.1",
         "react": "^18.2.0",
         "react-router-dom": "^6.16.0",
-        "sinon": "^16.1.0",
-        "typescript": "^5.2.2"
+        "sinon": "^17.0.1",
+        "typescript": "^5.3.2"
     },
     "peerDependencies": {
         "@azure/msal-browser": ">=2",
@@ -62,6 +62,6 @@
     },
     "dependencies": {
         "@microsoft/signalr": "^7.0.12",
-        "axios": "^1.5.0"
+        "axios": "^1.6.1"
     }
 }

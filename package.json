@@ -18,17 +18,17 @@
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/README.md",
     "devDependencies": {
         "@commitlint/cli": "^17.7.1",
-        "@commitlint/config-conventional": "^17.7.0",
-        "@typescript-eslint/eslint-plugin": "^5.62.0",
-        "@typescript-eslint/parser": "^5.62.0",
-        "eslint": "^8.52.0",
+        "@commitlint/config-conventional": "^18.4.3",
+        "@typescript-eslint/eslint-plugin": "^6.17.0",
+        "@typescript-eslint/parser": "^6.16.0",
+        "eslint": "^8.55.0",
         "eslint-config-prettier": "^9.0.0",
-        "eslint-plugin-prettier": "^4.2.1",
+        "eslint-plugin-prettier": "^5.1.2",
         "husky": "^8.0.3",
         "lint-staged": "^14.0.1",
-        "prettier": "^2.8.8",
+        "prettier": "^3.0.3",
         "turbo": "^1.10.14",
-        "typescript": "^5.2.2"
+        "typescript": "^5.3.2"
     },
     "packageManager": "yarn@1.22.19",
     "engines": {

@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/sdk",
-    "version": "1.0.0-dev.145",
+    "version": "1.0.0-dev.170",
     "description": "SDK for Evoke platform",
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/sdk/README.md",
     "repository": {
@@ -31,6 +31,6 @@
         "@evoke-platform/ui-components": "latest"
     },
     "devDependencies": {
-        "commit-and-tag-version": "^11.2.4"
+        "commit-and-tag-version": "^12.1.0"
     }
 }

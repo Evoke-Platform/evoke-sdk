@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/plugin",
-    "version": "1.0.0-dev.145",
+    "version": "1.0.0-dev.172",
     "description": "Scaffold a new Evoke platform plugin project",
     "files": [
         "README.md",
@@ -28,14 +28,14 @@
     },
     "types": "dist/generators/app/index.d.ts",
     "devDependencies": {
-        "@types/mocha": "^10.0.1",
-        "@types/validate-npm-package-name": "^4.0.0",
+        "@types/mocha": "^10.0.6",
+        "@types/validate-npm-package-name": "^4.0.2",
         "@types/yeoman-generator": "^5.2.12",
         "@types/yeoman-test": "^4.0.3",
-        "commit-and-tag-version": "^11.2.4",
+        "commit-and-tag-version": "^12.1.0",
         "copyfiles": "^2.4.1",
         "mocha": "^10.2.0",
-        "typescript": "^5.2.2",
+        "typescript": "^5.3.2",
         "yeoman-test": "^6.3.0"
     },
     "engines": {
@@ -47,7 +47,7 @@
         "mem-fs-editor": "^9.0.0",
         "validate-npm-package-name": "^5.0.0",
         "yeoman-environment": "^3.19.3",
-        "yeoman-generator": "^5.9.0"
+        "yeoman-generator": "^5.10.0"
     },
     "jest": {
         "testEnvironment": "node",

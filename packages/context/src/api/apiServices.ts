@@ -10,7 +10,10 @@ import { Callback } from './callback.js';
 export type Data = Record<string, unknown> | FormData;
 
 export class ApiServices {
-    constructor(private api: AxiosInstance, authContext?: AuthenticationContext) {
+    constructor(
+        private api: AxiosInstance,
+        authContext?: AuthenticationContext,
+    ) {
         if (authContext) {
             this.api.interceptors.request.use(async (config) => {
                 const token = await authContext.getAccessToken();
