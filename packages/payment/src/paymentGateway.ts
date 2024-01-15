@@ -1,6 +1,7 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
+import type { Request, Response } from '@loopback/rest';
 import { Payment } from './payment';
 
 export interface ParsedQueryString {
@@ -16,4 +17,10 @@ export interface TransferData {
 export interface PaymentGateway {
     prepare(payment: Payment, returnUrl: string): TransferData | PromiseLike<TransferData>;
     postPaymentResult(payment: Payment, resultData: ParsedQueryString): Payment | null | PromiseLike<Payment | null>;
+    receivePaymentNotification(
+        request: Request,
+        response: Response,
+    ): void | Payment | null | PromiseLike<Payment | null>;
 }
+
+export { Request, Response };

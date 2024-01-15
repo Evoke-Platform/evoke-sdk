@@ -8,7 +8,7 @@ export {};
 // Remove above export and uncomment below to enable the sample payment gateway.
 /////////////////////////////////////////////////////////////////////////////
 
-// import { ParsedQueryString, Payment, PaymentGateway, TransferData } from '@evoke-platform/sdk';
+// import { ParsedQueryString, Payment, PaymentGateway, Request, Response, TransferData } from '@evoke-platform/sdk';
 
 // export type SampleGatewayProps = {
 //     /** @propertyName Configurable Property 1 */
@@ -31,6 +31,10 @@ export {};
 //     }
 
 //     postPaymentResult(payment: Payment, resultData: ParsedQueryString): Payment | PromiseLike<Payment | null> | null {
+//         throw new Error('Method not implemented.');
+//     }
+
+//     receivePaymentNotification(request: Request, response: Response): Payment | PromiseLike<Payment | null> | null {
 //         throw new Error('Method not implemented.');
 //     }
 // }

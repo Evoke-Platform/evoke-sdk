@@ -30,5 +30,8 @@
     "devDependencies": {
         "commit-and-tag-version": "^11.2.4",
         "typescript": "^5.2.2"
+    },
+    "dependencies": {
+        "@loopback/rest": "^13.1.5"
     }
 }
