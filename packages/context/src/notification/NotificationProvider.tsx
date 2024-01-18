@@ -1,16 +1,34 @@
-import {HttpTransportType, HubConnection, HubConnectionBuilder, IHttpConnectionOptions, LogLevel} from '@microsoft/signalr/dist/esm/index.js';
-import React, {createContext, useContext, useEffect, useState} from 'react';
-import {useApiServices} from '../api/index.js';
+import {
+    HttpTransportType,
+    HubConnection,
+    HubConnectionBuilder,
+    IHttpConnectionOptions,
+    LogLevel,
+} from '@microsoft/signalr/dist/esm/index.js';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { useApiServices } from '../api/index.js';
 
 export type NotificationConnectionInfo = {
     url: string;
     accessToken: string;
 };
 
-export type Subscription<T> = {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    subscribe: (objectId: string, instanceId: string | undefined, callback: (...args: T[]) => any) => void;
-    unsubscribe: (objectId: string, instanceId: string | undefined, callback?: (...args: T[]) => void) => void;
+export type InstanceSubscription = {
+    subscribe: (objectId: string, callback: (...args: InstanceChange[]) => void) => void;
+    unsubscribe: (objectId: string, callback?: (...args: InstanceChange[]) => void) => void;
+};
+
+export type DocumentSubscription = {
+    subscribe: (
+        objectId: string,
+        instanceId: string | undefined,
+        callback: (...args: DocumentChange[]) => void,
+    ) => void;
+    unsubscribe: (
+        objectId: string,
+        instanceId: string | undefined,
+        callback?: (...args: DocumentChange[]) => void,
+    ) => void;
 };
 
 export type DocumentChange = {
@@ -23,18 +41,18 @@ export type DocumentChange = {
 export type InstanceChange = {
     objectId: string;
     instanceId: string;
-};;
+};
 
 export type NotificationContextType = {
-    documentChanges?: Subscription<DocumentChange>;
-    instanceChanges?: Subscription<InstanceChange>;
+    documentChanges?: DocumentSubscription;
+    instanceChanges?: InstanceSubscription;
 };
 
 export const NotificationContext = createContext<NotificationContextType>({});
 
 NotificationContext.displayName = 'NotificationContext';
 
-function NotificationProvider({children}: {children: React.ReactNode}) {
+function NotificationProvider({ children }: { children: React.ReactNode }) {
     const [instancesNotification, setInstancesNotification] = useState<HubConnection>();
     const [documentsNotification, setDocumentsNotification] = useState<HubConnection>();
 
@@ -82,7 +100,9 @@ function NotificationProvider({children}: {children: React.ReactNode}) {
                     setDocumentsNotification(connection);
                 }
                 // eslint-disable-next-line no-empty
-            } catch (err) { }
+            } catch (err) {
+                console.log(err);
+            }
         };
 
         getConnection();
@@ -147,21 +167,22 @@ function NotificationProvider({children}: {children: React.ReactNode}) {
             value={{
                 documentChanges: documentsNotification
                     ? {
-                        subscribe: (objectId, instanceId, callback) => documentsNotification.on(`${objectId}/${instanceId}`, callback),
-                        unsubscribe: (objectId, instanceId, callback) =>
-                            callback
-                                ? documentsNotification.off(`${objectId}/${instanceId}`, callback)
-                                : documentsNotification.off(`${objectId}/${instanceId}`),
-                    }
+                          subscribe: (objectId, instanceId, callback) =>
+                              documentsNotification.on(`${objectId}/${instanceId}`, callback),
+                          unsubscribe: (objectId, instanceId, callback) =>
+                              callback
+                                  ? documentsNotification.off(`${objectId}/${instanceId}`, callback)
+                                  : documentsNotification.off(`${objectId}/${instanceId}`),
+                      }
                     : undefined,
                 instanceChanges: instancesNotification
                     ? {
-                        subscribe: (objectId, instanceId, callback) => instancesNotification.on(objectId, callback),
-                        unsubscribe: (objectId, instanceId, callback) =>
-                            callback
-                                ? instancesNotification.off(objectId, callback)
-                                : instancesNotification.off(objectId),
-                    }
+                          subscribe: (objectId, callback) => instancesNotification.on(objectId, callback),
+                          unsubscribe: (objectId, callback) =>
+                              callback
+                                  ? instancesNotification.off(objectId, callback)
+                                  : instancesNotification.off(objectId),
+                      }
                     : undefined,
             }}
         >
