@@ -272,7 +272,6 @@ The data provided to the callback will be an array of instance IDs that were upd
 Unsubscribe to the specified object instance changes.
 
 Callback function is optional.
-If callback function is not defined, nothing will not be invoked when a connection is closed.
 If callback function is defined, you must pass the exact same Function instance as was previously passed to `instanceChanges.subscribe`.
 Passing a different instance (even if the function body is the same) will not remove the subscription.
 
@@ -327,7 +326,7 @@ following data:
 Unsubscribe to the specified object instance changes.
 
 Callback function is optional.
-If callback function is not defined, nothing will not be invoked when a connection is closed.
+If callback function is not defined, all subscriptions will be removed.
 If callback function is defined, you must pass the exact same Function instance as was previously passed to `documentChanges.subscribe`.
 Passing a different instance (even if the function body is the same) will not remove the subscription.
 
@@ -368,6 +367,7 @@ following data:
 Unsubscribe to the specified object changes.
 
 Callback function is optional.
+If callback function is not defined, all subscriptions will be removed.
 If callback function is defined, you must pass the exact same Function instance as was previously passed to `instanceChanges.subscribe`.
 Passing a different instance (even if the function body is the same) will not remove the subscription.
 
