@@ -1,7 +1,7 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import { Request, Response } from 'express';
+import type { Request, Response } from 'express';
 import { Payment } from './payment';
 
 export interface ParsedQueryString {
@@ -13,6 +13,8 @@ export interface TransferData {
     url: string;
     parameters: Record<string, string>;
 }
+
+export type { Request, Response } from 'express';
 
 export interface PaymentGateway {
     prepare(payment: Payment, returnUrl: string): TransferData | PromiseLike<TransferData>;
