@@ -6,8 +6,11 @@ import { useMemo } from 'react';
 import { AuthenticationContext, useAuthenticationContext } from '../authentication/AuthenticationContextProvider.js';
 import { useApiBaseUrl } from './ApiBaseUrlProvider.js';
 import { Callback } from './callback.js';
+import { randomUUID } from 'crypto';
 
 export type Data = Record<string, unknown> | FormData;
+
+const sessionId = randomUUID();
 
 export class ApiServices {
     constructor(
@@ -20,6 +23,7 @@ export class ApiServices {
 
                 config.headers = Object.assign({}, config.headers, {
                     Authorization: `Bearer ${token}`,
+                    'X-Session-Id': sessionId,
                 });
 
                 return config;
