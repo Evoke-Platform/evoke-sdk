@@ -45,7 +45,7 @@ export interface Payment {
     id: string;
 
     /**
-     * Payment number associted with the transaction.
+     * Payment number associated with the transaction.
      */
     name: string;
 
