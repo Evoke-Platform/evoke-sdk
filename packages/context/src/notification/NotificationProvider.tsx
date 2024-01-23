@@ -14,31 +14,31 @@ export type NotificationConnectionInfo = {
 };
 
 export type InstanceSubscription = {
-    subscribe: (objectId: string, callback: (...args: InstanceChange[]) => void) => void;
-    unsubscribe: (objectId: string, callback?: (...args: InstanceChange[]) => void) => void;
+    subscribe: (objectId: string, callback: (...args: NotificationInstanceChange[]) => void) => void;
+    unsubscribe: (objectId: string, callback?: (...args: NotificationInstanceChange[]) => void) => void;
 };
 
 export type DocumentSubscription = {
     subscribe: (
         objectId: string,
         instanceId: string | undefined,
-        callback: (...args: DocumentChange[]) => void,
+        callback: (...args: NotificationDocumentChange[]) => void,
     ) => void;
     unsubscribe: (
         objectId: string,
         instanceId: string | undefined,
-        callback?: (...args: DocumentChange[]) => void,
+        callback?: (...args: NotificationDocumentChange[]) => void,
     ) => void;
 };
 
-export type DocumentChange = {
+export type NotificationDocumentChange = {
     objectId: string;
     instanceId: string;
     documentId: string;
     type: string;
 };
 
-export type InstanceChange = {
+export type NotificationInstanceChange = {
     objectId: string;
     instanceId: string;
 };

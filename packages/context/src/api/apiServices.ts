@@ -6,11 +6,11 @@ import { useMemo } from 'react';
 import { AuthenticationContext, useAuthenticationContext } from '../authentication/AuthenticationContextProvider.js';
 import { useApiBaseUrl } from './ApiBaseUrlProvider.js';
 import { Callback } from './callback.js';
-import { randomUUID } from 'crypto';
+import { v4 as uuidv4 } from 'uuid';
 
 export type Data = Record<string, unknown> | FormData;
 
-const sessionId = randomUUID();
+const sessionId = uuidv4();
 
 export class ApiServices {
     constructor(
