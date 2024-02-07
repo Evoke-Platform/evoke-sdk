@@ -17,18 +17,18 @@ export class ApiServices {
         private api: AxiosInstance,
         authContext?: AuthenticationContext,
     ) {
-        if (authContext) {
-            this.api.interceptors.request.use(async (config) => {
+        this.api.interceptors.request.use(async (config) => {
+            const headers: Record<string, string> = { 'X-Session-Id': sessionId };
+
+            if (authContext) {
                 const token = await authContext.getAccessToken();
+                headers['Authorization'] = `Bearer ${token}`;
+            }
 
-                config.headers = Object.assign({}, config.headers, {
-                    Authorization: `Bearer ${token}`,
-                    'X-Session-Id': sessionId,
-                });
+            config.headers = Object.assign({}, config.headers, headers);
 
-                return config;
-            });
-        }
+            return config;
+        });
     }
 
     private async promiseOrCallback<T>(promise: Promise<AxiosResponse<T>>, cb?: Callback<T>) {
