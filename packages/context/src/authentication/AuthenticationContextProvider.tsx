@@ -26,7 +26,7 @@ export type AuthenticationContextProviderProps = {
     children?: ReactNode;
 };
 
-export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
+export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state' | 'loginHint'>;
 
 function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
     const { msal, authRequest, children } = props;
