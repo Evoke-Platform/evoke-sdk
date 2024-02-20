@@ -7,6 +7,7 @@
         "target": "es6",
         "lib": ["DOM"],
         "module": "ESNext",
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+        "sourceMap": false
     }
 }
