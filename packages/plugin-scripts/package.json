@@ -33,7 +33,7 @@
     "license": "MIT",
     "dependencies": {
         "@microsoft/tsdoc": "^0.14.2",
-        "comment-parser": "^1.4.0",
+        "comment-parser": "^1.4.1",
         "glob": "^10.3.10",
         "jszip": "^3.10.0",
         "lodash": "^4.17.21",
