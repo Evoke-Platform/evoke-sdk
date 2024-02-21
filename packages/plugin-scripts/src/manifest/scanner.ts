@@ -12,10 +12,7 @@ export type ScannerOptions = {
 };
 
 export class Scanner {
-    constructor(
-        private sourceRoot: string,
-        private options?: ScannerOptions,
-    ) {}
+    constructor(private sourceRoot: string, private options?: ScannerOptions) {}
 
     async scan() {
         const files = await glob(`${this.sourceRoot}/**/*.{ts,tsx}`);

@@ -13,10 +13,7 @@ export type Data = Record<string, unknown> | FormData;
 const sessionId = uuidv4();
 
 export class ApiServices {
-    constructor(
-        private api: AxiosInstance,
-        authContext?: AuthenticationContext,
-    ) {
+    constructor(private api: AxiosInstance, authContext?: AuthenticationContext) {
         this.api.interceptors.request.use(async (config) => {
             const headers: Record<string, string> = { 'X-Session-Id': sessionId };
 
