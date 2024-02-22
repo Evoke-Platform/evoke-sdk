@@ -75,7 +75,15 @@ export type CriteriaValidation = {
     criteria?: Record<string, unknown>;
 };
 
-export type PropertyValidation = RegexValidation | NumericValidation | DateValidation | CriteriaValidation;
+export type StringValidation = {
+    operator: 'any' | 'all';
+    rules?: {
+        regex: string;
+        errorMessage?: string;
+    }[];
+};
+
+export type PropertyValidation = StringValidation | NumericValidation | DateValidation | CriteriaValidation;
 
 export type Property = {
     id: string;
@@ -94,7 +102,7 @@ export type Property = {
 
 export type ActionType = 'create' | 'update' | 'delete';
 
-export type InputStringValidation = RegexValidation & {
+export type InputStringValidation = StringValidation & {
     minLength?: number;
     maxLength?: number;
     mask?: string;
@@ -124,11 +132,6 @@ export type ObjectInstance = {
     [key: string]: unknown;
 };
 
-export type RegexValidation = {
-    regex: string;
-    errorMessage: string;
-};
-
 export type SelectOption = {
     label: string;
     value: string;
@@ -139,7 +142,7 @@ export type VisibilityConfiguration = {
     conditions?: {
         property: string;
         operator: 'eq' | 'neq';
-        value: string | number;
+        value: string | number | boolean;
     }[];
 };
 
@@ -181,7 +184,6 @@ export type Column = {
 
 export type Columns = {
     type: 'columns';
-    label?: string;
     columns: Column[];
     visibility?: VisibilityConfiguration | string;
 };
@@ -193,7 +195,6 @@ export type Section = {
 
 export type Sections = {
     type: 'sections';
-    label?: string;
     sections: Section[];
     visibility?: VisibilityConfiguration | string;
 };
@@ -239,6 +240,12 @@ export type ActionInput = {
     tooltip?: string;
     prefix?: string;
     suffix?: string;
+    data?: {
+        /**
+         * An array of values required for select options.
+         */
+        values?: SelectOption[];
+    };
     inputMask?: string;
     inputMaskPlaceholderChar?: string;
     tableView?: boolean;
@@ -248,7 +255,6 @@ export type ActionInput = {
     showCharCount?: boolean;
     readOnly?: boolean;
     isMultiLineText?: boolean;
-    choices?: SelectOption[];
     verticalLayout?: boolean;
     input?: boolean;
     widget?: string;
@@ -265,7 +271,7 @@ export type ActionInput = {
         required?: boolean;
         ciriteria?: object;
         operator?: 'any' | 'all';
-        regexes?: RegexValidation[];
+        regexes?: { regex: string; errorMessage?: string }[];
         minLength?: number;
         maxLength?: number;
         minDate?: string;
