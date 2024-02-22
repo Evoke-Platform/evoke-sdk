@@ -328,7 +328,10 @@ export type ObjectOptions = {
 };
 
 export class ObjectStore {
-    constructor(private services: ApiServices, private objectId: string) {}
+    constructor(
+        private services: ApiServices,
+        private objectId: string,
+    ) {}
 
     get(options?: ObjectOptions): Promise<Obj>;
     get(cb?: Callback<Obj>): void;

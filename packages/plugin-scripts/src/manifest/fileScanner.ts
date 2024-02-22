@@ -28,7 +28,11 @@ export type FileScannerOptions = {
 export class FileScanner {
     private parsedSource: ParsedSource | undefined;
 
-    constructor(private program: Program, private file: string, private options?: FileScannerOptions) {}
+    constructor(
+        private program: Program,
+        private file: string,
+        private options?: FileScannerOptions,
+    ) {}
 
     private parse() {
         if (!this.parsedSource) {
