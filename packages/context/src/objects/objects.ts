@@ -1,10 +1,10 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import { AxiosRequestConfig } from 'axios';
-import { useMemo } from 'react';
-import { ApiServices, Callback, useApiServices } from '../api/index.js';
-import { Filter } from './filters.js';
+import {AxiosRequestConfig} from 'axios';
+import {useMemo} from 'react';
+import {ApiServices, Callback, useApiServices} from '../api/index.js';
+import {Filter} from './filters.js';
 
 export type BaseObjReference = {
     objectId: string;
@@ -154,7 +154,7 @@ export type VisibilityConfiguration = {
 export type RelatedObjectDefaultValue = {
     criteria: Record<string, unknown>;
     sortBy?: string;
-    orderBy: 'asc' | 'desc';
+    orderBy?: 'asc' | 'desc';
 };
 
 export type DisplayConfiguration = {
