@@ -132,6 +132,11 @@ export type ObjectInstance = {
     [key: string]: unknown;
 };
 
+export type RegexValidation = {
+    regex: string;
+    errorMessage: string;
+};
+
 export type SelectOption = {
     label: string;
     value: string;
@@ -146,12 +151,18 @@ export type VisibilityConfiguration = {
     }[];
 };
 
+export type RelatedObjectDefaultValue = {
+    criteria: Record<string, unknown>;
+    sortBy?: string;
+    orderBy: 'asc' | 'desc';
+};
+
 export type DisplayConfiguration = {
     label?: string;
     placeholder?: string;
     required?: boolean;
     description?: string;
-    defaultValue?: string | number | string[];
+    defaultValue?: string | number | string[] | RelatedObjectDefaultValue;
     readOnly?: boolean;
     tooltip?: string;
     prefix?: string;
@@ -271,7 +282,7 @@ export type ActionInput = {
         required?: boolean;
         ciriteria?: object;
         operator?: 'any' | 'all';
-        regexes?: { regex: string; errorMessage?: string }[];
+        regexes?: RegexValidation[];
         minLength?: number;
         maxLength?: number;
         minDate?: string;
