@@ -56,8 +56,10 @@ export type PropertyType =
     | 'integer'
     | 'number'
     | 'object'
+    | 'richText'
     | 'string'
-    | 'time';
+    | 'time'
+    | 'user';
 
 export type NumericValidation = {
     errorMessage?: string;
@@ -95,9 +97,11 @@ export type Property = {
     required?: boolean;
     searchable?: boolean;
     formula?: string;
+    formulaType?: 'aggregate' | 'custom' | 'arithmetic';
     mask?: string;
     validation?: PropertyValidation;
     manyToManyPropertyId?: string;
+    textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase';
 };
 
 export type ActionType = 'create' | 'update' | 'delete';
@@ -123,6 +127,8 @@ export type Action = {
     inputProperties?: ActionInput[];
     parameters?: InputParameter[];
     form?: Form;
+    customCode?: string;
+    preconditions?: object;
 };
 
 export type ObjectInstance = {
@@ -216,34 +222,39 @@ export type Form = {
     entries?: FormEntry[];
 };
 
+export type ActionInputType =
+    | 'button'
+    | 'Section'
+    | 'Columns'
+    | 'Content'
+    | 'Select'
+    | 'TextField'
+    | 'DateTime'
+    | 'RepeatableField'
+    | 'MultiSelect'
+    | 'Decimal'
+    | 'RichText'
+    | 'Date'
+    | 'Integer'
+    | 'Image'
+    | 'Object'
+    | 'Time'
+    | 'User';
+
 /**
  * Represents an object action inputProperty object.
  */
 export type ActionInput = {
     id?: string;
     label?: string;
-    type?:
-        | 'button'
-        | 'Section'
-        | 'Columns'
-        | 'Content'
-        | 'Select'
-        | 'TextField'
-        | 'DateTime'
-        | 'RepeatableField'
-        | 'MultiSelect'
-        | 'Decimal'
-        | 'RichText'
-        | 'Date'
-        | 'Integer'
-        | 'Image'
-        | 'Object'
-        | 'Time'
-        | 'User';
+    type?: ActionInputType;
     key?: string;
     initialValue?: string | number | SelectOption[] | SelectOption;
     defaultToCurrentDate?: boolean;
     defaultToCurrentTime?: boolean;
+    defaultValueCriteria?: object;
+    sortBy?: string;
+    orderBy?: 'asc' | 'desc' | 'ASC' | 'DESC';
     html?: string;
     labelPosition?: string;
     placeholder?: string;
@@ -280,7 +291,7 @@ export type ActionInput = {
     };
     validate?: {
         required?: boolean;
-        ciriteria?: object;
+        criteria?: object;
         operator?: 'any' | 'all';
         regexes?: RegexValidation[];
         minLength?: number;
@@ -300,7 +311,7 @@ export type ActionInput = {
         key: string;
         label?: string;
         components: ActionInput[];
-    };
+    }[];
     /**
      * An array of sub-components to be rendered inside columns.
      */
@@ -308,7 +319,7 @@ export type ActionInput = {
         width: number;
         currentWidth?: number;
         components: ActionInput[];
-    };
+    }[];
 };
 
 export type ActionRequest = {
