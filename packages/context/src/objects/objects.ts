@@ -123,6 +123,8 @@ export type Action = {
     inputProperties?: ActionInput[];
     parameters?: InputParameter[];
     form?: Form;
+    customCode?: string;
+    preconditions?: object;
 };
 
 export type ObjectInstance = {
