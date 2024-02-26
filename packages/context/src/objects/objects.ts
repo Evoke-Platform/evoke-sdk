@@ -250,6 +250,9 @@ export type ActionInput = {
     initialValue?: string | number | SelectOption[] | SelectOption;
     defaultToCurrentDate?: boolean;
     defaultToCurrentTime?: boolean;
+    defaultValueCriteria?: object;
+    sortBy?: string;
+    orderBy?: 'asc' | 'desc' | 'ASC' | 'DESC';
     html?: string;
     labelPosition?: string;
     placeholder?: string;
