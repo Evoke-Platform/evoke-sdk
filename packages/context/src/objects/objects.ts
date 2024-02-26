@@ -11,10 +11,35 @@ export type BaseObjReference = {
     discriminatorValue: unknown;
 };
 
+export type ViewLayout = {
+    table?: TableViewLayout;
+    dropdown?: DropdownViewLayout;
+};
+
+export type DropdownViewLayout = {
+    secondaryTextExpression: string;
+};
+
+export type TableViewLayout = {
+    properties: PropertyReference[];
+    sort?: Sort;
+};
+
+export type PropertyReference = {
+    id: string;
+    format?: string;
+};
+
+export type Sort = {
+    colId: string;
+    sort?: 'asc' | 'desc';
+};
+
 export type Obj = {
     id: string;
     name: string;
     typeDiscriminatorProperty?: string;
+    viewLayout?: ViewLayout;
     baseObject?: BaseObjReference;
     properties?: Property[];
     actions?: Action[];
@@ -34,25 +59,70 @@ export type PropertyType =
     | 'string'
     | 'time';
 
+export type NumericValidation = {
+    errorMessage?: string;
+    minimum?: number;
+    maximum?: number;
+};
+
+export type DateValidation = {
+    errorMessage?: string;
+    to?: string;
+    from?: string;
+};
+
+export type CriteriaValidation = {
+    criteria?: Record<string, unknown>;
+};
+
+export type StringValidation = {
+    operator: 'any' | 'all';
+    rules?: {
+        regex: string;
+        errorMessage?: string;
+    }[];
+};
+
+export type PropertyValidation = StringValidation | NumericValidation | DateValidation | CriteriaValidation;
+
 export type Property = {
     id: string;
     name: string;
     type: PropertyType;
     enum?: string[];
     objectId?: string;
+    relatedPropertyId?: string;
     required?: boolean;
     searchable?: boolean;
     formula?: string;
+    mask?: string;
+    validation?: PropertyValidation;
+    manyToManyPropertyId?: string;
 };
 
 export type ActionType = 'create' | 'update' | 'delete';
 
+export type InputStringValidation = StringValidation & {
+    minLength?: number;
+    maxLength?: number;
+    mask?: string;
+};
+
+export type InputParameter = {
+    id: string;
+    type: PropertyType;
+    required?: boolean;
+    enum?: string[];
+    validation?: PropertyValidation | InputStringValidation;
+};
 export type Action = {
     id: string;
     name: string;
     type: ActionType;
     outputEvent: string;
     inputProperties?: ActionInput[];
+    parameters?: InputParameter[];
+    form?: Form;
 };
 
 export type ObjectInstance = {
@@ -72,38 +142,173 @@ export type SelectOption = {
     value: string;
 };
 
+export type VisibilityConfiguration = {
+    operator?: 'any' | 'all';
+    conditions?: {
+        property: string;
+        operator: 'eq' | 'neq';
+        value: string | number | boolean;
+    }[];
+};
+
+export type RelatedObjectDefaultValue = {
+    criteria: Record<string, unknown>;
+    sortBy?: string;
+    orderBy?: 'asc' | 'desc' | 'ASC' | 'DESC';
+};
+
+export type DisplayConfiguration = {
+    label?: string;
+    placeholder?: string;
+    required?: boolean;
+    description?: string;
+    defaultValue?: string | number | string[] | RelatedObjectDefaultValue;
+    readOnly?: boolean;
+    tooltip?: string;
+    prefix?: string;
+    suffix?: string;
+    placeholderChar?: string;
+    rowCount?: number;
+    charCount?: boolean;
+    mode?: 'default' | 'existingOnly';
+    relatedObjectDisplay?: 'dropdown' | 'dialogBox';
+    visibility?: VisibilityConfiguration | string;
+};
+
+export type InputParameterReference = {
+    type: 'input';
+    parameterId: string;
+    display?: DisplayConfiguration;
+    enumWithLabels?: SelectOption[];
+};
+
+export type Content = {
+    type: 'content';
+    html: string;
+    visibility?: VisibilityConfiguration | string;
+};
+
+export type Column = {
+    width: number;
+    entries?: FormEntry[];
+};
+
+export type Columns = {
+    type: 'columns';
+    columns: Column[];
+    visibility?: VisibilityConfiguration | string;
+};
+
+export type Section = {
+    label: string;
+    entries?: FormEntry[];
+};
+
+export type Sections = {
+    type: 'sections';
+    sections: Section[];
+    visibility?: VisibilityConfiguration | string;
+};
+
+export type FormEntry = InputParameterReference | Columns | Sections | Content;
+
+export type Form = {
+    entries?: FormEntry[];
+};
+
 /**
  * Represents an object action inputProperty object.
  */
 export type ActionInput = {
-    label: string;
-    type: string;
-    key: string;
-    initialValue?: unknown;
+    id?: string;
+    label?: string;
+    type?:
+        | 'button'
+        | 'Section'
+        | 'Columns'
+        | 'Content'
+        | 'Select'
+        | 'TextField'
+        | 'DateTime'
+        | 'RepeatableField'
+        | 'MultiSelect'
+        | 'Decimal'
+        | 'RichText'
+        | 'Date'
+        | 'Integer'
+        | 'Image'
+        | 'Object'
+        | 'Time'
+        | 'User';
+    key?: string;
+    initialValue?: string | number | SelectOption[] | SelectOption;
+    defaultToCurrentDate?: boolean;
+    defaultToCurrentTime?: boolean;
+    html?: string;
+    labelPosition?: string;
     placeholder?: string;
     description?: string;
     tooltip?: string;
     prefix?: string;
     suffix?: string;
-    showCharCount?: boolean;
-    readOnly?: boolean;
-    isMultiLineText?: boolean;
     data?: {
         /**
          * An array of values required for select options.
          */
         values?: SelectOption[];
     };
+    inputMask?: string;
+    inputMaskPlaceholderChar?: string;
+    tableView?: boolean;
+    mode?: 'default' | 'existingOnly';
+    displayOption?: 'dropdown' | 'dialogBox';
+    rows?: number;
+    showCharCount?: boolean;
+    readOnly?: boolean;
+    isMultiLineText?: boolean;
+    verticalLayout?: boolean;
+    input?: boolean;
+    widget?: string;
+    conditional?: {
+        json?: string;
+        show?: boolean;
+        when?: string;
+        eq?: string | number;
+    };
+    property?: {
+        id: string;
+    };
     validate?: {
         required?: boolean;
+        ciriteria?: object;
         operator?: 'any' | 'all';
         regexes?: RegexValidation[];
+        minLength?: number;
+        maxLength?: number;
+        minDate?: string;
+        maxDate?: string;
+        minTime?: string;
+        maxTime?: string;
+        min?: number;
+        max?: number;
+        customMessage?: string;
     };
     /**
      * An array of sub-components to be rendered inside sections.
      */
-    components?: ActionInput[];
-    [key: string]: unknown;
+    components?: {
+        key: string;
+        label?: string;
+        components: ActionInput[];
+    };
+    /**
+     * An array of sub-components to be rendered inside columns.
+     */
+    columns?: {
+        width: number;
+        currentWidth?: number;
+        components: ActionInput[];
+    };
 };
 
 export type ActionRequest = {

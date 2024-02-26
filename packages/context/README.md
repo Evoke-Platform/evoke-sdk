@@ -337,7 +337,7 @@ const callback = (changes: DocumentChange[]) => {
     console.log(changes);
 };
 
-documentChanges.subscribe('myObjectId' , 'myInstanceId', callback);
+documentChanges.subscribe('myObjectId', 'myInstanceId', callback);
 
 documentChanges.unsubscribe('myObjectId', 'myInstanceId', callback);
 ```
