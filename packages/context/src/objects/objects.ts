@@ -101,6 +101,7 @@ export type Property = {
     mask?: string;
     validation?: PropertyValidation;
     manyToManyPropertyId?: string;
+    textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase';
 };
 
 export type ActionType = 'create' | 'update' | 'delete';
