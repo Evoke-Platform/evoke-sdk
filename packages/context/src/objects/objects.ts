@@ -306,7 +306,7 @@ export type ActionInput = {
         key: string;
         label?: string;
         components: ActionInput[];
-    };
+    }[];
     /**
      * An array of sub-components to be rendered inside columns.
      */
@@ -314,7 +314,7 @@ export type ActionInput = {
         width: number;
         currentWidth?: number;
         components: ActionInput[];
-    };
+    }[];
 };
 
 export type ActionRequest = {
