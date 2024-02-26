@@ -286,7 +286,7 @@ export type ActionInput = {
     };
     validate?: {
         required?: boolean;
-        ciriteria?: object;
+        criteria?: object;
         operator?: 'any' | 'all';
         regexes?: RegexValidation[];
         minLength?: number;
