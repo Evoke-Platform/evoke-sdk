@@ -56,8 +56,10 @@ export type PropertyType =
     | 'integer'
     | 'number'
     | 'object'
+    | 'richText'
     | 'string'
-    | 'time';
+    | 'time'
+    | 'user';
 
 export type NumericValidation = {
     errorMessage?: string;
@@ -218,30 +220,32 @@ export type Form = {
     entries?: FormEntry[];
 };
 
+export type ActionInputType =
+    | 'button'
+    | 'Section'
+    | 'Columns'
+    | 'Content'
+    | 'Select'
+    | 'TextField'
+    | 'DateTime'
+    | 'RepeatableField'
+    | 'MultiSelect'
+    | 'Decimal'
+    | 'RichText'
+    | 'Date'
+    | 'Integer'
+    | 'Image'
+    | 'Object'
+    | 'Time'
+    | 'User';
+
 /**
  * Represents an object action inputProperty object.
  */
 export type ActionInput = {
     id?: string;
     label?: string;
-    type?:
-        | 'button'
-        | 'Section'
-        | 'Columns'
-        | 'Content'
-        | 'Select'
-        | 'TextField'
-        | 'DateTime'
-        | 'RepeatableField'
-        | 'MultiSelect'
-        | 'Decimal'
-        | 'RichText'
-        | 'Date'
-        | 'Integer'
-        | 'Image'
-        | 'Object'
-        | 'Time'
-        | 'User';
+    type?: ActionInputType;
     key?: string;
     initialValue?: string | number | SelectOption[] | SelectOption;
     defaultToCurrentDate?: boolean;
