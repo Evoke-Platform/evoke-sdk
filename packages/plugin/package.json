@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/plugin",
-    "version": "1.0.0-dev.182",
+    "version": "1.0.0-dev.183",
     "description": "Scaffold a new Evoke platform plugin project",
     "files": [
         "README.md",
