@@ -97,6 +97,7 @@ export type Property = {
     required?: boolean;
     searchable?: boolean;
     formula?: string;
+    formulaType?: 'aggregate' | 'custom' | 'arithmetic';
     mask?: string;
     validation?: PropertyValidation;
     manyToManyPropertyId?: string;
