@@ -284,7 +284,7 @@ export type ActionInput = {
         json?: string;
         show?: boolean;
         when?: string;
-        eq?: string | number;
+        eq?: string | number | boolean;
     };
     property?: {
         id: string;
