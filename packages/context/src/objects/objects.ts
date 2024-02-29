@@ -231,6 +231,7 @@ export type ActionInputType =
     | 'TextField'
     | 'DateTime'
     | 'RepeatableField'
+    | 'ManyToManyRepeatableField'
     | 'MultiSelect'
     | 'Decimal'
     | 'RichText'
