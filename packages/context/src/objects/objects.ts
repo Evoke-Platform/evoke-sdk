@@ -45,6 +45,8 @@ export type Obj = {
     actions?: Action[];
 };
 
+export type ObjWithRoot = Obj & { rootObjectId: string };
+
 export type PropertyType =
     | 'address'
     | 'array'
@@ -361,11 +363,11 @@ export class ObjectStore {
         private objectId: string,
     ) {}
 
-    get(options?: ObjectOptions): Promise<Obj>;
-    get(cb?: Callback<Obj>): void;
-    get(options: ObjectOptions, cb?: Callback<Obj>): void;
+    get(options?: ObjectOptions): Promise<ObjWithRoot>;
+    get(cb?: Callback<ObjWithRoot>): void;
+    get(options: ObjectOptions, cb?: Callback<ObjWithRoot>): void;
 
-    get(optionsOrCallback?: ObjectOptions | Callback<Obj>, cb?: Callback<Obj>) {
+    get(optionsOrCallback?: ObjectOptions | Callback<ObjWithRoot>, cb?: Callback<ObjWithRoot>) {
         let options: ObjectOptions | undefined;
 
         if (cb) {
