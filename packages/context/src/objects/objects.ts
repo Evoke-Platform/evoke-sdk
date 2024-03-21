@@ -116,10 +116,14 @@ export type InputStringValidation = StringValidation & {
 
 export type InputParameter = {
     id: string;
+    name: string;
     type: PropertyType;
     required?: boolean;
     enum?: string[];
     validation?: PropertyValidation | InputStringValidation;
+    objectId?: string;
+    relatedPropertyId?: string;
+    manyToManyPropertyId?: string;
 };
 export type Action = {
     id: string;
