@@ -116,7 +116,7 @@ export type InputStringValidation = StringValidation & {
 
 export type InputParameter = {
     id: string;
-    name: string;
+    name?: string;
     type: PropertyType;
     required?: boolean;
     enum?: string[];
