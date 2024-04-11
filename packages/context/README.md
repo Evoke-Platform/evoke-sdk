@@ -160,7 +160,16 @@ Returns a function that can be used to navigate to another page. The returned fu
 
 #### `useApp()`
 
-Returns the currently loaded Evoke app.
+Returns an object with the following properties:
+
+-   `app`: The currently loaded Evoke app.
+-   `getDefaultPageSlug`: An asynchronous function that takes an `objectId` as a parameter and returns the default page slug for that object, if no default page slug is found and the object is a subtype, the page slug of the first ancestor with a default page will be used. It returns `undefined` if no default page slug is found for any ancestor type.
+
+Example usage:
+
+````javascript
+const { app, getDefaultPageSlug } = useApp();
+const defaultPageSlug = await getDefaultPageSlug(objectId);
 
 ### REST API calls
 
@@ -219,7 +228,7 @@ const { documentChanges } = useSignalRConnection();
 documentChanges.subscribe('myObjectId/myInstanceId', (data) => {
     console.log(data);
 });
-```
+````
 
 The data provided to the callback will be an array of `DocumentChange` which contains the
 following data:
