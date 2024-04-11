@@ -59,12 +59,12 @@ const defaultApp: App = {
 };
 
 type AppWithFunctions = App & {
-    getDefaultPageSlug: (objectId: string) => Promise<string | undefined>;
+    findDefaultPageSlugFor: (objectId: string) => Promise<string | undefined>;
 };
 
 const defaultAppWithFunctions: AppWithFunctions = {
     ...defaultApp,
-    getDefaultPageSlug: (objectId: string) => Promise.resolve(undefined),
+    findDefaultPageSlugFor: (objectId: string) => Promise.resolve(undefined),
 };
 
 const AppContext = createContext<AppWithFunctions>(defaultAppWithFunctions);
@@ -82,7 +82,13 @@ function AppProvider(props: AppProviderProps) {
 
     const appWithFunctions: AppWithFunctions = {
         ...app,
-        getDefaultPageSlug: useCallback(
+        /**
+         * Looks up the default page slug for a given object or its nearest type ancestor.
+         *
+         * @param {string} objectId - The ID of the object to start the search from.
+         * @returns {Promise<string | undefined>} The default page slug, or `undefined` if no default page is found.
+         */
+        findDefaultPageSlugFor: useCallback(
             async (objectId: string) => {
                 let defaultPageId: string | undefined;
                 const objectHierarchy = [objectId];

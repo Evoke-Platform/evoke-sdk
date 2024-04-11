@@ -163,7 +163,7 @@ Returns a function that can be used to navigate to another page. The returned fu
 Returns an object with the following properties:
 
 -   `app`: The currently loaded Evoke app.
--   `getDefaultPageSlug`: An asynchronous function that takes an `objectId` as a parameter and returns the default page slug for that object, if no default page slug is found and the object is a subtype, the page slug of the first ancestor with a default page will be used. It returns `undefined` if no default page slug is found for any ancestor type.
+-   `findDefaultPageSlugFor`: An asynchronous function that takes an `objectId` as a parameter and returns the default page slug for that object, if no default page slug is found and the object is a subtype, the page slug of the first ancestor with a default page will be used. It returns `undefined` if no default page slug is found for any ancestor type.
 
 Example usage:
 
