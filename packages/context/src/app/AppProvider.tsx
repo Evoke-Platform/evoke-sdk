@@ -132,7 +132,9 @@ function AppProvider(props: AppProviderProps) {
 }
 
 export function useApp() {
-    return useContext(AppContext);
+    const appContext = useContext(AppContext);
+    const { findDefaultPageSlugFor, ...app } = appContext;
+    return { ...app, findDefaultPageSlugFor };
 }
 
 export default AppProvider;
