@@ -1,7 +1,10 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import { createContext, ReactNode, useContext } from 'react';
+import { createContext, ReactNode, useCallback, useContext } from 'react';
+import { useApiServices } from '../api';
+import { Obj } from '../objects';
+import { AxiosError } from 'axios';
 
 export type AppType = 'public' | 'portal' | 'private';
 
@@ -50,8 +53,28 @@ export type NavigationItem = {
     pageName: string;
 };
 
-const defaultApp: App = { id: '_evoke', name: 'Evoke Platform', type: 'public' };
-const AppContext = createContext<App>(defaultApp);
+const defaultApp: App = {
+    id: '_evoke',
+    name: 'Evoke Platform',
+    type: 'public',
+};
+
+export type AppExtended = App & {
+    /**
+     * Looks up the default page slug for a given object or its nearest type ancestor.
+     *
+     * @param {string} objectId - The ID of the object to start the search from.
+     * @returns {Promise<string | undefined>} The default page slug, or `undefined` if no default page is found.
+     */
+    findDefaultPageSlugFor: (objectId: string) => Promise<string | undefined>;
+};
+
+const defaultAppExtended: AppExtended = {
+    ...defaultApp,
+    findDefaultPageSlugFor: (objectId: string) => Promise.resolve(undefined),
+};
+
+const AppContext = createContext<AppExtended>(defaultAppExtended);
 
 AppContext.displayName = 'AppContext';
 
@@ -62,8 +85,55 @@ export type AppProviderProps = {
 
 function AppProvider(props: AppProviderProps) {
     const { app, children } = props;
+    const apiServices = useApiServices();
 
-    return <AppContext.Provider value={app}>{children}</AppContext.Provider>;
+    const appExtended: AppExtended = {
+        ...app,
+        findDefaultPageSlugFor: useCallback(
+            async (objectId: string) => {
+                let defaultPageId: string | undefined;
+                let currentObjectId: string | undefined = objectId;
+                while (currentObjectId !== undefined) {
+                    if (app.defaultPages?.[currentObjectId]) {
+                        defaultPageId = app.defaultPages[currentObjectId];
+                        break;
+                    }
+
+                    const effectiveObject: Obj | undefined = await apiServices.get<Obj>(
+                        `data/objects/${currentObjectId}/effective`,
+                        {
+                            params: { filter: { fields: ['baseObject'] } },
+                        },
+                    );
+
+                    currentObjectId = effectiveObject?.baseObject?.objectId ?? undefined;
+                }
+
+                let defaultPage: Page | undefined;
+                if (defaultPageId) {
+                    const pageId = defaultPageId.includes('/')
+                        ? defaultPageId.split('/').slice(2).join('/')
+                        : defaultPageId;
+                    try {
+                        defaultPage = await apiServices.get<Page>(
+                            `/webContent/apps/${app.id}/pages/${encodeURIComponent(encodeURIComponent(pageId))}`,
+                        );
+                    } catch (error) {
+                        const err = error as AxiosError;
+                        if (err.response?.status === 404) {
+                            defaultPage = undefined;
+                        }
+                    }
+                }
+                if (defaultPage?.slug) {
+                    return defaultPage.slug;
+                }
+            },
+            [app],
+        ),
+    };
+
+    return <AppContext.Provider value={appExtended}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {
