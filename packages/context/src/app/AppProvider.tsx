@@ -59,7 +59,7 @@ const defaultApp: App = {
     type: 'public',
 };
 
-type AppExtended = App & {
+export type AppExtended = App & {
     /**
      * Looks up the default page slug for a given object or its nearest type ancestor.
      *
@@ -120,7 +120,7 @@ function AppProvider(props: AppProviderProps) {
                         );
                     } catch (error) {
                         const err = error as AxiosError;
-                        if (err.status === 404) {
+                        if (err.response?.status === 404) {
                             defaultPage = undefined;
                         }
                     }
