@@ -4,6 +4,7 @@
 import { createContext, ReactNode, useCallback, useContext } from 'react';
 import { useApiServices } from '../api';
 import { Obj } from '../objects';
+import { AxiosError } from 'axios';
 
 export type AppType = 'public' | 'portal' | 'private';
 
@@ -86,7 +87,7 @@ function AppProvider(props: AppProviderProps) {
     const { app, children } = props;
     const apiServices = useApiServices();
 
-    const appWithFunctions: AppExtended = {
+    const appExtended: AppExtended = {
         ...app,
         findDefaultPageSlugFor: useCallback(
             async (objectId: string) => {
@@ -113,9 +114,16 @@ function AppProvider(props: AppProviderProps) {
                     const pageId = defaultPageId.includes('/')
                         ? defaultPageId.split('/').slice(2).join('/')
                         : defaultPageId;
-                    defaultPage = await apiServices.get<Page>(
-                        `/webContent/apps/${app.id}/pages/${encodeURIComponent(encodeURIComponent(pageId))}`,
-                    );
+                    try {
+                        defaultPage = await apiServices.get<Page>(
+                            `/webContent/apps/${app.id}/pages/${encodeURIComponent(encodeURIComponent(pageId))}`,
+                        );
+                    } catch (error) {
+                        const err = error as AxiosError;
+                        if (err.status === 404) {
+                            defaultPage = undefined;
+                        }
+                    }
                 }
                 if (defaultPage?.slug) {
                     return defaultPage.slug;
@@ -125,7 +133,7 @@ function AppProvider(props: AppProviderProps) {
         ),
     };
 
-    return <AppContext.Provider value={appWithFunctions}>{children}</AppContext.Provider>;
+    return <AppContext.Provider value={appExtended}>{children}</AppContext.Provider>;
 }
 
 export function useApp() {
