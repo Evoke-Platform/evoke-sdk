@@ -58,16 +58,22 @@ const defaultApp: App = {
     type: 'public',
 };
 
-type AppWithFunctions = App & {
+type AppExtended = App & {
+    /**
+     * Looks up the default page slug for a given object or its nearest type ancestor.
+     *
+     * @param {string} objectId - The ID of the object to start the search from.
+     * @returns {Promise<string | undefined>} The default page slug, or `undefined` if no default page is found.
+     */
     findDefaultPageSlugFor: (objectId: string) => Promise<string | undefined>;
 };
 
-const defaultAppWithFunctions: AppWithFunctions = {
+const defaultAppExtended: AppExtended = {
     ...defaultApp,
     findDefaultPageSlugFor: (objectId: string) => Promise.resolve(undefined),
 };
 
-const AppContext = createContext<AppWithFunctions>(defaultAppWithFunctions);
+const AppContext = createContext<AppExtended>(defaultAppExtended);
 
 AppContext.displayName = 'AppContext';
 
@@ -80,18 +86,11 @@ function AppProvider(props: AppProviderProps) {
     const { app, children } = props;
     const apiServices = useApiServices();
 
-    const appWithFunctions: AppWithFunctions = {
+    const appWithFunctions: AppExtended = {
         ...app,
-        /**
-         * Looks up the default page slug for a given object or its nearest type ancestor.
-         *
-         * @param {string} objectId - The ID of the object to start the search from.
-         * @returns {Promise<string | undefined>} The default page slug, or `undefined` if no default page is found.
-         */
         findDefaultPageSlugFor: useCallback(
             async (objectId: string) => {
                 let defaultPageId: string | undefined;
-                const objectHierarchy = [objectId];
                 let currentObjectId: string | undefined = objectId;
                 while (currentObjectId !== undefined) {
                     if (app.defaultPages?.[currentObjectId]) {
@@ -99,22 +98,18 @@ function AppProvider(props: AppProviderProps) {
                         break;
                     }
 
-                    let effectiveObject: Obj | undefined;
-                    try {
-                        effectiveObject = await apiServices.get<Obj>(`data/objects/${currentObjectId}/effective`, {
-                            params: { filter: { fields: ['baseObject'] }, sanitizedVersion: true },
-                        });
-                    } catch (error) {
-                        console.error(error);
-                    }
-                    if (effectiveObject?.baseObject?.objectId) {
-                        objectHierarchy.push(effectiveObject?.baseObject?.objectId);
-                    }
+                    const effectiveObject: Obj | undefined = await apiServices.get<Obj>(
+                        `data/objects/${currentObjectId}/effective`,
+                        {
+                            params: { filter: { fields: ['baseObject'] } },
+                        },
+                    );
+
                     currentObjectId = effectiveObject?.baseObject?.objectId ?? undefined;
                 }
 
                 let defaultPage: Page | undefined;
-                if (defaultPageId && typeof defaultPageId === 'string') {
+                if (defaultPageId) {
                     const pageId = defaultPageId.includes('/')
                         ? defaultPageId.split('/').slice(2).join('/')
                         : defaultPageId;
@@ -122,7 +117,9 @@ function AppProvider(props: AppProviderProps) {
                         `/webContent/apps/${app.id}/pages/${encodeURIComponent(encodeURIComponent(pageId))}`,
                     );
                 }
-                return defaultPage?.slug;
+                if (defaultPage?.slug) {
+                    return defaultPage.slug;
+                }
             },
             [app],
         ),
