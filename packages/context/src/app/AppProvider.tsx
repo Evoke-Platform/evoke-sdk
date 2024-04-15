@@ -126,7 +126,7 @@ function AppProvider(props: AppProviderProps) {
                     }
                 }
                 if (defaultPage?.slug) {
-                    return defaultPage.slug;
+                    return `/${app.id}/${defaultPage.slug}`;
                 }
             },
             [app],
