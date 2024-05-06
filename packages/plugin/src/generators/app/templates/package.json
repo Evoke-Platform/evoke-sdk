@@ -13,7 +13,7 @@
         "@babel/preset-react": "^7.17.0",
         "@babel/preset-typescript": "^7.17.0",
         "@evoke-platform/plugin-scripts": "latest",
-        "@storybook/addon-essentials": "^7.0.2",
+        "@storybook/addon-essentials": "^8.0.10",
         "@storybook/addon-interactions": "^7.0.2",
         "@storybook/addon-links": "^7.0.2",
         "@storybook/blocks": "^7.0.2",
