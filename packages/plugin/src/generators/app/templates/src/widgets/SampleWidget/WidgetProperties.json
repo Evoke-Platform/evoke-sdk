@@ -9,7 +9,7 @@
             "name": "message",
             "type": "text",
             "isOptional": true,
-            "inputLabel": "Message"
+            "displayName": "Message"
         }
     ]
 }
