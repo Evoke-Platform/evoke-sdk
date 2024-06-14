@@ -6,10 +6,10 @@
     "src": "src/widgets/SampleWidget",
     "properties": [
         {
-            "id": "message",
-            "name": "Message",
+            "name": "message",
             "type": "text",
-            "optional": true
+            "isOptional": true,
+            "inputLabel": "Message"
         }
     ]
 }
