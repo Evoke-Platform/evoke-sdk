@@ -54,7 +54,12 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
                 ? {
                       account: { id: account.localAccountId, name: account.name },
                       logout: () => {
-                          msal.instance.logoutRedirect({ account });
+                          msal.instance.logoutRedirect({
+                              account,
+                              postLogoutRedirectUri: `/logout?p=${encodeURIComponent(
+                                  window.location.pathname + window.location.search,
+                              )}`,
+                          });
                       },
                       getAccessToken,
                   }
