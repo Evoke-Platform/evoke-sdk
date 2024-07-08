@@ -2,7 +2,7 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "WidgetProperties",
   "type": "object",
-  "required": ["id", "name", "properties"],
+  "required": ["id", "name", "description", "version", "properties"],
   "additionalProperties": false,
   "properties": {
     "id": {
@@ -37,7 +37,7 @@
       "items": { "$ref": "#/definitions/dataType" }
     },
     "needsDocument": {
-      "type": "string"
+      "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/dataType" }]
     },
     "icon": {
       "type": "object",
@@ -120,11 +120,20 @@
           "description": "URL of the API"
         },
         "resultMapping": {
-          "$ref": "#/definitions/choice",
-          "description": "Mapping of the API result to the choices",
-          "additionalProperties": {
-            "type": "string"
-          }
+          "type": "object",
+          "required": ["value", "label"],
+          "additionalProperties": false,
+          "properties": {
+            "value": {
+              "type": "string",
+              "description": "Value of the API result"
+            },
+            "label": {
+              "type": "string",
+              "description": "Label of the API result"
+            }
+          },
+          "description": "Mapping of the API result to the choices"
         }
       }
     },
