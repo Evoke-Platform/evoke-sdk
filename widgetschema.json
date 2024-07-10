@@ -198,10 +198,6 @@
           "type": "string",
           "description": "This value shows up as a prompt at the top of all the input field(s) for that setting."
         },
-        "inputLabel": {
-          "type": "string",
-          "description": "If applicable, this value shows up near/next to the input field."
-        },
         "isOptional": {
           "oneOf": [
             { "$ref": "#/definitions/widgetSettingOptionalValue" },
