@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/Evoke-Platform/evoke-sdk/main/widgetschema.json",
     "id": "Widget",
     "name": "Sample widget",
     "description": "Description of the Sample Widget",
