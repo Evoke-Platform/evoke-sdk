@@ -73,15 +73,6 @@
         "relatedObjectInstances"
       ]
     },
-    "widgetSettingOptionalValue": {
-      "type": "object",
-      "required": ["value"],
-      "additionalProperties": false,
-      "properties": {
-        "value": { "type": "boolean" },
-        "initialValue": {}
-      }
-    },
     "choices": {
       "type": "array",
       "uniqueItems": true,
@@ -194,10 +185,7 @@
           "description": "This value shows up as a prompt at the top of all the input field(s) for that setting."
         },
         "isOptional": {
-          "oneOf": [
-            { "$ref": "#/definitions/widgetSettingOptionalValue" },
-            { "type": "boolean" }
-          ],
+          "type":"boolean",
           "description": "Indicates if the property is optional"
         },
         "isWidgetTitle": {
