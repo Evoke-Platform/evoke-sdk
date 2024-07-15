@@ -1,247 +1,235 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
-  "title": "WidgetProperties",
-  "type": "object",
-  "required": ["id", "name", "properties"],
-  "additionalProperties": false,
-  "properties": {
-    "id": {
-      "type": "string",
-      "description": "Unique identifier for the widget"
-    },
-    "name": {
-      "type": "string",
-      "description": "Name of the widget"
-    },
-    "description": {
-      "type": "string",
-      "description": "Description of the widget"
-    },
-    "version": {
-      "type": "string",
-      "description": "Version of the widget"
-    },
-    "src": {
-      "type": "string",
-      "description": "URL of the widget source code"
-    },
-    "needsDataSource": {
-      "type": "boolean",
-      "description": "Indicates if the widget needs a data source"
-    },
-    "needsInstance": {
-      "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/dataType" }]
-    },
-    "typesSupported": {
-      "type": "array",
-      "items": { "$ref": "#/definitions/dataType" }
-    },
-    "needsDocument": {
-      "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/dataType" }]
-    },
-    "icon": {
-      "type": "object",
-      "required": ["src"],
-      "additionalProperties": false,
-      "properties": {
-        "src": {
-          "type": "string"
-        }
-      }
-    },
-    "allowSticky": {
-      "type": "boolean"
-    },
-    "deprecated": {
-      "type": "boolean"
-    },
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "WidgetProperties",
+    "type": "object",
+    "required": ["id", "name", "properties"],
+    "additionalProperties": false,
     "properties": {
-      "type": "array",
-      "uniqueItems": true,
-      "description": "Array of properties that the widget supports",
-      "items": { "$ref": "#/definitions/widgetProperty" }
-    },
-    "$schema": { "type": "string" }
-  },
-
-  "definitions": {
-    "dataType": {
-      "enum": [
-        "documents",
-        "objectInstances",
-        "documentVersions",
-        "relatedObjectInstances"
-      ]
-    },
-    "choices": {
-      "type": "array",
-      "uniqueItems": true,
-      "description": "Array of choices for the property",
-      "items": {
-        "$ref": "#/definitions/choice"
-      }
-    },
-    "choice": {
-      "type": "object",
-      "required": ["label", "value"],
-      "additionalProperties": false,
-      "properties": {
-        "value": {
-          "type": "string",
-          "description": "Value of the choice"
+        "id": {
+            "type": "string",
+            "description": "Unique identifier for the widget"
         },
-        "label": {
-          "type": "string",
-          "description": "Label of the choice"
-        }
-      }
-    },
-    "api": {
-      "type": "object",
-      "required": ["url", "resultMapping"],
-      "additionalProperties": false,
-      "properties": {
-        "url": {
-          "type": "string",
-          "description": "URL of the API"
-        },
-        "resultMapping": {
-          "type": "object",
-          "required": ["value", "label"],
-          "additionalProperties": false,
-          "properties": {
-            "value": {
-              "type": "string",
-              "description": "Value of the API result"
-            },
-            "label": {
-              "type": "string",
-              "description": "Label of the API result"
-            }
-          },
-          "description": "Mapping of the API result to the choices"
-        }
-      }
-    },
-    "inputGroup": {
-      "type": "array",
-      "uniqueItems": true,
-      "items": { "$ref": "#/definitions/widgetProperty" }
-    },
-    "widgetProperty": {
-      "type": "object",
-      "required": ["name", "type"],
-      "additionalProperties": false,
-      "oneOf": [
-        {
-          "properties": { "type": { "const": "inputGroup" } },
-          "required": ["name", "type", "inputGroup"]
-        },
-        { "properties": { "type": { "const": "actionButtons" } } },
-        { "properties": { "type": { "const": "documentUpload" } } },
-        { "properties": { "type": { "const": "columnSelector" } } },
-        { "properties": { "type": { "const": "filter" } } },
-        {
-          "properties": { "type": { "const": "text" } }
-        },
-        { "properties": { "type": { "const": "number" } } },
-        { "properties": { "type": { "const": "date" } } },
-        { "properties": { "type": { "const": "boolean" } } },
-        {
-          "properties": { "type": { "const": "choices" } },
-          "oneOf": [
-            { "required": ["name", "type", "choices"] },
-            { "required": ["name", "type", "api"] }
-          ]
-        }
-      ],
-      "properties": {
         "name": {
-          "type": "string",
-          "description": "This is the name of the input field, and also the property name passed to the widget react component"
+            "type": "string",
+            "description": "Name of the widget"
         },
-        "type": {
-          "type": "string",
-          "description": "This is the “type” of the input and will determine which input field(s) are presented to the builder user, and the format of the values passed to the widget.",
-          "enum": [
-            "text",
-            "number",
-            "boolean",
-            "choices",
-            "inputGroup",
-            "date",
-            "actionButtons",
-            "documentUpload",
-            "columnSelector",
-            "filter"
-          ]
+        "description": {
+            "type": "string",
+            "description": "Description of the widget"
         },
-        "displayName": {
-          "type": "string",
-          "description": "The text that shows up in the list of widget-settings while editing a widget. If “displayName” is not specified, the value specified for “name” is displayed in start-case."
+        "version": {
+            "type": "string",
+            "description": "Version of the widget"
         },
-        "instructionText": {
-          "type": "string",
-          "description": "This value shows up as a prompt at the top of all the input field(s) for that setting."
+        "src": {
+            "type": "string",
+            "description": "URL of the widget source code"
         },
-        "isOptional": {
-          "type":"boolean",
-          "description": "Indicates if the property is optional"
+        "needsDataSource": {
+            "type": "boolean",
+            "description": "Indicates if the widget needs a data source"
         },
-        "isWidgetTitle": {
-          "type": "boolean"
+        "needsInstance": {
+            "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/dataType" }]
         },
-        "isMultiple": {
-          "type": "boolean"
+        "typesSupported": {
+            "type": "array",
+            "items": { "$ref": "#/definitions/dataType" }
         },
-        "initialValue": {
-          "oneOf": [
-            { "type": "string" },
-            { "type": "number" },
-            { "type": "boolean" }
-          ],
-          "description": "Initial value of the property"
+        "needsDocument": {
+            "oneOf": [{ "type": "boolean" }, { "$ref": "#/definitions/dataType" }]
         },
-        "tooltip": {
-          "type": "string",
-          "description": "This value shows up as a tooltip when the user hovers over the input field."
-        },
-        "informationModal": {
-          "type": "object",
-          "properties": {
-            "linkText": { "type": "string" },
-            "title": { "type": "string" },
-            "content": { "type": "string" },
-            "isJson": { "type": "boolean" }
-          }
-        },
-        "hidden": {
-          "type": "object",
-          "properties": {
-            "dataType": {
-              "type": "array",
-              "items": { "$ref": "#/definitions/dataType" }
+        "icon": {
+            "type": "object",
+            "required": ["src"],
+            "additionalProperties": false,
+            "properties": {
+                "src": {
+                    "type": "string"
+                }
             }
-          }
         },
-        "isSortable": {
-          "type": "boolean"
+        "allowSticky": {
+            "type": "boolean"
         },
-        "choices": { "$ref": "#/definitions/choices" },
+        "deprecated": {
+            "type": "boolean"
+        },
+        "properties": {
+            "type": "array",
+            "uniqueItems": true,
+            "description": "Array of properties that the widget supports",
+            "items": { "$ref": "#/definitions/widgetProperty" }
+        },
+        "$schema": { "type": "string" }
+    },
+
+    "definitions": {
+        "dataType": {
+            "enum": ["documents", "objectInstances", "documentVersions", "relatedObjectInstances"]
+        },
+        "choices": {
+            "type": "array",
+            "uniqueItems": true,
+            "description": "Array of choices for the property",
+            "items": {
+                "$ref": "#/definitions/choice"
+            }
+        },
+        "choice": {
+            "type": "object",
+            "required": ["label", "value"],
+            "additionalProperties": false,
+            "properties": {
+                "value": {
+                    "type": "string",
+                    "description": "Value of the choice"
+                },
+                "label": {
+                    "type": "string",
+                    "description": "Label of the choice"
+                }
+            }
+        },
         "api": {
-          "$ref": "#/definitions/api"
-        },
-        "inputGroup": { "$ref": "#/definitions/inputGroup" },
-        "disabled": {
-          "type": "object",
-          "properties": {
-            "dataType": {
-              "type": "array",
-              "items": { "$ref": "#/definitions/dataType" }
+            "type": "object",
+            "required": ["url", "resultMapping"],
+            "additionalProperties": false,
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "description": "URL of the API"
+                },
+                "resultMapping": {
+                    "type": "object",
+                    "required": ["value", "label"],
+                    "additionalProperties": false,
+                    "properties": {
+                        "value": {
+                            "type": "string",
+                            "description": "Value of the API result"
+                        },
+                        "label": {
+                            "type": "string",
+                            "description": "Label of the API result"
+                        }
+                    },
+                    "description": "Mapping of the API result to the choices"
+                }
             }
-          }
+        },
+        "inputGroup": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": { "$ref": "#/definitions/widgetProperty" }
+        },
+        "widgetProperty": {
+            "type": "object",
+            "required": ["name", "type"],
+            "additionalProperties": false,
+            "oneOf": [
+                {
+                    "properties": { "type": { "const": "inputGroup" } },
+                    "required": ["name", "type", "inputGroup"]
+                },
+                { "properties": { "type": { "const": "actionButtons" } } },
+                { "properties": { "type": { "const": "documentUpload" } } },
+                { "properties": { "type": { "const": "columnSelector" } } },
+                { "properties": { "type": { "const": "filter" } } },
+                {
+                    "properties": { "type": { "const": "text" } }
+                },
+                { "properties": { "type": { "const": "number" } } },
+                { "properties": { "type": { "const": "date" } } },
+                { "properties": { "type": { "const": "boolean" } } },
+                {
+                    "properties": { "type": { "const": "choices" } },
+                    "oneOf": [{ "required": ["name", "type", "choices"] }, { "required": ["name", "type", "api"] }]
+                }
+            ],
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "This is the name of the input field, and also the property name passed to the widget react component"
+                },
+                "type": {
+                    "type": "string",
+                    "description": "This is the “type” of the input and will determine which input field(s) are presented to the builder user, and the format of the values passed to the widget.",
+                    "enum": [
+                        "text",
+                        "number",
+                        "boolean",
+                        "choices",
+                        "inputGroup",
+                        "date",
+                        "actionButtons",
+                        "documentUpload",
+                        "columnSelector",
+                        "filter"
+                    ]
+                },
+                "displayName": {
+                    "type": "string",
+                    "description": "The text that shows up in the list of widget-settings while editing a widget. If “displayName” is not specified, the value specified for “name” is displayed in start-case."
+                },
+                "instructionText": {
+                    "type": "string",
+                    "description": "This value shows up as a prompt at the top of all the input field(s) for that setting."
+                },
+                "isOptional": {
+                    "type": "boolean",
+                    "description": "Indicates if the property is optional"
+                },
+                "isWidgetTitle": {
+                    "type": "boolean"
+                },
+                "isMultiple": {
+                    "type": "boolean"
+                },
+                "initialValue": {
+                    "oneOf": [{ "type": "string" }, { "type": "number" }, { "type": "boolean" }],
+                    "description": "Initial value of the property"
+                },
+                "tooltip": {
+                    "type": "string",
+                    "description": "This value shows up as a tooltip when the user hovers over the input field."
+                },
+                "informationModal": {
+                    "type": "object",
+                    "properties": {
+                        "linkText": { "type": "string" },
+                        "title": { "type": "string" },
+                        "content": { "type": "string" },
+                        "isJson": { "type": "boolean" }
+                    }
+                },
+                "hidden": {
+                    "type": "object",
+                    "properties": {
+                        "dataType": {
+                            "type": "array",
+                            "items": { "$ref": "#/definitions/dataType" }
+                        }
+                    }
+                },
+                "isSortable": {
+                    "type": "boolean"
+                },
+                "choices": { "$ref": "#/definitions/choices" },
+                "api": {
+                    "$ref": "#/definitions/api"
+                },
+                "inputGroup": { "$ref": "#/definitions/inputGroup" },
+                "disabled": {
+                    "type": "object",
+                    "properties": {
+                        "dataType": {
+                            "type": "array",
+                            "items": { "$ref": "#/definitions/dataType" }
+                        }
+                    }
+                }
+            }
         }
-      }
     }
-  }
 }
