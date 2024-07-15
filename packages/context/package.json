@@ -62,7 +62,7 @@
         "react-router-dom": ">=6"
     },
     "dependencies": {
-        "@microsoft/signalr": "^7.0.12",
+        "@microsoft/signalr": "^8.0.7",
         "axios": "^1.6.7",
         "uuid": "^9.0.1"
     }
