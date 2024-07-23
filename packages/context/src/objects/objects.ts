@@ -54,6 +54,7 @@ export type PropertyType =
     | 'collection'
     | 'date'
     | 'date-time'
+    | 'document'
     | 'image'
     | 'integer'
     | 'number'
@@ -87,7 +88,18 @@ export type StringValidation = {
     }[];
 };
 
-export type PropertyValidation = StringValidation | NumericValidation | DateValidation | CriteriaValidation;
+export type DocumentValidation = {
+    errorMessage?: string;
+    maxDocuments?: number;
+    minDocuments?: number;
+};
+
+export type PropertyValidation =
+    | StringValidation
+    | NumericValidation
+    | DateValidation
+    | CriteriaValidation
+    | DocumentValidation;
 
 export type Property = {
     id: string;
@@ -192,6 +204,7 @@ export type InputParameterReference = {
     parameterId: string;
     display?: DisplayConfiguration;
     enumWithLabels?: SelectOption[];
+    documentMetadata?: Record<string, string>;
 };
 
 export type Content = {
