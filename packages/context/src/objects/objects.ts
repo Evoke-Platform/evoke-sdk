@@ -249,6 +249,7 @@ export type ActionInputType =
     | 'Select'
     | 'TextField'
     | 'DateTime'
+    | 'Document'
     | 'RepeatableField'
     | 'ManyToManyRepeatableField'
     | 'MultiSelect'
