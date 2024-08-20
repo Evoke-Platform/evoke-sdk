@@ -187,7 +187,7 @@
                     "type": "boolean"
                 },
                 "initialValue": {
-                    "oneOf": [{ "type": "string" }, { "type": "number" }, { "type": "boolean" }],
+                    "oneOf": [{ "type": "string" }, { "type": "number" }, { "type": "boolean" }, { "type": "object" }],
                     "description": "Initial value of the property"
                 },
                 "tooltip": {
