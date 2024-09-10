@@ -1,10 +1,10 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
+import { AxiosError } from 'axios';
 import { createContext, ReactNode, useCallback, useContext } from 'react';
 import { useApiServices } from '../api/index.js';
-import { Obj } from '../objects';
-import { AxiosError } from 'axios';
+import { Obj } from '../objects/index.js';
 
 export type AppType = 'public' | 'portal' | 'private';
 

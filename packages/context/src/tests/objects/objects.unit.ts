@@ -4,7 +4,7 @@
 import chai, { expect } from 'chai';
 import dirtyChai from 'dirty-chai';
 import sinon, { SinonStub } from 'sinon';
-import { ApiServices } from '../../api';
+import { ApiServices } from '../../api/index.js';
 import { ObjWithRoot, ObjectStore } from '../../objects/index.js';
 import { assertionCallback } from '../helpers.js';
 
