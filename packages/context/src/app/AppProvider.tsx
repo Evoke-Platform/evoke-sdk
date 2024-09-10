@@ -2,7 +2,7 @@
 // This file is licensed under the MIT License.
 
 import { createContext, ReactNode, useCallback, useContext } from 'react';
-import { useApiServices } from '../api';
+import { useApiServices } from '../api/index.js';
 import { Obj } from '../objects';
 import { AxiosError } from 'axios';
 
