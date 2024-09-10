@@ -63,7 +63,7 @@
     },
     "dependencies": {
         "@microsoft/signalr": "^7.0.12",
-        "axios": "^1.6.7",
+        "axios": "^1.7.4",
         "uuid": "^9.0.1"
     }
 }
