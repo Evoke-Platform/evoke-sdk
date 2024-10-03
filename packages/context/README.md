@@ -211,7 +211,7 @@ absolute URL.
 -   [useNofitication](#usenotification)
     -   [documentChanges](#documentchangessubscribeobjectidinstanceid-data-documentchange)
     -   [instanceChanges](#instancechangessubscribeobjectid-instanceids-instancechange)
--   [~~useSignalRConnection~~](#usesignalrconnection) (_Deprecated_)
+-   [~~useSignalRConnection~~](#usesignalrconnection) (_Obsolete_)
 
 #### `useNofitication()`
 
@@ -305,9 +305,9 @@ instanceChanges.unsubscribe('myObjectId', callback);
 
 #### `useSignalRConnection()`
 
-> **Deprecated**
-> Use of `useSignalRConnection()` has been deprecated. Use of this will not cause an error, but the
-> widget will not receive any notifications. Use [useNotification](#usenofitication) instead.
+> **Obsolete**
+> Using `useSignalRConnection` will not cause an error, but the widget will not receive any notifications.
+> Use [useNotification](#usenofitication) instead.
 
 ## License
 
