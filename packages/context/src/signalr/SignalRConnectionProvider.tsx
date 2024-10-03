@@ -2,6 +2,7 @@
 // This file is licensed under the MIT License.
 
 import React, { createContext, useContext } from 'react';
+import { useNotification } from '../notification/index.js';
 
 export type SignalRConnectionInfo = {
     url: string;
@@ -33,16 +34,39 @@ export const SignalRConnectionContext = createContext<SignalRConnectionContextTy
 SignalRConnectionContext.displayName = 'SignalRConnectionContext';
 
 function SignalRConnectionProvider({ children }: { children: React.ReactNode }) {
+    const notifications = useNotification();
+
     return (
         <SignalRConnectionContext.Provider
             value={{
                 documentChanges: {
-                    subscribe: () => {},
-                    unsubscribe: () => {},
+                    subscribe: (topicName, callback) => {
+                        const [objectId, instanceId] = topicName.split('/');
+
+                        notifications.documentChanges?.subscribe(objectId, instanceId, callback);
+                    },
+                    unsubscribe: (topicName, callback) => {
+                        const [objectId, instanceId] = topicName.split('/');
+
+                        notifications.documentChanges?.unsubscribe(objectId, instanceId, callback);
+                    },
                 },
                 instanceChanges: {
-                    subscribe: () => {},
-                    unsubscribe: () => {},
+                    subscribe: (objectId, callback) => {
+                        notifications.instanceChanges?.subscribe(objectId, (...changes) => {
+                            callback(...changes.map((change) => change.instanceId));
+                        });
+                    },
+                    unsubscribe: (objectId, callback) => {
+                        notifications.instanceChanges?.unsubscribe(
+                            objectId,
+                            callback
+                                ? (...changes) => {
+                                      callback?.(...changes.map((change) => change.instanceId));
+                                  }
+                                : undefined,
+                        );
+                    },
                 },
             }}
         >
@@ -52,7 +76,7 @@ function SignalRConnectionProvider({ children }: { children: React.ReactNode }) 
 }
 
 export function useSignalRConnection() {
-    console.warn('Use of useSignalRConnection is obsolete. Use useNotification instead.');
+    console.warn('Use of useSignalRConnection is deprecated. Use useNotification instead.');
 
     return useContext(SignalRConnectionContext);
 }
