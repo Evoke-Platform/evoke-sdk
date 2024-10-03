@@ -52,7 +52,7 @@ function SignalRConnectionProvider({ children }: { children: React.ReactNode }) 
 }
 
 export function useSignalRConnection() {
-    console.warn('Use of useSignalRConnection is deprecated. Use useNotification instead.');
+    console.warn('Use of useSignalRConnection is obsolete. Use useNotification instead.');
 
     return useContext(SignalRConnectionContext);
 }
