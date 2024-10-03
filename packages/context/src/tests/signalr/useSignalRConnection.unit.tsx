@@ -16,6 +16,11 @@ import { SignalRConnectionProvider, useSignalRConnection } from '../../signalr/i
 
 chai.use(dirtyChai);
 
+type TestComponentProps = {
+    instanceTopic?: string;
+    documentTopic?: string;
+};
+
 describe('useSignalRConnection', () => {
     // Callbacks to receive change notifications.
     const callbacks = {
@@ -23,11 +28,7 @@ describe('useSignalRConnection', () => {
         documentCallback() {},
     };
 
-    // These are used to control what TestComponent will subscribe to during the tests.
-    let instanceTopic: string | undefined;
-    let documentTopic: string | undefined;
-
-    const TestComponent = () => {
+    const TestComponent = ({ instanceTopic, documentTopic }: TestComponentProps) => {
         const { instanceChanges, documentChanges } = useSignalRConnection();
 
         if (instanceTopic) {
@@ -56,11 +57,6 @@ describe('useSignalRConnection', () => {
         documentChanges: documentSubscription,
     };
 
-    beforeEach(() => {
-        instanceTopic = undefined;
-        documentTopic = undefined;
-    });
-
     afterEach(() => {
         sinon.restore();
     });
@@ -68,12 +64,10 @@ describe('useSignalRConnection', () => {
     it('subscribes to instance change notifications', () => {
         sinon.mock(instanceSubscription).expects('subscribe').withArgs('testObject');
 
-        instanceTopic = 'testObject';
-
         render(
             <NotificationContext.Provider value={notifications}>
                 <SignalRConnectionProvider>
-                    <TestComponent />
+                    <TestComponent instanceTopic="testObject" />
                 </SignalRConnectionProvider>
             </NotificationContext.Provider>,
         );
@@ -90,12 +84,10 @@ describe('useSignalRConnection', () => {
 
         sinon.mock(callbacks).expects('instanceCallback').withExactArgs('instance1', 'instance2');
 
-        instanceTopic = 'testObject';
-
         render(
             <NotificationContext.Provider value={notifications}>
                 <SignalRConnectionProvider>
-                    <TestComponent />
+                    <TestComponent instanceTopic="testObject" />
                 </SignalRConnectionProvider>
             </NotificationContext.Provider>,
         );
@@ -114,12 +106,10 @@ describe('useSignalRConnection', () => {
     it('subscribes to document change notifications', () => {
         sinon.mock(documentSubscription).expects('subscribe').withArgs('docObject', 'testInstance');
 
-        documentTopic = 'docObject/testInstance';
-
         render(
             <NotificationContext.Provider value={notifications}>
                 <SignalRConnectionProvider>
-                    <TestComponent />
+                    <TestComponent documentTopic="docObject/testInstance" />
                 </SignalRConnectionProvider>
             </NotificationContext.Provider>,
         );
@@ -149,12 +139,10 @@ describe('useSignalRConnection', () => {
             },
         );
 
-        documentTopic = 'docObject/testInstance';
-
         render(
             <NotificationContext.Provider value={notifications}>
                 <SignalRConnectionProvider>
-                    <TestComponent />
+                    <TestComponent documentTopic="docObject/testInstance" />
                 </SignalRConnectionProvider>
             </NotificationContext.Provider>,
         );
