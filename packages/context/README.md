@@ -17,7 +17,7 @@ available and no further installation is necessary.
 
 -   [Working With Objects](#working-with-objects)
 -   [REST API Calls](#rest-api-calls)
--   [SignalR Connection](#signalr-connection)
+-   [Notifications](#notifications)
 
 ### Working With Objects
 
@@ -206,101 +206,14 @@ absolute URL.
 
 ##### `delete(url, options)`
 
-### SignalR Connection
-
-Deprecated
-
--   [useSignalRConnection](#usesignalrconnection)
-    -   [documentChanges](#documentchangessubscribeobjectidinstanceid-data-documentchange)
-    -   [instanceChanges](#instancechangessubscribeobjectid-instanceids-instancechange)
-
-#### `useSignalRConnection()`
-
-Hook used to obtain an instanceChanges instance of `SignalRConnection` and a documentChanges instance of `SignalRConnection`.
-
-##### `documentChanges.subscribe('{objectId}/{instanceId}', (data: DocumentChange[]]) => {})`
-
-Subscribe to the specified object instance document changes.
-
-```javascript
-const { documentChanges } = useSignalRConnection();
-
-documentChanges.subscribe('myObjectId/myInstanceId', (data) => {
-    console.log(data);
-});
-```
-
-The data provided to the callback will be an array of `DocumentChange` which contains the
-following data:
-
--   `objectId`
-    -   Object describing the instance associated with the updated document.
--   `instanceId`
-    -   Instance that the updated document is associated with.
--   `documentId`
-    -   Document that was updated.
--   `type`
-    -   The type of update. Possible values are `BlobCreated`, `BlobDeleted`, and `BlobMetadataUpdated`.
-
-##### `documentChanges.unsubscribe('{objectId}/{instanceId}', (data: DocumentChange[]) => {})`
-
-Unsubscribe to the specified object instance document changes.
-
-Callback function is optional.
-If callback function is defined, you must pass the exact same Function instance as was previously passed to `documentChanges.subscribe`.
-Passing a different instance (even if the function body is the same) will not remove the subscription.
-
-```javascript
-const { documentChanges } = useSignalRConnection();
-
-const callback = (data: DocumentChange[]) => {
-    console.log(data);
-};
-
-documentChanges.subscribe('myObjectId/myInstanceId', callback);
-
-documentChanges.unsubscribe('myObjectId/myInstanceId', callback);
-```
-
-##### `instanceChanges.subscribe('{objectId}', (instanceIds: InstanceChange[]) => {})`
-
-Subscribe to the specified object instance changes.
-
-```javascript
-const { instanceChanges } = useSignalRConnection();
-
-instanceChanges.subscribe('myObjectId', (instanceIds) => {
-    console.log(instanceIds);
-});
-```
-
-The data provided to the callback will be an array of instance IDs that were updated.
-
-##### `instanceChanges.unsubscribe('{objectId}', (instanceIds: InstanceChange[]) => {})`
-
-Unsubscribe to the specified object instance changes.
-
-Callback function is optional.
-If callback function is defined, you must pass the exact same Function instance as was previously passed to `instanceChanges.subscribe`.
-Passing a different instance (even if the function body is the same) will not remove the subscription.
-
-```javascript
-const { instanceChanges } = useSignalRConnection();
-
-const callback = (instanceIds: InstanceChange[]) => {
-    console.log(instanceIds);
-};
-
-instanceChanges.subscribe('myObjectId', callback);
-
-instanceChanges.unsubscribe('myObjectId', callback);
-```
-
-### Notification
+### Notifications
 
 -   [useNofitication](#usenotification)
     -   [documentChanges](#documentchangessubscribeobjectidinstanceid-data-documentchange)
     -   [instanceChanges](#instancechangessubscribeobjectid-instanceids-instancechange)
+-   [useSignalRConnection](#usesignalrconnection) (_Deprecated_)
+    -   [documentChanges](#documentchangessubscribeobjectidinstanceid-data-documentchange) (_Deprecated_)
+    -   [instanceChanges](#instancechangessubscribeobjectid-instanceids-instancechange) (_Deprecated_)
 
 #### `useNofitication()`
 
@@ -385,6 +298,103 @@ const { instanceChanges } = useNotification();
 
 const callback = (changes: InstanceChange[]) => {
     console.log(changes);
+};
+
+instanceChanges.subscribe('myObjectId', callback);
+
+instanceChanges.unsubscribe('myObjectId', callback);
+```
+
+#### `useSignalRConnection()`
+
+> **Deprecated**
+> This has been deprecated in favor of [useNotification](#usenofitication).
+
+Hook used to obtain an instanceChanges instance of `SignalRConnection` and a documentChanges instance of `SignalRConnection`.
+
+##### `documentChanges.subscribe('{objectId}/{instanceId}', (data: DocumentChange[]]) => {})`
+
+> **Deprecated**
+> This has been deprecated in favor of [useNotification](#usenofitication).
+
+Subscribe to the specified object instance document changes.
+
+```javascript
+const { documentChanges } = useSignalRConnection();
+
+documentChanges.subscribe('myObjectId/myInstanceId', (data) => {
+    console.log(data);
+});
+```
+
+The data provided to the callback will be an array of `DocumentChange` which contains the
+following data:
+
+-   `objectId`
+    -   Object describing the instance associated with the updated document.
+-   `instanceId`
+    -   Instance that the updated document is associated with.
+-   `documentId`
+    -   Document that was updated.
+-   `type`
+    -   The type of update. Possible values are `BlobCreated`, `BlobDeleted`, and `BlobMetadataUpdated`.
+
+##### `documentChanges.unsubscribe('{objectId}/{instanceId}', (data: DocumentChange[]) => {})`
+
+> **Deprecated**
+> This has been deprecated in favor of [useNotification](#usenofitication).
+
+Unsubscribe to the specified object instance document changes.
+
+Callback function is optional.
+If callback function is defined, you must pass the exact same Function instance as was previously passed to `documentChanges.subscribe`.
+Passing a different instance (even if the function body is the same) will not remove the subscription.
+
+```javascript
+const { documentChanges } = useSignalRConnection();
+
+const callback = (data: DocumentChange[]) => {
+    console.log(data);
+};
+
+documentChanges.subscribe('myObjectId/myInstanceId', callback);
+
+documentChanges.unsubscribe('myObjectId/myInstanceId', callback);
+```
+
+##### `instanceChanges.subscribe('{objectId}', (instanceIds: InstanceChange[]) => {})`
+
+> **Deprecated**
+> This has been deprecated in favor of [useNotification](#usenofitication).
+
+Subscribe to the specified object instance changes.
+
+```javascript
+const { instanceChanges } = useSignalRConnection();
+
+instanceChanges.subscribe('myObjectId', (instanceIds) => {
+    console.log(instanceIds);
+});
+```
+
+The data provided to the callback will be an array of instance IDs that were updated.
+
+##### `instanceChanges.unsubscribe('{objectId}', (instanceIds: InstanceChange[]) => {})`
+
+> **Deprecated**
+> This has been deprecated in favor of [useNotification](#usenofitication).
+
+Unsubscribe to the specified object instance changes.
+
+Callback function is optional.
+If callback function is defined, you must pass the exact same Function instance as was previously passed to `instanceChanges.subscribe`.
+Passing a different instance (even if the function body is the same) will not remove the subscription.
+
+```javascript
+const { instanceChanges } = useSignalRConnection();
+
+const callback = (instanceIds: InstanceChange[]) => {
+    console.log(instanceIds);
 };
 
 instanceChanges.subscribe('myObjectId', callback);

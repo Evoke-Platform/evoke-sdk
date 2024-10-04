@@ -4,7 +4,7 @@ import {
     HubConnectionBuilder,
     IHttpConnectionOptions,
     LogLevel,
-} from '@microsoft/signalr/dist/esm/index.js';
+} from '@microsoft/signalr';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useApiServices } from '../api/index.js';
 
