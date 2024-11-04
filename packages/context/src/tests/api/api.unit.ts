@@ -75,7 +75,7 @@ describe('ApiServices', () => {
 
     context('without authentication context', () => {
         it('does not add Authorization header', async () => {
-            const services = new ApiServices(axios.create());
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
 
             let authHeader: string | null = null;
 
@@ -95,7 +95,7 @@ describe('ApiServices', () => {
 
     context('with authentication context', () => {
         it('adds Authorization header', async () => {
-            const services = new ApiServices(axios.create(), {
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), {
                 account: {
                     id: 'testuser',
                     name: 'Test User',
@@ -121,7 +121,7 @@ describe('ApiServices', () => {
     });
 
     describe('#get', () => {
-        const services = new ApiServices(axios.create());
+        const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
         const testConfig = { headers: { 'Echo-Header': 'get header' } };
 
         describe('(url) => Promise', () => {
@@ -165,7 +165,7 @@ describe('ApiServices', () => {
     });
 
     describe('#post', () => {
-        const services = new ApiServices(axios.create());
+        const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
         const testPayload = { test: 'post data', context: '#post' };
         const testConfig = { headers: { 'Echo-Header': 'post header' } };
 
@@ -186,7 +186,7 @@ describe('ApiServices', () => {
         });
 
         describe('(url, data, config) => Promise', () => {
-            const services = new ApiServices(axios.create());
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
 
             it('posts data', async () => {
                 const data = await services.post('/echo', testPayload, testConfig);
@@ -250,7 +250,7 @@ describe('ApiServices', () => {
     });
 
     describe('#put', () => {
-        const services = new ApiServices(axios.create());
+        const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
         const testPayload = { test: 'put data', context: '#put' };
         const testConfig = { headers: { 'Echo-Header': 'put header' } };
 
@@ -271,7 +271,7 @@ describe('ApiServices', () => {
         });
 
         describe('(url, data, config) => Promise', () => {
-            const services = new ApiServices(axios.create());
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
 
             it('puts data', async () => {
                 const data = await services.put('/echo', testPayload, testConfig);
@@ -335,7 +335,7 @@ describe('ApiServices', () => {
     });
 
     describe('#patch', () => {
-        const services = new ApiServices(axios.create());
+        const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
         const testPayload = { test: 'patch data', context: '#patch' };
         const testConfig = { headers: { 'Echo-Header': 'patch header' } };
 
@@ -356,7 +356,7 @@ describe('ApiServices', () => {
         });
 
         describe('(url, data, config) => Promise', () => {
-            const services = new ApiServices(axios.create());
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
 
             it('patches data', async () => {
                 const data = await services.patch('/echo', testPayload, testConfig);
@@ -420,7 +420,7 @@ describe('ApiServices', () => {
     });
 
     describe('#delete', () => {
-        const services = new ApiServices(axios.create());
+        const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
         const testConfig = { headers: { 'Echo-Header': 'delete header' } };
 
         describe('(url) => Promise', () => {
