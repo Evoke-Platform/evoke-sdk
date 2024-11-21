@@ -34,7 +34,6 @@ export type DefaultTableViewLayout = {
 export type ViewLayout = {
     id: string;
     name: string;
-    type: 'table' | 'dropdown';
     objectId: string;
 };
 
