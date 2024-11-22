@@ -11,38 +11,18 @@ export type BaseObjReference = {
     discriminatorValue: unknown;
 };
 
-export type DefaultViewLayout = {
-    table?: DefaultTableViewLayout;
-    dropdown?: DefaultDropdownViewLayout;
-};
-
-export type ViewLayoutReference = {
-    id: string;
-    objectId: string;
-};
-
-export type DefaultDropdownViewLayout = {
-    secondaryTextExpression: string;
-};
-
-export type DefaultTableViewLayout = {
-    properties: PropertyReference[];
-    sort?: Sort;
-};
-
 export type ViewLayout = {
-    id: string;
-    name: string;
-    objectId: string;
+    table?: TableViewLayout;
+    dropdown?: DropdownViewLayout;
 };
 
-export type TableViewLayout = ViewLayout & {
+export type DropdownViewLayout = {
+    secondaryTextExpression: string;
+};
+
+export type TableViewLayout = {
     properties: PropertyReference[];
     sort?: Sort;
-};
-
-export type DropdownViewLayout = ViewLayout & {
-    secondaryTextExpression: string;
 };
 
 export type PropertyReference = {
@@ -59,7 +39,7 @@ export type Obj = {
     id: string;
     name: string;
     typeDiscriminatorProperty?: string;
-    viewLayout?: DefaultViewLayout;
+    viewLayout?: ViewLayout;
     baseObject?: BaseObjReference;
     properties?: Property[];
     actions?: Action[];
@@ -217,7 +197,6 @@ export type DisplayConfiguration = {
     mode?: 'default' | 'existingOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
     visibility?: VisibilityConfiguration | string;
-    viewLayout?: ViewLayoutReference;
 };
 
 export type InputParameterReference = {
