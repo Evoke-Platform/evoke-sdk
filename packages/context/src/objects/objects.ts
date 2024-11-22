@@ -18,7 +18,6 @@ export type DefaultViewLayout = {
 
 export type ViewLayoutReference = {
     id: string;
-    type: 'table' | 'dropdown';
     objectId: string;
 };
 
