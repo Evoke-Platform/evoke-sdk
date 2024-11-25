@@ -11,20 +11,20 @@ export type BaseObjReference = {
     discriminatorValue: unknown;
 };
 
-export type ViewLayoutReference = {
+export type ViewLayoutEntityReference = {
     id: string;
     objectId: string;
 };
 
-export type ViewLayoutV2 = {
+type ViewLayoutEntity = {
     id: string;
     name: string;
     objectId: string;
 };
 
-export type TableViewLayoutV2 = ViewLayoutV2 & TableViewLayout;
+export type TableViewLayoutEntity = ViewLayoutEntity & TableViewLayout;
 
-export type DropdownViewLayoutV2 = ViewLayoutV2 & DropdownViewLayout;
+export type DropdownViewLayoutEntity = ViewLayoutEntity & DropdownViewLayout;
 
 export type ViewLayout = {
     table?: TableViewLayout;
@@ -212,7 +212,7 @@ export type DisplayConfiguration = {
     mode?: 'default' | 'existingOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
     visibility?: VisibilityConfiguration | string;
-    viewLayout?: ViewLayoutReference;
+    viewLayout?: ViewLayoutEntityReference;
 };
 
 export type InputParameterReference = {
