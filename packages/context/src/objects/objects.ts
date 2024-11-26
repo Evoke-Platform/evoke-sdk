@@ -279,7 +279,7 @@ export type DocumentType = 'Portal' | 'Private' | 'Public';
 
 export type DocumentMetadata = {
     type?: string;
-    view_permissions?: DocumentType;
+    view_permission?: DocumentType;
 };
 
 /**
