@@ -62,6 +62,11 @@ export type Obj = {
 
 export type ObjWithRoot = Obj & { rootObjectId: string };
 
+export type EffectiveObject = Obj & {
+    rootObjectId: string;
+    discriminatorValues?: Record<string, unknown>;
+};
+
 export type PropertyType =
     | 'address'
     | 'array'
