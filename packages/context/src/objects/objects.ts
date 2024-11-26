@@ -97,10 +97,7 @@ export type CriteriaValidation = {
 
 export type StringValidation = {
     operator: 'any' | 'all';
-    rules?: {
-        regex: string;
-        errorMessage?: string;
-    }[];
+    rules?: RegexValidation[];
 };
 
 export type DocumentValidation = {
