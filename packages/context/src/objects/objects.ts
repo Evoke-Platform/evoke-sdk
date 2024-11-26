@@ -277,11 +277,6 @@ export type ActionInputType =
 
 export type DocumentType = 'Portal' | 'Private' | 'Public';
 
-export type DocumentMetadata = {
-    type?: string;
-    view_permission?: DocumentType;
-};
-
 /**
  * Represents an object action inputProperty object.
  */
@@ -329,7 +324,7 @@ export type ActionInput = {
     };
     property?: InputParameter;
     viewLayout?: ViewLayoutEntityReference;
-    documentMetadata?: DocumentMetadata;
+    documentMetadata?: Record<string, string>;
     validate?: {
         required?: boolean;
         criteria?: object;
