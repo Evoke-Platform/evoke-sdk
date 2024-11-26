@@ -173,7 +173,7 @@ export type ObjectInstance = {
 
 export type RegexValidation = {
     regex: string;
-    errorMessage: string;
+    errorMessage?: string;
 };
 
 export type SelectOption = {
@@ -278,6 +278,13 @@ export type ActionInputType =
     | 'Time'
     | 'User';
 
+export type DocumentType = 'Portal' | 'Private' | 'Public';
+
+export type DocumentMetadata = {
+    type?: string;
+    view_permissions?: DocumentType;
+};
+
 /**
  * Represents an object action inputProperty object.
  */
@@ -323,9 +330,9 @@ export type ActionInput = {
         when?: string;
         eq?: string | number | boolean;
     };
-    property?: {
-        id: string;
-    };
+    property?: InputParameter;
+    viewLayout?: ViewLayoutEntityReference;
+    documentMetadata?: DocumentMetadata;
     validate?: {
         required?: boolean;
         criteria?: object;
@@ -339,6 +346,8 @@ export type ActionInput = {
         maxTime?: string;
         min?: number;
         max?: number;
+        minDocuments?: number;
+        maxDocuments?: number;
         customMessage?: string;
     };
     /**
