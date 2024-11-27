@@ -97,10 +97,7 @@ export type CriteriaValidation = {
 
 export type StringValidation = {
     operator: 'any' | 'all';
-    rules?: {
-        regex: string;
-        errorMessage?: string;
-    }[];
+    rules?: RegexValidation[];
 };
 
 export type DocumentValidation = {
@@ -173,7 +170,7 @@ export type ObjectInstance = {
 
 export type RegexValidation = {
     regex: string;
-    errorMessage: string;
+    errorMessage?: string;
 };
 
 export type SelectOption = {
@@ -323,9 +320,9 @@ export type ActionInput = {
         when?: string;
         eq?: string | number | boolean;
     };
-    property?: {
-        id: string;
-    };
+    property?: InputParameter;
+    viewLayout?: ViewLayoutEntityReference;
+    documentMetadata?: Record<string, string>;
     validate?: {
         required?: boolean;
         criteria?: object;
@@ -339,6 +336,8 @@ export type ActionInput = {
         maxTime?: string;
         min?: number;
         max?: number;
+        minDocuments?: number;
+        maxDocuments?: number;
         customMessage?: string;
     };
     /**
