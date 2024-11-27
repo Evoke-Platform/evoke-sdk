@@ -275,8 +275,6 @@ export type ActionInputType =
     | 'Time'
     | 'User';
 
-export type DocumentType = 'Portal' | 'Private' | 'Public';
-
 /**
  * Represents an object action inputProperty object.
  */
