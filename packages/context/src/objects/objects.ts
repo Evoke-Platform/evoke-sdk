@@ -283,7 +283,7 @@ export type ActionInput = {
     label?: string;
     type?: ActionInputType;
     key?: string;
-    initialValue?: string | number | SelectOption[] | SelectOption;
+    initialValue?: string | string[] | number | RelatedObjectDefaultValue | SelectOption[] | SelectOption;
     defaultToCurrentDate?: boolean;
     defaultToCurrentTime?: boolean;
     defaultValueCriteria?: object;
