@@ -6,8 +6,9 @@ import chai, { expect } from 'chai';
 import dirtyChai from 'dirty-chai';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { ApiServices, paramsSerializer } from '../../api/index.js';
+import { ApiServices } from '../../api/index.js';
 import { assertionCallback } from '../helpers.js';
+import { paramsSerializer } from '../../api/paramsSerializer.js';
 
 chai.use(dirtyChai);
 
@@ -61,7 +62,7 @@ const server = setupServer(
 
     // Return contents of params in response
     rest.get('http://localhost/params', (req, res, ctx) => {
-        return res(ctx.text((req.url.search as string) ?? ''));
+        return res(ctx.text(req.url.search ?? ''));
     }),
 );
 
@@ -141,6 +142,12 @@ describe('ApiServices', () => {
                 const data = await services.get('/echoHeader', { headers: { 'Echo-Header': 'get header' } });
 
                 expect(data).to.eql('get header');
+            });
+
+            it('sends undefined params', async () => {
+                const data = await services.get('/params', { params: undefined });
+
+                expect(data).to.eql('');
             });
 
             it('sends string params', async () => {

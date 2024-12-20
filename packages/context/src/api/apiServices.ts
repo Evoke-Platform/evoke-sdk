@@ -1,12 +1,13 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, ParamsSerializerOptions } from 'axios';
+import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthenticationContext, useAuthenticationContext } from '../authentication/AuthenticationContextProvider.js';
 import { useApiBaseUrl } from './ApiBaseUrlProvider.js';
 import { Callback } from './callback.js';
+import { paramsSerializer } from './paramsSerializer.js';
 
 export type Data = Record<string, unknown> | FormData;
 
@@ -190,14 +191,4 @@ export function useApiServices() {
     );
 
     return apiServices;
-}
-
-export function paramsSerializer(params: Record<string, unknown>, options?: ParamsSerializerOptions) {
-    const searchParams = new URLSearchParams();
-
-    for (const [key, value] of Object.entries(params)) {
-        searchParams.append(key, typeof value !== 'string' ? JSON.stringify(value) : value);
-    }
-
-    return searchParams.toString();
 }
