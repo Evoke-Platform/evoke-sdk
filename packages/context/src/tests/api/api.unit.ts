@@ -174,6 +174,19 @@ describe('ApiServices', () => {
                     '?filter=%7B%22where%22%3A%7B%22or%22%3A%5B%7B%22and%22%3A%5B%7B%22a%22%3A%7B%22regexp%22%3A%22valueA%22%7D%2C%22b%22%3A%7B%22eq%22%3A%22valueB%22%7D%7D%5D%7D%2C%7B%22and%22%3A%5B%7B%22a%22%3A%7B%22regexp%22%3A%22another+ValueA%22%7D%2C%22b%22%3A%7B%22eq%22%3A%22another+ValueB%22%7D%7D%5D%7D%5D%7D%7D',
                 );
             });
+
+            it('overrides paramsSerializer', async () => {
+                const data = await services.get('/params', {
+                    params: {
+                        param1: 'param1 value',
+                    },
+                    paramsSerializer: (params, options) => {
+                        return 'param1=custom+paramsSerializer';
+                    },
+                });
+
+                expect(data).to.eql('?param1=custom+paramsSerializer');
+            });
         });
 
         describe('(url, cb)', () => {
