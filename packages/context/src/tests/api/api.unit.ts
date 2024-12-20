@@ -8,6 +8,7 @@ import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { ApiServices } from '../../api/index.js';
 import { assertionCallback } from '../helpers.js';
+import { paramsSerializer } from '../../api/paramsSerializer.js';
 
 chai.use(dirtyChai);
 
@@ -57,6 +58,11 @@ const server = setupServer(
     }),
     rest.delete('http://localhost/echoHeader', (req, res, ctx) => {
         return res(ctx.text(req.headers.get('Echo-Header') ?? ''));
+    }),
+
+    // Return contents of params in response
+    rest.get('http://localhost/params', (req, res, ctx) => {
+        return res(ctx.text(req.url.search ?? ''));
     }),
 );
 
@@ -121,8 +127,7 @@ describe('ApiServices', () => {
     });
 
     describe('#get', () => {
-        const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
-        const testConfig = { headers: { 'Echo-Header': 'get header' } };
+        const services = new ApiServices(axios.create({ baseURL: 'http://localhost/', paramsSerializer }));
 
         describe('(url) => Promise', () => {
             it('returns response data', async () => {
@@ -134,9 +139,53 @@ describe('ApiServices', () => {
 
         describe('(url, config) => Promise', () => {
             it('sends headers', async () => {
-                const data = await services.get('/echoHeader', testConfig);
+                const data = await services.get('/echoHeader', { headers: { 'Echo-Header': 'get header' } });
 
                 expect(data).to.eql('get header');
+            });
+
+            it('sends undefined params', async () => {
+                const data = await services.get('/params', { params: undefined });
+
+                expect(data).to.eql('');
+            });
+
+            it('sends string params', async () => {
+                const data = await services.get('/params', { params: { param1: 'param1 value' } });
+
+                expect(data).to.eql('?param1=param1+value');
+            });
+
+            it('sends object params', async () => {
+                const data = await services.get('/params', {
+                    params: {
+                        filter: {
+                            where: {
+                                or: [
+                                    { and: [{ a: { regexp: 'valueA' }, b: { eq: 'valueB' } }] },
+                                    { and: [{ a: { regexp: 'another ValueA' }, b: { eq: 'another ValueB' } }] },
+                                ],
+                            },
+                        },
+                    },
+                });
+
+                expect(data).to.eql(
+                    '?filter=%7B%22where%22%3A%7B%22or%22%3A%5B%7B%22and%22%3A%5B%7B%22a%22%3A%7B%22regexp%22%3A%22valueA%22%7D%2C%22b%22%3A%7B%22eq%22%3A%22valueB%22%7D%7D%5D%7D%2C%7B%22and%22%3A%5B%7B%22a%22%3A%7B%22regexp%22%3A%22another+ValueA%22%7D%2C%22b%22%3A%7B%22eq%22%3A%22another+ValueB%22%7D%7D%5D%7D%5D%7D%7D',
+                );
+            });
+
+            it('overrides paramsSerializer', async () => {
+                const data = await services.get('/params', {
+                    params: {
+                        param1: 'param1 value',
+                    },
+                    paramsSerializer: (params, options) => {
+                        return 'param1=custom+paramsSerializer';
+                    },
+                });
+
+                expect(data).to.eql('?param1=custom+paramsSerializer');
             });
         });
 
@@ -155,7 +204,7 @@ describe('ApiServices', () => {
             it('sends headers', (done) => {
                 services.get(
                     '/echoHeader',
-                    testConfig,
+                    { headers: { 'Echo-Header': 'get header' } },
                     assertionCallback(done, (data) => {
                         expect(data).to.eql('get header');
                     }),
