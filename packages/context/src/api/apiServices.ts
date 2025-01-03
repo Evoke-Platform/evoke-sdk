@@ -3,10 +3,11 @@
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useMemo } from 'react';
+import { v4 as uuidv4 } from 'uuid';
 import { AuthenticationContext, useAuthenticationContext } from '../authentication/AuthenticationContextProvider.js';
 import { useApiBaseUrl } from './ApiBaseUrlProvider.js';
 import { Callback } from './callback.js';
-import { v4 as uuidv4 } from 'uuid';
+import { paramsSerializer } from './paramsSerializer.js';
 
 export type Data = Record<string, unknown> | FormData;
 
@@ -184,7 +185,10 @@ export function useApiServices() {
     const authContext = useAuthenticationContext();
     const baseURL = useApiBaseUrl();
 
-    const apiServices = useMemo(() => new ApiServices(axios.create({ baseURL }), authContext), [authContext, baseURL]);
+    const apiServices = useMemo(
+        () => new ApiServices(axios.create({ baseURL, paramsSerializer }), authContext),
+        [authContext, baseURL],
+    );
 
     return apiServices;
 }
