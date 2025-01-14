@@ -150,13 +150,13 @@ describe('ApiServices', () => {
                 expect(data).to.eql('');
             });
 
-            it('sends undefined params value', async () => {
+            it('filters out undefined params value', async () => {
                 const data = await services.get('/params', { params: { param1: undefined } });
 
                 expect(data).to.eql('');
             });
 
-            it('sends empty params key', async () => {
+            it('filters out empty params key', async () => {
                 const data = await services.get('/params', { params: { '': 'value' } });
 
                 expect(data).to.eql('');
