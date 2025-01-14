@@ -16,7 +16,7 @@ export function paramsSerializer(params: Record<string, unknown>, options?: Para
 }
 
 function validateParamKey(item?: string) {
-    return !_.isNil(item) && !_.isUndefined(item) && !(_.isString(item) && _.isEmpty(item));
+    return !(_.isString(item) && _.isEmpty(item));
 }
 
 function validateParamValue(item?: unknown) {
