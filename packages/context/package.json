@@ -69,7 +69,6 @@
     "dependencies": {
         "@microsoft/signalr": "^7.0.12",
         "axios": "^1.7.9",
-        "lodash": "^4.17.21",
         "uuid": "^9.0.1"
     }
 }

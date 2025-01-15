@@ -1,5 +1,4 @@
 import { ParamsSerializerOptions } from 'axios';
-import _ from 'lodash';
 
 export function paramsSerializer(params: Record<string, unknown>, options?: ParamsSerializerOptions) {
     const searchParams = new URLSearchParams();
@@ -15,10 +14,10 @@ export function paramsSerializer(params: Record<string, unknown>, options?: Para
     return searchParams.toString();
 }
 
-function validateParamKey(item?: string) {
-    return !(_.isString(item) && _.isEmpty(item));
+function validateParamKey(item: string) {
+    return item.length;
 }
 
 function validateParamValue(item?: unknown) {
-    return !_.isUndefined(item);
+    return item !== undefined;
 }
