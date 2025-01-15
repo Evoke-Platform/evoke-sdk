@@ -7,8 +7,8 @@ import dirtyChai from 'dirty-chai';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
 import { ApiServices } from '../../api/index.js';
-import { assertionCallback } from '../helpers.js';
 import { paramsSerializer } from '../../api/paramsSerializer.js';
+import { assertionCallback } from '../helpers.js';
 
 chai.use(dirtyChai);
 
@@ -150,10 +150,28 @@ describe('ApiServices', () => {
                 expect(data).to.eql('');
             });
 
-            it('sends string params', async () => {
-                const data = await services.get('/params', { params: { param1: 'param1 value' } });
+            it('filters out undefined params value', async () => {
+                const data = await services.get('/params', { params: { param1: undefined } });
 
-                expect(data).to.eql('?param1=param1+value');
+                expect(data).to.eql('');
+            });
+
+            it('filters out empty params key', async () => {
+                const data = await services.get('/params', { params: { '': 'value' } });
+
+                expect(data).to.eql('');
+            });
+
+            it('sends string params', async () => {
+                const data = await services.get('/params', { params: { param1: 'param1 value', param2: '' } });
+
+                expect(data).to.eql('?param1=param1+value&param2=');
+            });
+
+            it('sends number params', async () => {
+                const data = await services.get('/params', { params: { 0: 0 } });
+
+                expect(data).to.eql('?0=0');
             });
 
             it('sends object params', async () => {
