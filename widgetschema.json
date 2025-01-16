@@ -132,10 +132,6 @@
                     "properties": { "type": { "const": "inputGroup" } },
                     "required": ["name", "type", "inputGroup"]
                 },
-                { "properties": { "type": { "const": "actionButtons" } } },
-                { "properties": { "type": { "const": "documentUpload" } } },
-                { "properties": { "type": { "const": "columnSelector" } } },
-                { "properties": { "type": { "const": "filter" } } },
                 {
                     "properties": { "type": { "const": "text" } }
                 },
@@ -145,7 +141,15 @@
                 {
                     "properties": { "type": { "const": "choices" } },
                     "oneOf": [{ "required": ["name", "type", "choices"] }, { "required": ["name", "type", "api"] }]
-                }
+                },
+                {
+                    "properties": { "type": { "const": "multiple" } },
+                    "required": ["fields", "itemName"]
+                },
+                { "properties": { "type": { "const": "actionButtons" } } },
+                { "properties": { "type": { "const": "documentUpload" } } },
+                { "properties": { "type": { "const": "columnSelector" } } },
+                { "properties": { "type": { "const": "filter" } } }
             ],
             "properties": {
                 "name": {
@@ -162,6 +166,7 @@
                         "choices",
                         "inputGroup",
                         "date",
+                        "multiple",
                         "actionButtons",
                         "documentUpload",
                         "columnSelector",
@@ -228,8 +233,53 @@
                             "items": { "$ref": "#/definitions/dataType" }
                         }
                     }
+                },
+                "visibility": { "$ref": "#/definitions/WidgetVisibilityGroup" },
+                "fields": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/widgetProperty" }
+                },
+                "itemName": {
+                    "type": "string",
+                    "description": "Specifies the label for the singular repeated item within a multiple property"
                 }
             }
+        },
+        "WidgetVisibilityGroup": {
+            "type": "object",
+            "description": "Group of conditions for the visibility of a widget property",
+            "properties": {
+                "operator": {
+                    "type": "string",
+                    "enum": ["and", "or"]
+                },
+                "conditions": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/WidgetVisibilityCondition" }
+                }
+            },
+            "required": ["operator", "conditions"]
+        },
+        "WidgetVisibilityCondition": {
+            "type": "object",
+            "description": "Condition for the visibility of a widget property",
+            "properties": {
+                "field": { "type": "string" },
+                "operator": {
+                    "type": "string",
+                    "enum": ["equals", "notEquals"]
+                },
+                "value": {
+                    "anyOf": [
+                        { "type": "string" },
+                        { "type": "number" },
+                        { "type": "boolean" },
+                        { "type": "object" },
+                        { "type": "array" }
+                    ]
+                }
+            },
+            "required": ["field", "operator", "value"]
         }
     }
 }
