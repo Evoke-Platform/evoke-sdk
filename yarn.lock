@@ -19,10 +19,10 @@
   resolved "https://registry.npmjs.org/@azure/msal-common/-/msal-common-13.3.1.tgz#012465bf940d12375dc47387b754ccf9d6b92180"
   integrity sha512-Lrk1ozoAtaP/cp53May3v6HtcFSVxdFrg2Pa/1xu5oIvsIwhxW6zSPibKefCOVgd5osgykMi5jjcZHv8XkzZEQ==
 
-"@azure/msal-react@^1.5.9":
-  version "1.5.9"
-  resolved "https://registry.npmjs.org/@azure/msal-react/-/msal-react-1.5.9.tgz#8a7c941deabe7bf365204ada1711146846c64825"
-  integrity sha512-OqlBmo3h2ucp+OtpXwjNcKaUdIwRMUoEcixZz9rKzHJJ8VR7rngy2pHf+4tCTqwQXQOsRKdneNKG3Osh/AAhzg==
+"@azure/msal-react@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.npmjs.org/@azure/msal-react/-/msal-react-3.0.2.tgz#7ca0a26b67eaa18f760e635eacfcd9d0348a16ef"
+  integrity sha512-Lbuc2acHU1zX/leSxK5ZdkUziPTPFySaLLyI2ouxjBFt2INqRKq56KJUwQf4hvZA0wyf/Wz6AHtz5LHVa6qFXA==
 
 "@babel/code-frame@^7.0.0":
   version "7.18.6"
