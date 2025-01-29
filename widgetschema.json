@@ -115,6 +115,10 @@
                         }
                     },
                     "description": "Mapping of the API result to the choices"
+                },
+                "mappedValues": {
+                    "type": "object",
+                    "description": "Values from other widget properties that will replace parts of the url. The key specifies the url segment to replace, and the value indicates the corresponding property name."
                 }
             }
         },
@@ -130,21 +134,50 @@
             "oneOf": [
                 {
                     "properties": { "type": { "const": "inputGroup" } },
-                    "required": ["name", "type", "inputGroup"]
+                    "required": ["name", "type", "inputGroup"],
+                    "exclude": ["fields", "itemDisplayName"]
                 },
-                { "properties": { "type": { "const": "actionButtons" } } },
-                { "properties": { "type": { "const": "documentUpload" } } },
-                { "properties": { "type": { "const": "columnSelector" } } },
-                { "properties": { "type": { "const": "filter" } } },
                 {
-                    "properties": { "type": { "const": "text" } }
+                    "properties": { "type": { "const": "text" } },
+                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
                 },
-                { "properties": { "type": { "const": "number" } } },
-                { "properties": { "type": { "const": "date" } } },
-                { "properties": { "type": { "const": "boolean" } } },
+                {
+                    "properties": { "type": { "const": "number" } },
+                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                },
+                {
+                    "properties": { "type": { "const": "date" } },
+                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                },
+                {
+                    "properties": { "type": { "const": "boolean" } },
+                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                },
                 {
                     "properties": { "type": { "const": "choices" } },
-                    "oneOf": [{ "required": ["name", "type", "choices"] }, { "required": ["name", "type", "api"] }]
+                    "oneOf": [{ "required": ["choices"] }, { "required": ["api"] }],
+                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                },
+                {
+                    "properties": { "type": { "const": "multiple" } },
+                    "required": ["fields", "itemDisplayName"],
+                    "exclude": ["inputGroup"]
+                },
+                {
+                    "properties": { "type": { "const": "actionButtons" } },
+                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                },
+                {
+                    "properties": { "type": { "const": "documentUpload" } },
+                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                },
+                {
+                    "properties": { "type": { "const": "columnSelector" } },
+                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                },
+                {
+                    "properties": { "type": { "const": "filter" } },
+                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
                 }
             ],
             "properties": {
@@ -162,6 +195,7 @@
                         "choices",
                         "inputGroup",
                         "date",
+                        "multiple",
                         "actionButtons",
                         "documentUpload",
                         "columnSelector",
@@ -228,8 +262,54 @@
                             "items": { "$ref": "#/definitions/dataType" }
                         }
                     }
+                },
+                "visibility": { "$ref": "#/definitions/widgetVisibilityGroup" },
+                "fields": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/widgetProperty" },
+                    "description": "Fields for the multiple property"
+                },
+                "itemDisplayName": {
+                    "type": "string",
+                    "description": "Specifies the label for the singular repeated item within a multiple property"
                 }
             }
+        },
+        "widgetVisibilityGroup": {
+            "type": "object",
+            "description": "Group of conditions for the visibility of a widget property",
+            "properties": {
+                "operator": {
+                    "type": "string",
+                    "enum": ["and", "or"]
+                },
+                "conditions": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/widgetVisibilityCondition" }
+                }
+            },
+            "required": ["operator", "conditions"]
+        },
+        "widgetVisibilityCondition": {
+            "type": "object",
+            "description": "Condition for the visibility of a widget property",
+            "properties": {
+                "field": { "type": "string" },
+                "operator": {
+                    "type": "string",
+                    "enum": ["equals", "notEquals"]
+                },
+                "value": {
+                    "anyOf": [
+                        { "type": "string" },
+                        { "type": "number" },
+                        { "type": "boolean" },
+                        { "type": "object" },
+                        { "type": "array" }
+                    ]
+                }
+            },
+            "required": ["field", "operator", "value"]
         }
     }
 }
