@@ -210,8 +210,10 @@ export type DisplayConfiguration = {
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
     visibility?: VisibilityConfiguration | string;
     viewLayout?: ViewLayoutEntityReference;
-    choicesDisplay?: 'dropdown' | 'radio';
-    sortBy?: 'custom' | 'alphabetically';
+    choicesDisplay?: {
+        type: 'dropdown' | 'radio';
+        sortBy?: 'ASC' | 'DESC' | 'NONE';
+    };
 };
 
 export type InputParameterReference = {
