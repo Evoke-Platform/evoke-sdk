@@ -211,7 +211,7 @@ export type DisplayConfiguration = {
     visibility?: VisibilityConfiguration | string;
     viewLayout?: ViewLayoutEntityReference;
     choicesDisplay?: {
-        type: 'dropdown' | 'radio';
+        type: 'dropdown' | 'radioButton';
         sortBy?: 'ASC' | 'DESC' | 'NONE';
     };
 };
