@@ -42,7 +42,7 @@
         "@types/chai": "^4.3.11",
         "@types/dirty-chai": "^2.0.4",
         "@types/mocha": "^10.0.6",
-        "@types/node": "^18.15.7",
+        "@types/node": "^22.13.1",
         "@types/react": "^18.2.28",
         "@types/sinon": "^17.0.3",
         "@types/uuid": "^9.0.8",
