@@ -156,10 +156,6 @@
                     "oneOf": [{ "required": ["choices"] }, { "required": ["api"] }]
                 },
                 {
-                    "properties": { "type": { "const": "multiple" } },
-                    "required": ["fields"]
-                },
-                {
                     "properties": { "type": { "const": "actionButtons" } }
                 },
                 {
@@ -187,7 +183,6 @@
                         "choices",
                         "inputGroup",
                         "date",
-                        "multiple",
                         "actionButtons",
                         "documentUpload",
                         "columnSelector",
@@ -210,7 +205,8 @@
                     "type": "boolean"
                 },
                 "isMultiple": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Indicates if a property can have multiple values. Currently only supported for choices and inputGroup properties"
                 },
                 "initialValue": {
                     "oneOf": [{ "type": "string" }, { "type": "number" }, { "type": "boolean" }, { "type": "object" }],
@@ -256,14 +252,9 @@
                     }
                 },
                 "visibility": { "$ref": "#/definitions/widgetVisibilityGroup" },
-                "fields": {
-                    "type": "array",
-                    "items": { "$ref": "#/definitions/widgetProperty" },
-                    "description": "Fields for the multiple property"
-                },
                 "itemDisplayName": {
                     "type": "string",
-                    "description": "Specifies the label for the singular repeated item within a multiple property"
+                    "description": "Specifies the label for the singular repeated item within a multiple inputGroup property"
                 }
             }
         },
