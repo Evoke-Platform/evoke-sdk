@@ -118,7 +118,7 @@
                 },
                 "mappedValues": {
                     "type": "object",
-                    "description": "Values from other widget properties that will replace parts of the url. The key specifies the url segment to replace, and the value indicates the corresponding property name."
+                    "description": "Values from other widget properties used to replace parts of the url. The key specifies the url segment to replace, and the value indicates the property name."
                 }
             }
         },
@@ -134,50 +134,42 @@
             "oneOf": [
                 {
                     "properties": { "type": { "const": "inputGroup" } },
-                    "required": ["name", "type", "inputGroup"],
-                    "exclude": ["fields", "itemDisplayName"]
+                    "required": ["inputGroup"]
                 },
                 {
-                    "properties": { "type": { "const": "text" } },
-                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                    "properties": { "type": { "const": "system" } }
                 },
                 {
-                    "properties": { "type": { "const": "number" } },
-                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                    "properties": { "type": { "const": "text" } }
                 },
                 {
-                    "properties": { "type": { "const": "date" } },
-                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                    "properties": { "type": { "const": "number" } }
                 },
                 {
-                    "properties": { "type": { "const": "boolean" } },
-                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                    "properties": { "type": { "const": "date" } }
+                },
+                {
+                    "properties": { "type": { "const": "boolean" } }
                 },
                 {
                     "properties": { "type": { "const": "choices" } },
-                    "oneOf": [{ "required": ["choices"] }, { "required": ["api"] }],
-                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                    "oneOf": [{ "required": ["choices"] }, { "required": ["api"] }]
                 },
                 {
                     "properties": { "type": { "const": "multiple" } },
-                    "required": ["fields", "itemDisplayName"],
-                    "exclude": ["inputGroup"]
+                    "required": ["fields"]
                 },
                 {
-                    "properties": { "type": { "const": "actionButtons" } },
-                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                    "properties": { "type": { "const": "actionButtons" } }
                 },
                 {
-                    "properties": { "type": { "const": "documentUpload" } },
-                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                    "properties": { "type": { "const": "documentUpload" } }
                 },
                 {
-                    "properties": { "type": { "const": "columnSelector" } },
-                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                    "properties": { "type": { "const": "columnSelector" } }
                 },
                 {
-                    "properties": { "type": { "const": "filter" } },
-                    "exclude": ["fields", "itemDisplayName", "inputGroup"]
+                    "properties": { "type": { "const": "filter" } }
                 }
             ],
             "properties": {
@@ -294,7 +286,7 @@
             "type": "object",
             "description": "Condition for the visibility of a widget property",
             "properties": {
-                "field": { "type": "string" },
+                "field": { "type": "string", "description": "Name of the widget property to be compared" },
                 "operator": {
                     "type": "string",
                     "enum": ["equals", "notEquals"]
