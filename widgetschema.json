@@ -115,6 +115,10 @@
                         }
                     },
                     "description": "Mapping of the API result to the choices"
+                },
+                "mappedValues": {
+                    "type": "object",
+                    "description": "Values from other widget properties used to replace parts of the url. The key specifies the url segment to replace, and the value indicates the property name."
                 }
             }
         },
@@ -130,21 +134,38 @@
             "oneOf": [
                 {
                     "properties": { "type": { "const": "inputGroup" } },
-                    "required": ["name", "type", "inputGroup"]
+                    "required": ["inputGroup"]
                 },
-                { "properties": { "type": { "const": "actionButtons" } } },
-                { "properties": { "type": { "const": "documentUpload" } } },
-                { "properties": { "type": { "const": "columnSelector" } } },
-                { "properties": { "type": { "const": "filter" } } },
+                {
+                    "properties": { "type": { "const": "system" } }
+                },
                 {
                     "properties": { "type": { "const": "text" } }
                 },
-                { "properties": { "type": { "const": "number" } } },
-                { "properties": { "type": { "const": "date" } } },
-                { "properties": { "type": { "const": "boolean" } } },
+                {
+                    "properties": { "type": { "const": "number" } }
+                },
+                {
+                    "properties": { "type": { "const": "date" } }
+                },
+                {
+                    "properties": { "type": { "const": "boolean" } }
+                },
                 {
                     "properties": { "type": { "const": "choices" } },
-                    "oneOf": [{ "required": ["name", "type", "choices"] }, { "required": ["name", "type", "api"] }]
+                    "oneOf": [{ "required": ["choices"] }, { "required": ["api"] }]
+                },
+                {
+                    "properties": { "type": { "const": "actionButtons" } }
+                },
+                {
+                    "properties": { "type": { "const": "documentUpload" } }
+                },
+                {
+                    "properties": { "type": { "const": "columnSelector" } }
+                },
+                {
+                    "properties": { "type": { "const": "filter" } }
                 }
             ],
             "properties": {
@@ -184,7 +205,8 @@
                     "type": "boolean"
                 },
                 "isMultiple": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "description": "Indicates if a property can have multiple values. Currently only supported for choices and inputGroup properties"
                 },
                 "initialValue": {
                     "oneOf": [{ "type": "string" }, { "type": "number" }, { "type": "boolean" }, { "type": "object" }],
@@ -228,8 +250,49 @@
                             "items": { "$ref": "#/definitions/dataType" }
                         }
                     }
+                },
+                "visibility": { "$ref": "#/definitions/widgetVisibilityGroup" },
+                "itemDisplayName": {
+                    "type": "string",
+                    "description": "Specifies the label for the singular repeated item within a multiple inputGroup property"
                 }
             }
+        },
+        "widgetVisibilityGroup": {
+            "type": "object",
+            "description": "Group of conditions for the visibility of a widget property",
+            "properties": {
+                "operator": {
+                    "type": "string",
+                    "enum": ["and", "or"]
+                },
+                "conditions": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/widgetVisibilityCondition" }
+                }
+            },
+            "required": ["operator", "conditions"]
+        },
+        "widgetVisibilityCondition": {
+            "type": "object",
+            "description": "Condition for the visibility of a widget property",
+            "properties": {
+                "field": { "type": "string", "description": "Name of the widget property to be compared" },
+                "operator": {
+                    "type": "string",
+                    "enum": ["equals", "notEquals"]
+                },
+                "value": {
+                    "anyOf": [
+                        { "type": "string" },
+                        { "type": "number" },
+                        { "type": "boolean" },
+                        { "type": "object" },
+                        { "type": "array" }
+                    ]
+                }
+            },
+            "required": ["field", "operator", "value"]
         }
     }
 }
