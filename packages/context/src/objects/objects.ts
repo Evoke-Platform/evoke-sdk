@@ -310,7 +310,7 @@ export type ActionInput = {
     inputMaskPlaceholderChar?: string;
     tableView?: boolean;
     mode?: 'default' | 'existingOnly';
-    displayOption?: 'dropdown' | 'dialogBox';
+    displayOption?: 'dropdown' | 'dialogBox' | 'radioButton';
     rows?: number;
     showCharCount?: boolean;
     readOnly?: boolean;
