@@ -1,0 +1,25 @@
+{
+    "include-component-in-tag": true,
+    "tag-separator": "@",
+    "release-type": "node",
+    "separate-pull-requests": true,
+    "prerelease": true,
+    "prerelease-type": "dev",
+    "packages": {
+        "./packages/context": {
+            "package-name": "context"
+        },
+        "./packages/payment": {
+            "package-name": "payment"
+        },
+        "./packages/plugin": {
+            "package-name": "plugin"
+        },
+        "./packages/plugin-scripts": {
+            "package-name": "plugin-scripts"
+        },
+        "./packages/sdk": {
+            "package-name": "sdk"
+        }
+    }
+}
