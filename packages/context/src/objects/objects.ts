@@ -31,8 +31,14 @@ export type ViewLayout = {
     dropdown?: DropdownViewLayout;
 };
 
+export type DropdownViewLayoutSort = {
+    propertyId: string;
+    direction?: 'asc' | 'desc';
+};
+
 export type DropdownViewLayout = {
     secondaryTextExpression: string;
+    sort?: DropdownViewLayoutSort;
 };
 
 export type TableViewLayout = {
