@@ -3,11 +3,11 @@ name: Testing Continuous Integration
 on:
     push:
         branches:
-            - live
+            - release
     workflow_dispatch:
 
 concurrency:
-    group: branch-live
+    group: branch-release
 
 jobs:
     publish:
@@ -46,5 +46,5 @@ jobs:
             - name: Push Changes
               run: |
                   git fetch origin
-                  git merge -m "Merge branch 'live' [skip ci]" origin/live
-                  git push origin HEAD:live
+                  git merge -m "Merge branch 'release' [skip ci]" origin/release
+                  git push origin HEAD:release

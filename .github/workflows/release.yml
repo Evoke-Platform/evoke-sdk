@@ -4,12 +4,12 @@ on:
     workflow_dispatch:
 
 concurrency:
-    group: branch-live
+    group: branch-release
 
 jobs:
     publish:
         runs-on: ubuntu-latest
-        if: github.ref == 'refs/heads/live'
+        if: github.ref == 'refs/heads/release'
         steps:
             - name: Generate Token
               id: generate_token
@@ -40,5 +40,5 @@ jobs:
             - name: Push Changes
               run: |
                   git fetch origin
-                  git merge -m "Merge branch 'live' [skip ci]" origin/live
-                  git push origin HEAD:live
+                  git merge -m "Merge branch 'release' [skip ci]" origin/release
+                  git push origin HEAD:release
