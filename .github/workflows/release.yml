@@ -19,7 +19,6 @@ jobs:
                   private_key: ${{ secrets.TOKEN_APP_PRIVATE_KEY }}
             - uses: actions/checkout@v3
               with:
-                  fetch-depth: 5
                   token: ${{ steps.generate_token.outputs.token }}
             - uses: actions/setup-node@v3
               with:
@@ -41,4 +40,4 @@ jobs:
               run: |
                   git fetch origin
                   git merge -m "Merge branch 'release' [skip ci]" origin/release
-                  git push origin HEAD:release
+                  git push --follow-tags
