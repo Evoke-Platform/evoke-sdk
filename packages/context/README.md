@@ -17,6 +17,7 @@ available and no further installation is necessary.
 
 -   [Working With Objects](#working-with-objects)
 -   [REST API Calls](#rest-api-calls)
+-   [Authentication Context](#authentication-context)
 -   [Notifications](#notifications)
 
 ### Working With Objects
@@ -205,6 +206,24 @@ absolute URL.
 ##### `put(url, data, options)`
 
 ##### `delete(url, options)`
+
+### Authentication Context
+
+-   [useAuthenticationContext](#useauthenticationcontext)
+
+#### `useAuthenticationContext()`
+
+Hook to obtain the authentication context based on the current logged-in user.
+
+The authentication context includes the following property and functions.
+
+-   `account` _[object]_
+    -   The account of the currently logged-in user. This includes both the user's `id` and `name`.
+-   `logout()`
+    -   A function that logs out the currently logged-in user. The user will be redirected to Evoke's logout page upon logout.
+-   `getAccessToken()`
+    -   A function that returns an access token that is associated to the currently logged-in user. This token can be used to
+        make API calls to Evoke's APIs to authentication the API call.
 
 ### Notifications
 
