@@ -6,6 +6,13 @@ on:
             package_name:
                 description: 'Package name'
                 required: true
+                type: choice
+                options:
+                    - 'context'
+                    - 'payment'
+                    - 'plugin'
+                    - 'plugin-scripts'
+                    - 'sdk'
 
 concurrency:
     group: branch-release
@@ -28,16 +35,16 @@ jobs:
               with:
                   node-version: 18
             - name: Setup
-              run: yarn workspace @evoke-platform/${{ github.event.inputs.package_name }} install
+              run: npx turbo run install --filter=@evoke-platform/${{ github.event.inputs.package_name }}
             - name: Build
-              run: yarn workspace @evoke-platform/${{ github.event.inputs.package_name }} build
+              run: npx turbo run build --filter=@evoke-platform/${{ github.event.inputs.package_name }}
             - name: Publish
               run: |
                   git config user.name "GitHub Actions Bot"
                   git config user.email "<>"
                   mv npmrc-ci .npmrc
-                  npx turbo run release --force --filter=@evoke-platform/${{ github.event.inputs.package_name }} --concurrency 1 --
-                  npx turbo run deploy --force --filter=@evoke-platform/${{ github.event.inputs.package_name }} --
+                  npx turbo run release --filter=@evoke-platform/${{ github.event.inputs.package_name }} --concurrency 1 --
+                  npx turbo run deploy --filter=@evoke-platform/${{ github.event.inputs.package_name }} --
               env:
                   NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
             - name: Push Changes
