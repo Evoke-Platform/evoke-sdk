@@ -222,8 +222,9 @@ The authentication context includes the following property and functions.
 -   `logout()`
     -   A function that logs out the currently logged-in user. The user will be redirected to Evoke's logout page upon logout.
 -   `getAccessToken()`
-    -   A function that returns an access token that is associated to the currently logged-in user. This token can be used to
-        make API calls to Evoke's APIs to authentication the API call.
+    -   A function that returns an access token that is associated to the currently logged-in user. This token can be used to make API calls to Evoke's APIs to authentication the API call.
+    -   Note: As a general recommendation, the [ApiService](#class-apiservices) class should be used to make API calls as it will take care
+        of appending an access token to the call.
 
 ### Notifications
 
