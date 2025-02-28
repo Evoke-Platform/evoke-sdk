@@ -3,7 +3,7 @@
     "version": "0.0.0",
     "private": true,
     "dependencies": {
-        "@evoke-platform/sdk": "latest",
+        "@evoke-platform/sdk": "^1.0.0",
         "react": "^18.1.0",
         "react-dom": "^18.1.0"
     },
