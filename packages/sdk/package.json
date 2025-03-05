@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/sdk",
-    "version": "1.0.0-dev.223",
+    "version": "1.0.0",
     "description": "SDK for Evoke platform",
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/sdk/README.md",
     "repository": {
@@ -26,9 +26,9 @@
     "author": "System Automation Corp.",
     "license": "MIT",
     "dependencies": {
-        "@evoke-platform/context": "latest",
-        "@evoke-platform/payment": "^1.0.0-dev.0",
-        "@evoke-platform/ui-components": "latest"
+        "@evoke-platform/context": "^1.0.0",
+        "@evoke-platform/payment": "^1.0.0",
+        "@evoke-platform/ui-components": "^1.0.0"
     },
     "devDependencies": {
         "commit-and-tag-version": "^12.1.0"

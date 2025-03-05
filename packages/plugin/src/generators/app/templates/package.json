@@ -3,7 +3,7 @@
     "version": "0.0.0",
     "private": true,
     "dependencies": {
-        "@evoke-platform/sdk": "latest",
+        "@evoke-platform/sdk": "^1.0.0",
         "react": "^18.1.0",
         "react-dom": "^18.1.0"
     },
@@ -13,7 +13,7 @@
         "@babel/preset-env": "^7.17.0",
         "@babel/preset-react": "^7.17.0",
         "@babel/preset-typescript": "^7.17.0",
-        "@evoke-platform/plugin-scripts": "latest",
+        "@evoke-platform/plugin-scripts": "^1.0.0",
         "@storybook/addon-essentials": "^7.0.2",
         "@storybook/addon-interactions": "^7.0.2",
         "@storybook/addon-links": "^7.0.2",
