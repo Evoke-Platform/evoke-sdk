@@ -47,7 +47,7 @@
         "mem-fs-editor": "^9.0.0",
         "validate-npm-package-name": "^5.0.0",
         "yeoman-environment": "^3.19.3",
-        "yeoman-generator": "^5.10.0"
+        "yeoman-generator": "^7.5.0"
     },
     "jest": {
         "testEnvironment": "node",
