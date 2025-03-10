@@ -1,0 +1,54 @@
+name: Custom Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      package_name:
+        description: "Package name"
+        required: true
+        type: choice
+        options:
+          - "context"
+          - "payment"
+          - "plugin"
+          - "plugin-scripts"
+          - "sdk"
+
+concurrency:
+  group: branch-release
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/release'
+    steps:
+      - name: Generate Token
+        id: generate_token
+        uses: tibdex/github-app-token@v1
+        with:
+          app_id: ${{ vars.TOKEN_APP_ID }}
+          private_key: ${{ secrets.TOKEN_APP_PRIVATE_KEY }}
+      - uses: actions/checkout@v3
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: Setup
+        run: npx turbo run install
+      - name: Build
+        run: npx turbo run build --filter=@evoke-platform/${{ github.event.inputs.package_name }}
+      - name: Publish
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "<>"
+          mv npmrc-ci .npmrc
+          npx turbo run release --filter=@evoke-platform/${{ github.event.inputs.package_name }} --concurrency 1 --
+          npx turbo run deploy --filter=@evoke-platform/${{ github.event.inputs.package_name }} --
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+      - name: Push Changes
+        run: |
+          git fetch origin
+          git merge -m "Merge branch 'release' [skip ci]" origin/release
+          git push --follow-tags
