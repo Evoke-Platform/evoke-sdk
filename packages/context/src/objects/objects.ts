@@ -86,6 +86,25 @@ export type PropertyType =
     | 'time'
     | 'user';
 
+export const PROPERTY_TYPES: { [K in PropertyType]: K } = {
+    address: 'address',
+    array: 'array',
+    boolean: 'boolean',
+    collection: 'collection',
+    criteria: 'criteria',
+    date: 'date',
+    'date-time': 'date-time',
+    document: 'document',
+    image: 'image',
+    integer: 'integer',
+    number: 'number',
+    object: 'object',
+    richText: 'richText',
+    string: 'string',
+    time: 'time',
+    user: 'user',
+};
+
 export type NumericValidation = {
     errorMessage?: string;
     minimum?: number;
@@ -136,6 +155,13 @@ export type Property = {
     manyToManyPropertyId?: string;
     textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase';
 };
+
+export type PropertyWithChildren = {
+    open?: boolean;
+    children?: ExpandedProperty[];
+};
+
+export type ExpandedProperty = Property & PropertyWithChildren;
 
 export type ActionType = 'create' | 'update' | 'delete';
 
@@ -518,3 +544,46 @@ export function useObject(objectId: string) {
 
     return useMemo(() => new ObjectStore(services, objectId), [services, objectId]);
 }
+
+export type TaskObj = {
+    id: 'sys__task';
+    name: 'Task';
+    properties: [
+        {
+            id: 'name';
+            name: 'Name';
+            type: 'string';
+            required: true;
+        },
+        {
+            id: 'userPool';
+            name: 'User Pool';
+            type: 'array';
+            required: false;
+        },
+        {
+            id: 'assignee';
+            name: 'Assignee';
+            type: 'string';
+            required: false;
+        },
+        {
+            id: 'createdDate';
+            name: 'Created Date';
+            type: 'date-time';
+            required: false;
+        },
+        {
+            id: 'createdBy';
+            name: 'Created By';
+            type: 'string';
+            required: true;
+        },
+        {
+            id: 'closingEvents';
+            name: 'Closing Events';
+            type: 'array';
+            required: false;
+        },
+    ];
+};
