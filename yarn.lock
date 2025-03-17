@@ -579,6 +579,15 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
+"@evoke-platform/context@^1.0.0", "@evoke-platform/context@^1.0.0-dev.118":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.0.0.tgz#71cedd010afb246c8a3d51d813bd18a3ca375f64"
+  integrity sha512-UFO88KI4PEKXkq38YiCwTaWSMnx00Ii5LjApcYtWzi9maaODxFCGHPzofwQ1Im023tjdmboMWfaZWbB3A+9CMQ==
+  dependencies:
+    "@microsoft/signalr" "^7.0.12"
+    axios "^1.7.9"
+    uuid "^9.0.1"
+
 "@evoke-platform/ui-components@^1.0.0":
   version "1.0.1"
   resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.0.1.tgz#449922d62a071a59dd03797fe6cd10bbbbde6c9b"
@@ -2349,10 +2358,10 @@ available-typed-arrays@^1.0.5:
   resolved "https://registry.npmjs.org/available-typed-arrays/-/available-typed-arrays-1.0.5.tgz#92f95616501069d07d10edb2fc37d3e1c65123b7"
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
-axios@^1.7.9:
-  version "1.7.9"
-  resolved "https://registry.npmjs.org/axios/-/axios-1.7.9.tgz#d7d071380c132a24accda1b2cfc1535b79ec650a"
-  integrity sha512-LhLcE7Hbiryz8oMDdDptSrWowmB4Bl6RCt6sIJKpRB4XtVf0iEgewX3au/pJqm+Py1kCASkb/FFKjxQaLtxJvw==
+axios@^1.7.9, axios@^1.8.3:
+  version "1.8.3"
+  resolved "https://registry.npmjs.org/axios/-/axios-1.8.3.tgz#9ebccd71c98651d547162a018a1a95a4b4ed4de8"
+  integrity sha512-iP4DebzoNlP/YN2dpwCgb8zoCmhtkajzS48JvwmkSkXvPI3DHc7m+XYL5tGnSlJtR6nImXZmdCuN5aP8dh1d8A==
   dependencies:
     follow-redirects "^1.15.6"
     form-data "^4.0.0"
