@@ -1,4 +1,4 @@
-import React, { createContext, useEffect, useRef, useState } from 'react';
+import React, { createContext, useRef } from 'react';
 import { useApiServices } from '../api';
 import { Obj, PROPERTY_TYPES } from '../objects';
 import { flattenProperties, getPrefixedUrl, mutateTaskObj } from '../objects/utils';
@@ -14,7 +14,6 @@ export type ObjectCacheContextType = {
      * @returns Promise resolving to object or undefined if an error occurs
      */
     fetchObject: (objectId: string) => Promise<Obj | undefined>;
-    isInitialized: boolean;
 };
 
 export const ObjectCacheContext = createContext<ObjectCacheContextType>({
@@ -22,7 +21,6 @@ export const ObjectCacheContext = createContext<ObjectCacheContextType>({
         console.warn('fetchObject called before Provider was initialized');
         return undefined;
     },
-    isInitialized: false,
 });
 
 /**
@@ -31,19 +29,8 @@ export const ObjectCacheContext = createContext<ObjectCacheContextType>({
 export const ObjectCacheProvider = ({ children }: { children: React.ReactNode }) => {
     const objectCacheRef = useRef<Map<string, Obj | Promise<Obj | undefined>>>(new Map());
     const api = useApiServices();
-    const [isInitialized, setIsInitialized] = useState(false);
 
-    console.log('here in provider');
-
-    useEffect(() => {
-        // Mark as initialized after first render
-        setIsInitialized(true);
-    }, []);
     const fetchObject = async (objectId: string): Promise<Obj | undefined> => {
-        if (!isInitialized) {
-            console.warn('fetchObject called before Provider was fully initialized');
-            return undefined;
-        }
         const cachedValue = objectCacheRef.current.get(objectId);
 
         if (cachedValue) {
@@ -52,22 +39,13 @@ export const ObjectCacheProvider = ({ children }: { children: React.ReactNode })
 
         const fetchPromise = api
             .get<Obj>(getPrefixedUrl(`/objects/${objectId}/effective`), {
-                params: {
-                    filter: {
-                        fields: ['id', 'name', 'properties'],
-                    },
-                },
+                params: { filter: { fields: ['id', 'name', 'properties'] } },
             })
             .then((object) => {
                 mutateTaskObj(object);
 
                 // add id prop
-                const instanceProperty = {
-                    id: 'id',
-                    name: 'ID',
-                    type: PROPERTY_TYPES.string,
-                    required: true,
-                };
+                const instanceProperty = { id: 'id', name: 'ID', type: PROPERTY_TYPES.string, required: true };
 
                 // Alphabetize, and flatten properties
                 const processedObject: Obj = {
@@ -92,9 +70,5 @@ export const ObjectCacheProvider = ({ children }: { children: React.ReactNode })
         return fetchPromise;
     };
 
-    return (
-        <ObjectCacheContext.Provider value={{ fetchObject, isInitialized }}>
-            {isInitialized ? children : <div>Initializing object cache...</div>}
-        </ObjectCacheContext.Provider>
-    );
+    return <ObjectCacheContext.Provider value={{ fetchObject }}>{children}</ObjectCacheContext.Provider>;
 };
