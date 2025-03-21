@@ -137,3 +137,21 @@ export const traversePropertyPath = async (
 
     return null;
 };
+type FetchObjectFunction = (id: string) => Promise<Obj | undefined>;
+
+/**
+ * Fetches the display name path for a given property ID within an object hierarchy.
+ *
+ * @param {string} propertyId - The property ID to find the display name for.
+ * @param {Obj} rootObject - The root object to start the search from.
+ * @param {FetchObjectFunction} fetchObject - Function to fetch an object by its ID.
+ * @returns {Promise<string>} - A promise that resolves to the display name path.
+ */
+export const fetchDisplayNamePath = async (
+    propertyId: string,
+    rootObject: Obj,
+    fetchObject: FetchObjectFunction,
+): Promise<string> => {
+    const propertyInfo = await traversePropertyPath(propertyId, rootObject, fetchObject);
+    return propertyInfo ? propertyInfo.name : '(Deleted)';
+};
