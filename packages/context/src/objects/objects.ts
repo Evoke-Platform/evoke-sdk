@@ -73,6 +73,7 @@ export type PropertyType =
     | 'array'
     | 'boolean'
     | 'collection'
+    | 'criteria'
     | 'date'
     | 'date-time'
     | 'document'
@@ -199,12 +200,14 @@ export type RelatedObjectDefaultValue = {
     orderBy?: 'asc' | 'desc' | 'ASC' | 'DESC';
 };
 
+export type CriteriaDefaultValue = Record<string, unknown>;
+
 export type DisplayConfiguration = {
     label?: string;
     placeholder?: string;
     required?: boolean;
     description?: string;
-    defaultValue?: string | number | string[] | RelatedObjectDefaultValue;
+    defaultValue?: string | number | string[] | RelatedObjectDefaultValue | CriteriaDefaultValue;
     readOnly?: boolean;
     tooltip?: string;
     prefix?: string;
@@ -269,6 +272,7 @@ export type ActionInputType =
     | 'Section'
     | 'Columns'
     | 'Content'
+    | 'Criteria'
     | 'Select'
     | 'TextField'
     | 'DateTime'
