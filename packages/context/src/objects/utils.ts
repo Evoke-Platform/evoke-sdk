@@ -1,4 +1,4 @@
-import { ExpandedProperty, Obj, Property, PROPERTY_TYPES, PropertyType, TaskObj } from '../objects';
+import { Obj, PROPERTY_TYPES, Property, TaskObj } from './objects.js';
 
 export function mutateTaskObj(obj: Pick<Obj, 'id' | 'properties'> | Obj): void {
     if (obj.id !== 'sys__task') {
@@ -12,8 +12,8 @@ export function mutateTaskObj(obj: Pick<Obj, 'id' | 'properties'> | Obj): void {
     ) as TaskObj['properties'];
 }
 
-export const flattenProperties = (properties: ExpandedProperty[]): ExpandedProperty[] => {
-    return properties.reduce((acc: ExpandedProperty[], prop) => {
+export const flattenProperties = (properties: Property[]): Property[] => {
+    return properties.reduce((acc: Property[], prop) => {
         if (prop.type === 'user') {
             acc.push(
                 {
@@ -47,7 +47,6 @@ export const flattenProperties = (properties: ExpandedProperty[]): ExpandedPrope
             acc.push({
                 ...prop,
                 id: prop.id,
-                children: [{ id: `${prop.id}-loading`, name: 'Loading...', type: 'loading' as PropertyType }],
             });
         } else {
             acc.push({
@@ -57,98 +56,4 @@ export const flattenProperties = (properties: ExpandedProperty[]): ExpandedPrope
         }
         return acc;
     }, []);
-};
-
-export function getPrefixedUrl(url: string) {
-    const wcsMatchers = ['/apps', '/pages', '/widgets', '/logo'];
-    const dataMatchers = ['/objects', '/instances', '/reports'];
-    const accessManagementMatchers = ['/users', '/roles'];
-    const adminMatchers = ['/tenant'];
-
-    if (wcsMatchers.some((endpoint) => url.startsWith(endpoint))) return `/webContent${url}`;
-    if (dataMatchers.some((endpoint) => url.startsWith(endpoint))) return `/data${url}`;
-    if (accessManagementMatchers.some((endpoint) => url.startsWith(endpoint))) return `/accessManagement${url}`;
-    if (adminMatchers.some((endpoint) => url.startsWith(endpoint))) return `/admin${url}`;
-
-    return url;
-}
-
-/**
- * Traverses a property path within an object hierarchy to retrieve detailed property information.
- *
- * @param {string} propertyPath - The dot-separated path of the property to traverse.
- * @param {Obj} rootObject - The root object from which to start the traversal.
- * @param {FetchObjectFunction} fetchObject - A function to fetch an object by its ID.
- * @returns {Promise<ObjectProperty | null>} A promise that resolves to an ObjectProperty if found, or null otherwise.
- */
-export const traversePropertyPath = async (
-    propertyPath: string,
-    rootObject: Obj,
-    fetchObject: (objectId: string) => Promise<Obj | undefined>,
-): Promise<Property | null> => {
-    const segments = propertyPath.split('.');
-    let currentObject = rootObject;
-    let fullPath = '';
-    let namePath = '';
-
-    for (let i = 0; i < segments.length; i++) {
-        const remainingPath = segments.slice(i).join('.');
-
-        let prop = currentObject.properties?.find((p) => p.id === remainingPath);
-        if (prop) {
-            // flattened address or user properties
-            fullPath = fullPath ? `${fullPath}.${remainingPath}` : remainingPath;
-            namePath = namePath ? `${namePath} / ${prop.name}` : prop.name;
-            return {
-                ...prop,
-                id: fullPath,
-                name: namePath,
-            };
-        } else {
-            prop = currentObject.properties?.find((p) => p.id === segments[i]);
-            if (!prop) {
-                return null;
-            }
-
-            fullPath = fullPath ? `${fullPath}.${prop.id}` : prop.id;
-            namePath = namePath ? `${namePath} / ${prop.name}` : prop.name;
-
-            if (i === segments.length - 1) {
-                return {
-                    ...prop,
-                    id: fullPath,
-                    name: namePath,
-                };
-            }
-
-            if (prop.type === 'object' && prop.objectId) {
-                const fetchedObject = await fetchObject(prop.objectId);
-                if (fetchedObject) {
-                    currentObject = fetchedObject;
-                } else {
-                    return null;
-                }
-            }
-        }
-    }
-
-    return null;
-};
-type FetchObjectFunction = (id: string) => Promise<Obj | undefined>;
-
-/**
- * Fetches the display name path for a given property ID within an object hierarchy.
- *
- * @param {string} propertyId - The property ID to find the display name for.
- * @param {Obj} rootObject - The root object to start the search from.
- * @param {FetchObjectFunction} fetchObject - Function to fetch an object by its ID.
- * @returns {Promise<string>} - A promise that resolves to the display name path.
- */
-export const fetchDisplayNamePath = async (
-    propertyId: string,
-    rootObject: Obj,
-    fetchObject: FetchObjectFunction,
-): Promise<string> => {
-    const propertyInfo = await traversePropertyPath(propertyId, rootObject, fetchObject);
-    return propertyInfo ? propertyInfo.name : '(Deleted)';
 };
