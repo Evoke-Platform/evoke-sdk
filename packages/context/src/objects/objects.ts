@@ -191,6 +191,7 @@ export type VisibilityConfiguration = {
         property: string;
         operator: 'eq' | 'neq';
         value: string | number | boolean;
+        isInstanceProperty?: boolean;
     }[];
 };
 
