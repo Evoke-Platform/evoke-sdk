@@ -1,4 +1,4 @@
-import { Obj, PROPERTY_TYPES, Property, TaskObj } from './objects.js';
+import { Obj, Property, TaskObj } from './objects.js';
 
 export function mutateTaskObj(obj: Pick<Obj, 'id' | 'properties'> | Obj): void {
     if (obj.id !== 'sys__task') {
@@ -37,11 +37,14 @@ export const flattenProperties = (properties: Property[]): Property[] => {
                 county: 'County',
             };
 
-            const addressProps = Object.entries(addressFieldNames).map(([field, displayName]) => ({
-                id: `${prop.id}.${field}`,
-                name: `${prop.name} ${displayName}`,
-                type: PROPERTY_TYPES.string,
-            }));
+            const addressProps = Object.entries(addressFieldNames).map(
+                ([field, displayName]) =>
+                    ({
+                        id: `${prop.id}.${field}`,
+                        name: `${prop.name} ${displayName}`,
+                        type: 'string',
+                    }) as Property,
+            );
             acc.push(...addressProps);
         } else if (prop.type === 'object') {
             acc.push({
