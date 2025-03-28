@@ -139,13 +139,6 @@ export type Property = {
     textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase';
 };
 
-export type PropertyWithChildren = {
-    open?: boolean;
-    children?: ExpandedProperty[];
-};
-
-export type ExpandedProperty = Property & PropertyWithChildren;
-
 export type ActionType = 'create' | 'update' | 'delete';
 
 export type InputStringValidation = StringValidation & {
