@@ -67,6 +67,7 @@
         "react-router-dom": ">=6"
     },
     "dependencies": {
+        "@isaacs/ttlcache": "^1.4.1",
         "@microsoft/signalr": "^7.0.12",
         "axios": "^1.7.9",
         "uuid": "^9.0.1"

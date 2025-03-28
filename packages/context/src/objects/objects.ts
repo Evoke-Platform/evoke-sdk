@@ -1,10 +1,12 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
+import TTLCache from '@isaacs/ttlcache';
 import { AxiosRequestConfig } from 'axios';
 import { useMemo } from 'react';
 import { ApiServices, Callback, useApiServices } from '../api/index.js';
 import { Filter } from './filters.js';
+import { flattenProperties, mutateTaskObj } from './utils.js';
 
 export type BaseObjReference = {
     objectId: string;
@@ -430,13 +432,66 @@ export type Reference = {
 
 export type ObjectOptions = {
     sanitized?: boolean;
+    flattenProperties?: boolean;
+    mutateTaskObj?: boolean;
+    bypassCache?: boolean;
+    skipAlphabetize?: boolean;
 };
 
 export class ObjectStore {
+    // 5 minute TTL
+    private static objectCache = new TTLCache<string, ObjWithRoot>({
+        ttl: 5 * 60 * 1000,
+    });
+
     constructor(
         private services: ApiServices,
         private objectId: string,
     ) {}
+
+    private getCacheKey(options?: ObjectOptions): string {
+        return `${this.objectId}:${options?.sanitized ? 'sanitized' : 'default'}:${
+            options?.flattenProperties ? 'flat' : 'nested'
+        }:${options?.mutateTaskObj ? 'mutated' : 'original'}:${options?.skipAlphabetize ? 'unsorted' : 'sorted'}`;
+    }
+
+    private processObject(object: ObjWithRoot, options?: ObjectOptions): ObjWithRoot {
+        const result = { ...object };
+
+        // task object mutation if requested
+        if (options?.mutateTaskObj && result.id === 'sys__task') {
+            mutateTaskObj(result);
+        }
+
+        if (result.properties) {
+            // property flattening if requested
+            if (options?.flattenProperties) {
+                result.properties = flattenProperties(result.properties);
+            }
+
+            // alphabetize properties by default unless disabled
+            if (!options?.skipAlphabetize) {
+                result.properties = [...result.properties].sort((a, b) =>
+                    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+                );
+            }
+        }
+
+        return result;
+    }
+
+    public invalidateCache(): void {
+        const prefix = `${this.objectId}:`;
+        for (const key of ObjectStore.objectCache.keys()) {
+            if (typeof key === 'string' && key.startsWith(prefix)) {
+                ObjectStore.objectCache.delete(key);
+            }
+        }
+    }
+
+    public static invalidateAllCache(): void {
+        ObjectStore.objectCache.clear();
+    }
 
     get(options?: ObjectOptions): Promise<ObjWithRoot>;
     get(cb?: Callback<ObjWithRoot>): void;
@@ -453,17 +508,60 @@ export class ObjectStore {
             options = optionsOrCallback;
         }
 
+        if (!options?.bypassCache) {
+            const cacheKey = this.getCacheKey(options);
+            const cachedData = ObjectStore.objectCache.get(cacheKey);
+
+            if (cachedData) {
+                if (cb) {
+                    // queue callback in event loop for cache
+                    setTimeout(() => cb && cb(null, cachedData), 0);
+                    return;
+                }
+                return Promise.resolve(cachedData);
+            }
+        }
+
         const config: AxiosRequestConfig = {
             params: {
                 sanitizedVersion: options?.sanitized,
             },
         };
 
+        // promise-based call
         if (!cb) {
-            return this.services.get(`data/objects/${this.objectId}/effective`, config);
+            return this.services.get<ObjWithRoot>(`data/objects/${this.objectId}/effective`, config).then((result) => {
+                // process the result depending on options
+                const processedResult = this.processObject(result as ObjWithRoot, options);
+
+                // cache that if caching not disabled
+                if (!options?.bypassCache) {
+                    const cacheKey = this.getCacheKey(options);
+                    ObjectStore.objectCache.set(cacheKey, processedResult);
+                }
+
+                return processedResult;
+            });
         }
 
-        this.services.get(`data/objects/${this.objectId}/effective`, config, cb);
+        // callback-based call
+        this.services.get(`data/objects/${this.objectId}/effective`, config, (err, result) => {
+            if (!cb) return;
+
+            if (err || !result) {
+                cb(err, result as ObjWithRoot | undefined);
+                return;
+            }
+
+            const processedResult = this.processObject(result as ObjWithRoot, options);
+
+            if (!options?.bypassCache) {
+                const cacheKey = this.getCacheKey(options);
+                ObjectStore.objectCache.set(cacheKey, processedResult);
+            }
+
+            cb(null, processedResult);
+        });
     }
 
     findInstances<T extends ObjectInstance = ObjectInstance>(filter?: Filter): Promise<T[]>;
