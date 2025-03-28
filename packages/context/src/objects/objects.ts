@@ -88,25 +88,6 @@ export type PropertyType =
     | 'time'
     | 'user';
 
-export const PROPERTY_TYPES: { [K in PropertyType]: K } = {
-    address: 'address',
-    array: 'array',
-    boolean: 'boolean',
-    collection: 'collection',
-    criteria: 'criteria',
-    date: 'date',
-    'date-time': 'date-time',
-    document: 'document',
-    image: 'image',
-    integer: 'integer',
-    number: 'number',
-    object: 'object',
-    richText: 'richText',
-    string: 'string',
-    time: 'time',
-    user: 'user',
-};
-
 export type NumericValidation = {
     errorMessage?: string;
     minimum?: number;
