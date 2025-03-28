@@ -428,13 +428,41 @@ export type Reference = {
 };
 
 export type ObjectOptions = {
+    /**
+     * When true, returns a sanitized version of the object reflecting
+     * only the properties and actions available to the current user.
+     */
     sanitized?: boolean;
+
+    /**
+     * When true, flattens nested properties like user and address objects
+     * into individual properties (e.g., user.id, address.line1).
+     */
     flattenProperties?: boolean;
+
+    /**
+     * When true, applies special processing to task objects,
+     * filtering out certain properties like closingEvents and userPool.
+     */
     mutateTaskObj?: boolean;
+
+    /**
+     * When true, bypasses the cache and forces a new API call.
+     */
     bypassCache?: boolean;
+
+    /**
+     * When true, preserves the original order of properties instead of
+     * alphabetizing them (properties are alphabetized by default).
+     */
     skipAlphabetize?: boolean;
 };
 
+/**
+ * Provides methods for working with objects and their instances in Evoke.
+ * Supports retrieving object definitions, finding/retrieving instances,
+ * creating new instances, and performing actions on existing instances.
+ */
 export class ObjectStore {
     // 5 minute TTL
     private static objectCache = new TTLCache<string, ObjWithRoot>({
@@ -477,6 +505,10 @@ export class ObjectStore {
         return result;
     }
 
+    /**
+     * Invalidates cached data for this specific object ID and all its option variants.
+     * Use this when you know the object definition has changed on the server.
+     */
     public invalidateCache(): void {
         const prefix = `${this.objectId}:`;
         for (const key of ObjectStore.objectCache.keys()) {
@@ -486,10 +518,23 @@ export class ObjectStore {
         }
     }
 
+    /**
+     * Invalidates the entire object cache across all ObjectStore instances.
+     * Use this when you need to force fresh data for all objects.
+     */
     public static invalidateAllCache(): void {
         ObjectStore.objectCache.clear();
     }
 
+    /**
+     * Retrieves the object definition with inherited properties and actions.
+     * Results are cached with a 5-minute TTL to reduce API calls for frequently accessed objects.
+     *
+     * By default, properties are alphabetized by name. Use options to customize behavior.
+     *
+     * @param options - Configuration options for object retrieval and processing
+     * @returns A promise resolving to the object with root
+     */
     get(options?: ObjectOptions): Promise<ObjWithRoot>;
     get(cb?: Callback<ObjWithRoot>): void;
     get(options: ObjectOptions, cb?: Callback<ObjWithRoot>): void;
@@ -561,6 +606,9 @@ export class ObjectStore {
         });
     }
 
+    /**
+     * Finds instances of the object that match the specified filter criteria.
+     */
     findInstances<T extends ObjectInstance = ObjectInstance>(filter?: Filter): Promise<T[]>;
     findInstances<T extends ObjectInstance = ObjectInstance>(cb: Callback<T[]>): void;
     findInstances<T extends ObjectInstance = ObjectInstance>(filter: Filter, cb: Callback<T[]>): void;
@@ -589,6 +637,9 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances`, config, cb);
     }
 
+    /**
+     * Retrieves a specific instance of the object by ID.
+     */
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string): Promise<T>;
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string, cb: Callback<T>): void;
 
@@ -600,6 +651,9 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances/${id}`, cb);
     }
 
+    /**
+     * Retrieves the history of an instance of the object.
+     */
     getInstanceHistory(id: string): Promise<History[]>;
     getInstanceHistory(id: string, cb: Callback<History[]>): void;
 
@@ -611,6 +665,9 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances/${id}/history`, cb);
     }
 
+    /**
+     * Creates a new instance of the object.
+     */
     newInstance<T extends ObjectInstance = ObjectInstance>(input: ActionRequest): Promise<T>;
     newInstance<T extends ObjectInstance = ObjectInstance>(input: ActionRequest, cb: Callback<T>): void;
 
@@ -622,6 +679,9 @@ export class ObjectStore {
         this.services.post(`data/objects/${this.objectId}/instances/actions`, input, cb);
     }
 
+    /**
+     * Performs an action on an existing instance of the object.
+     */
     instanceAction<T extends ObjectInstance = ObjectInstance>(id: string, input: ActionRequest): Promise<T>;
     instanceAction<T extends ObjectInstance = ObjectInstance>(id: string, input: ActionRequest, cb: Callback<T>): void;
 
@@ -634,6 +694,14 @@ export class ObjectStore {
     }
 }
 
+/**
+ * Creates an ObjectStore instance for the specified object.
+ * Provides access to object definitions and instance operations.
+ * object definitions are cached for performance.
+ *
+ * @param objectId - ID of the object to access
+ * @returns ObjectStore instance
+ */
 export function useObject(objectId: string) {
     const services = useApiServices();
 
