@@ -446,6 +446,9 @@ export class ObjectStore {
         ttl: 5 * 60 * 1000,
     });
 
+    // Cache for in-flight promises
+    private static promiseCache = new Map<string, Promise<ObjWithRoot>>();
+
     constructor(
         private services: ApiServices,
         private objectId: string,
@@ -493,6 +496,12 @@ export class ObjectStore {
                 ObjectStore.objectCache.delete(key);
             }
         }
+
+        for (const key of ObjectStore.promiseCache.keys()) {
+            if (key.startsWith(prefix)) {
+                ObjectStore.promiseCache.delete(key);
+            }
+        }
     }
 
     /**
@@ -501,6 +510,7 @@ export class ObjectStore {
      */
     public static invalidateAllCache(): void {
         ObjectStore.objectCache.clear();
+        ObjectStore.promiseCache.clear();
     }
 
     /**
@@ -527,17 +537,31 @@ export class ObjectStore {
             options = optionsOrCallback;
         }
 
+        const cacheKey = this.getCacheKey(options);
+
         if (!options?.bypassCache) {
-            const cacheKey = this.getCacheKey(options);
             const cachedData = ObjectStore.objectCache.get(cacheKey);
 
             if (cachedData) {
+                const resolvedCachePromise = Promise.resolve(cachedData);
+
                 if (cb) {
-                    // queue callback in event loop for cache
-                    setTimeout(() => cb && cb(null, cachedData), 0);
+                    const callback = cb;
+                    resolvedCachePromise.then((data) => callback(null, data)).catch((err) => callback(err));
                     return;
                 }
-                return Promise.resolve(cachedData);
+                return resolvedCachePromise;
+            }
+
+            // check for request in flight
+            const pendingPromise = ObjectStore.promiseCache.get(cacheKey);
+            if (pendingPromise) {
+                if (cb) {
+                    const callback = cb;
+                    pendingPromise.then((data) => callback(null, data)).catch((err) => callback(err));
+                    return;
+                }
+                return pendingPromise;
             }
         }
 
@@ -549,38 +573,59 @@ export class ObjectStore {
 
         // promise-based call
         if (!cb) {
-            return this.services.get<ObjWithRoot>(`data/objects/${this.objectId}/effective`, config).then((result) => {
-                // process the result depending on options
-                const processedResult = this.processObject(result as ObjWithRoot, options);
+            const promise = this.services
+                .get<ObjWithRoot>(`data/objects/${this.objectId}/effective`, config)
+                .then((result) => {
+                    const processedResult = this.processObject(result as ObjWithRoot, options);
 
-                // cache that if caching not disabled
-                if (!options?.bypassCache) {
-                    const cacheKey = this.getCacheKey(options);
                     ObjectStore.objectCache.set(cacheKey, processedResult);
-                }
 
-                return processedResult;
-            });
-        }
+                    if (!options?.bypassCache) {
+                        ObjectStore.promiseCache.delete(cacheKey);
+                    }
 
-        // callback-based call
-        this.services.get(`data/objects/${this.objectId}/effective`, config, (err, result) => {
-            if (!cb) return;
-
-            if (err || !result) {
-                cb(err, result as ObjWithRoot | undefined);
-                return;
-            }
-
-            const processedResult = this.processObject(result as ObjWithRoot, options);
+                    return processedResult;
+                })
+                .catch((err) => {
+                    if (!options?.bypassCache) {
+                        ObjectStore.promiseCache.delete(cacheKey);
+                    }
+                    throw err;
+                });
 
             if (!options?.bypassCache) {
-                const cacheKey = this.getCacheKey(options);
-                ObjectStore.objectCache.set(cacheKey, processedResult);
+                ObjectStore.promiseCache.set(cacheKey, promise);
             }
 
-            cb(null, processedResult);
+            return promise;
+        }
+
+        const callback = cb;
+        // callback-based call
+        const promise = new Promise<ObjWithRoot>((resolve, reject) => {
+            this.services.get(`data/objects/${this.objectId}/effective`, config, (err, result) => {
+                if (err || !result) {
+                    callback(err, undefined);
+                    reject(err);
+                    return;
+                }
+
+                const processedResult = this.processObject(result as ObjWithRoot, options);
+
+                ObjectStore.objectCache.set(cacheKey, processedResult);
+
+                callback(null, processedResult);
+                resolve(processedResult);
+            });
+        }).finally(() => {
+            if (!options?.bypassCache) {
+                ObjectStore.promiseCache.delete(cacheKey);
+            }
         });
+
+        if (!options?.bypassCache) {
+            ObjectStore.promiseCache.set(cacheKey, promise);
+        }
     }
 
     /**
