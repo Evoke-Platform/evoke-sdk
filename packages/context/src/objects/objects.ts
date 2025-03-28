@@ -1,6 +1,7 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
+import TTLCache from '@isaacs/ttlcache';
 import { AxiosRequestConfig } from 'axios';
 import { useMemo } from 'react';
 import { ApiServices, Callback, useApiServices } from '../api/index.js';
@@ -402,15 +403,101 @@ export type Reference = {
 };
 
 export type ObjectOptions = {
+    /**
+     * When true, returns a sanitized version of the object reflecting
+     * only the properties and actions available to the current user.
+     */
     sanitized?: boolean;
+
+    /**
+     * When true, bypasses the cache and forces a new API call.
+     */
+    bypassCache?: boolean;
+
+    /**
+     * When true, preserves the original order of properties instead of
+     * alphabetizing them (properties are alphabetized by default).
+     */
+    skipAlphabetize?: boolean;
 };
 
+/**
+ * Provides methods for working with objects and their instances in Evoke.
+ * Supports retrieving object definitions, finding/retrieving instances,
+ * creating new instances, and performing actions on existing instances.
+ */
 export class ObjectStore {
+    // 5 minute TTL
+    private static objectCache = new TTLCache<string, ObjWithRoot>({
+        ttl: 5 * 60 * 1000,
+    });
+
+    // Cache for in-flight promises
+    private static promiseCache = new Map<string, Promise<ObjWithRoot>>();
+
     constructor(
         private services: ApiServices,
         private objectId: string,
     ) {}
 
+    private getCacheKey(options?: ObjectOptions): string {
+        return `${this.objectId}:${options?.sanitized ? 'sanitized' : 'default'}:${
+            options?.skipAlphabetize ? 'unsorted' : 'sorted'
+        }`;
+    }
+
+    private processObject(object: ObjWithRoot, options?: ObjectOptions): ObjWithRoot {
+        const result = { ...object };
+
+        if (result.properties) {
+            // alphabetize properties by default unless disabled
+            if (!options?.skipAlphabetize) {
+                result.properties = [...result.properties].sort((a, b) =>
+                    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+                );
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Invalidates cached data for this specific object ID and all its option variants.
+     * Use this when you know the object definition has changed on the server.
+     */
+    public invalidateCache(): void {
+        const prefix = `${this.objectId}:`;
+        for (const key of ObjectStore.objectCache.keys()) {
+            if (typeof key === 'string' && key.startsWith(prefix)) {
+                ObjectStore.objectCache.delete(key);
+            }
+        }
+
+        for (const key of ObjectStore.promiseCache.keys()) {
+            if (key.startsWith(prefix)) {
+                ObjectStore.promiseCache.delete(key);
+            }
+        }
+    }
+
+    /**
+     * Invalidates the entire object cache across all ObjectStore instances.
+     * Use this when you need to force fresh data for all objects.
+     */
+    public static invalidateAllCache(): void {
+        ObjectStore.objectCache.clear();
+        ObjectStore.promiseCache.clear();
+    }
+
+    /**
+     * Retrieves the object definition with inherited properties and actions.
+     * Results are cached with a 5-minute TTL to reduce API calls for frequently accessed objects.
+     *
+     * By default, properties are alphabetized by name. Use options to customize behavior.
+     *
+     * @param options - Configuration options for object retrieval and processing
+     * @returns A promise resolving to the object with root
+     */
     get(options?: ObjectOptions): Promise<ObjWithRoot>;
     get(cb?: Callback<ObjWithRoot>): void;
     get(options: ObjectOptions, cb?: Callback<ObjWithRoot>): void;
@@ -426,19 +513,100 @@ export class ObjectStore {
             options = optionsOrCallback;
         }
 
+        const cacheKey = this.getCacheKey(options);
+
+        if (!options?.bypassCache) {
+            const cachedData = ObjectStore.objectCache.get(cacheKey);
+
+            if (cachedData) {
+                const resolvedCachePromise = Promise.resolve(cachedData);
+
+                if (cb) {
+                    const callback = cb;
+                    resolvedCachePromise.then((data) => callback(null, data)).catch((err) => callback(err));
+                    return;
+                }
+                return resolvedCachePromise;
+            }
+
+            // check for request in flight
+            const pendingPromise = ObjectStore.promiseCache.get(cacheKey);
+            if (pendingPromise) {
+                if (cb) {
+                    const callback = cb;
+                    pendingPromise.then((data) => callback(null, data)).catch((err) => callback(err));
+                    return;
+                }
+                return pendingPromise;
+            }
+        }
+
         const config: AxiosRequestConfig = {
             params: {
                 sanitizedVersion: options?.sanitized,
             },
         };
 
+        // promise-based call
         if (!cb) {
-            return this.services.get(`data/objects/${this.objectId}/effective`, config);
+            const promise = this.services
+                .get<ObjWithRoot>(`data/objects/${this.objectId}/effective`, config)
+                .then((result) => {
+                    const processedResult = this.processObject(result as ObjWithRoot, options);
+
+                    ObjectStore.objectCache.set(cacheKey, processedResult);
+
+                    if (!options?.bypassCache) {
+                        ObjectStore.promiseCache.delete(cacheKey);
+                    }
+
+                    return processedResult;
+                })
+                .catch((err) => {
+                    if (!options?.bypassCache) {
+                        ObjectStore.promiseCache.delete(cacheKey);
+                    }
+                    throw err;
+                });
+
+            if (!options?.bypassCache) {
+                ObjectStore.promiseCache.set(cacheKey, promise);
+            }
+
+            return promise;
         }
 
-        this.services.get(`data/objects/${this.objectId}/effective`, config, cb);
+        const callback = cb;
+        // callback-based call
+        const promise = new Promise<ObjWithRoot>((resolve, reject) => {
+            this.services.get(`data/objects/${this.objectId}/effective`, config, (err, result) => {
+                if (err || !result) {
+                    callback(err, undefined);
+                    reject(err);
+                    return;
+                }
+
+                const processedResult = this.processObject(result as ObjWithRoot, options);
+
+                ObjectStore.objectCache.set(cacheKey, processedResult);
+
+                callback(null, processedResult);
+                resolve(processedResult);
+            });
+        }).finally(() => {
+            if (!options?.bypassCache) {
+                ObjectStore.promiseCache.delete(cacheKey);
+            }
+        });
+
+        if (!options?.bypassCache) {
+            ObjectStore.promiseCache.set(cacheKey, promise);
+        }
     }
 
+    /**
+     * Finds instances of the object that match the specified filter criteria.
+     */
     findInstances<T extends ObjectInstance = ObjectInstance>(filter?: Filter): Promise<T[]>;
     findInstances<T extends ObjectInstance = ObjectInstance>(cb: Callback<T[]>): void;
     findInstances<T extends ObjectInstance = ObjectInstance>(filter: Filter, cb: Callback<T[]>): void;
@@ -467,6 +635,9 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances`, config, cb);
     }
 
+    /**
+     * Retrieves a specific instance of the object by ID.
+     */
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string): Promise<T>;
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string, cb: Callback<T>): void;
 
@@ -478,6 +649,9 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances/${id}`, cb);
     }
 
+    /**
+     * Retrieves the history of an instance of the object.
+     */
     getInstanceHistory(id: string): Promise<History[]>;
     getInstanceHistory(id: string, cb: Callback<History[]>): void;
 
@@ -489,6 +663,9 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances/${id}/history`, cb);
     }
 
+    /**
+     * Creates a new instance of the object.
+     */
     newInstance<T extends ObjectInstance = ObjectInstance>(input: ActionRequest): Promise<T>;
     newInstance<T extends ObjectInstance = ObjectInstance>(input: ActionRequest, cb: Callback<T>): void;
 
@@ -500,6 +677,9 @@ export class ObjectStore {
         this.services.post(`data/objects/${this.objectId}/instances/actions`, input, cb);
     }
 
+    /**
+     * Performs an action on an existing instance of the object.
+     */
     instanceAction<T extends ObjectInstance = ObjectInstance>(id: string, input: ActionRequest): Promise<T>;
     instanceAction<T extends ObjectInstance = ObjectInstance>(id: string, input: ActionRequest, cb: Callback<T>): void;
 
@@ -512,8 +692,59 @@ export class ObjectStore {
     }
 }
 
+/**
+ * Creates an ObjectStore instance for the specified object.
+ * Provides access to object definitions and instance operations.
+ * object definitions are cached for performance.
+ *
+ * @param objectId - ID of the object to access
+ * @returns ObjectStore instance
+ */
 export function useObject(objectId: string) {
     const services = useApiServices();
 
     return useMemo(() => new ObjectStore(services, objectId), [services, objectId]);
 }
+
+export type TaskObj = {
+    id: 'sys__task';
+    name: 'Task';
+    properties: [
+        {
+            id: 'name';
+            name: 'Name';
+            type: 'string';
+            required: true;
+        },
+        {
+            id: 'userPool';
+            name: 'User Pool';
+            type: 'array';
+            required: false;
+        },
+        {
+            id: 'assignee';
+            name: 'Assignee';
+            type: 'string';
+            required: false;
+        },
+        {
+            id: 'createdDate';
+            name: 'Created Date';
+            type: 'date-time';
+            required: false;
+        },
+        {
+            id: 'createdBy';
+            name: 'Created By';
+            type: 'string';
+            required: true;
+        },
+        {
+            id: 'closingEvents';
+            name: 'Closing Events';
+            type: 'array';
+            required: false;
+        },
+    ];
+};
