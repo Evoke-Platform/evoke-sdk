@@ -6,7 +6,6 @@ import { AxiosRequestConfig } from 'axios';
 import { useMemo } from 'react';
 import { ApiServices, Callback, useApiServices } from '../api/index.js';
 import { Filter } from './filters.js';
-import { flattenProperties, mutateTaskObj } from './utils.js';
 
 export type BaseObjReference = {
     objectId: string;
@@ -412,18 +411,6 @@ export type ObjectOptions = {
     sanitized?: boolean;
 
     /**
-     * When true, flattens nested properties like user and address objects
-     * into individual properties (e.g., user.id, address.line1).
-     */
-    flattenProperties?: boolean;
-
-    /**
-     * When true, applies special processing to task objects,
-     * filtering out certain properties like closingEvents and userPool.
-     */
-    mutateTaskObj?: boolean;
-
-    /**
      * When true, bypasses the cache and forces a new API call.
      */
     bypassCache?: boolean;
@@ -456,24 +443,14 @@ export class ObjectStore {
 
     private getCacheKey(options?: ObjectOptions): string {
         return `${this.objectId}:${options?.sanitized ? 'sanitized' : 'default'}:${
-            options?.flattenProperties ? 'flat' : 'nested'
-        }:${options?.mutateTaskObj ? 'mutated' : 'original'}:${options?.skipAlphabetize ? 'unsorted' : 'sorted'}`;
+            options?.skipAlphabetize ? 'unsorted' : 'sorted'
+        }`;
     }
 
     private processObject(object: ObjWithRoot, options?: ObjectOptions): ObjWithRoot {
         const result = { ...object };
 
-        // task object mutation if requested
-        if (options?.mutateTaskObj && result.id === 'sys__task') {
-            mutateTaskObj(result);
-        }
-
         if (result.properties) {
-            // property flattening if requested
-            if (options?.flattenProperties) {
-                result.properties = flattenProperties(result.properties);
-            }
-
             // alphabetize properties by default unless disabled
             if (!options?.skipAlphabetize) {
                 result.properties = [...result.properties].sort((a, b) =>
