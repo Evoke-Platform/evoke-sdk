@@ -428,13 +428,11 @@ export type ObjectOptions = {
  * creating new instances, and performing actions on existing instances.
  */
 export class ObjectStore {
-    // 5 minute TTL
-    private static objectCache = new TTLCache<string, ObjWithRoot>({
-        ttl: 5 * 60 * 1000,
+    // Cache that stores both resolved objects and in-flight promises
+    // 30 second TTL for resolved objects
+    private static cache = new TTLCache<string, ObjWithRoot | Promise<ObjWithRoot>>({
+        ttl: 30 * 1000,
     });
-
-    // Cache for in-flight promises
-    private static promiseCache = new Map<string, Promise<ObjWithRoot>>();
 
     constructor(
         private services: ApiServices,
@@ -468,15 +466,9 @@ export class ObjectStore {
      */
     public invalidateCache(): void {
         const prefix = `${this.objectId}:`;
-        for (const key of ObjectStore.objectCache.keys()) {
+        for (const key of ObjectStore.cache.keys()) {
             if (typeof key === 'string' && key.startsWith(prefix)) {
-                ObjectStore.objectCache.delete(key);
-            }
-        }
-
-        for (const key of ObjectStore.promiseCache.keys()) {
-            if (key.startsWith(prefix)) {
-                ObjectStore.promiseCache.delete(key);
+                ObjectStore.cache.delete(key);
             }
         }
     }
@@ -486,13 +478,12 @@ export class ObjectStore {
      * Use this when you need to force fresh data for all objects.
      */
     public static invalidateAllCache(): void {
-        ObjectStore.objectCache.clear();
-        ObjectStore.promiseCache.clear();
+        ObjectStore.cache.clear();
     }
 
     /**
      * Retrieves the object definition with inherited properties and actions.
-     * Results are cached with a 5-minute TTL to reduce API calls for frequently accessed objects.
+     * Results are cached with a 30-second TTL to reduce API calls for frequently accessed objects.
      *
      * By default, properties are alphabetized by name. Use options to customize behavior.
      *
@@ -517,28 +508,28 @@ export class ObjectStore {
         const cacheKey = this.getCacheKey(options);
 
         if (!options?.bypassCache) {
-            const cachedData = ObjectStore.objectCache.get(cacheKey);
+            const cachedItem = ObjectStore.cache.get(cacheKey);
 
-            if (cachedData) {
-                const resolvedCachePromise = Promise.resolve(cachedData);
-
-                if (cb) {
-                    const callback = cb;
-                    resolvedCachePromise.then((data) => callback(null, data)).catch((err) => callback(err));
-                    return;
+            if (cachedItem) {
+                // If the cached item is a promise (in-flight request)
+                if (cachedItem instanceof Promise) {
+                    if (cb) {
+                        const callback = cb;
+                        cachedItem.then((data) => callback(null, data)).catch((err) => callback(err));
+                        return;
+                    }
+                    return cachedItem;
                 }
-                return resolvedCachePromise;
-            }
-
-            // check for request in flight
-            const pendingPromise = ObjectStore.promiseCache.get(cacheKey);
-            if (pendingPromise) {
-                if (cb) {
-                    const callback = cb;
-                    pendingPromise.then((data) => callback(null, data)).catch((err) => callback(err));
-                    return;
+                // If the cached item is a resolved object
+                else {
+                    const resolvedCachePromise = Promise.resolve(cachedItem);
+                    if (cb) {
+                        const callback = cb;
+                        resolvedCachePromise.then((data) => callback(null, data)).catch((err) => callback(err));
+                        return;
+                    }
+                    return resolvedCachePromise;
                 }
-                return pendingPromise;
             }
         }
 
@@ -555,23 +546,21 @@ export class ObjectStore {
                 .then((result) => {
                     const processedResult = this.processObject(result as ObjWithRoot, options);
 
-                    ObjectStore.objectCache.set(cacheKey, processedResult);
-
                     if (!options?.bypassCache) {
-                        ObjectStore.promiseCache.delete(cacheKey);
+                        ObjectStore.cache.set(cacheKey, processedResult);
                     }
 
                     return processedResult;
                 })
                 .catch((err) => {
                     if (!options?.bypassCache) {
-                        ObjectStore.promiseCache.delete(cacheKey);
+                        ObjectStore.cache.delete(cacheKey);
                     }
                     throw err;
                 });
 
             if (!options?.bypassCache) {
-                ObjectStore.promiseCache.set(cacheKey, promise);
+                ObjectStore.cache.set(cacheKey, promise);
             }
 
             return promise;
@@ -589,19 +578,17 @@ export class ObjectStore {
 
                 const processedResult = this.processObject(result as ObjWithRoot, options);
 
-                ObjectStore.objectCache.set(cacheKey, processedResult);
+                if (!options?.bypassCache) {
+                    ObjectStore.cache.set(cacheKey, processedResult);
+                }
 
                 callback(null, processedResult);
                 resolve(processedResult);
             });
-        }).finally(() => {
-            if (!options?.bypassCache) {
-                ObjectStore.promiseCache.delete(cacheKey);
-            }
         });
 
         if (!options?.bypassCache) {
-            ObjectStore.promiseCache.set(cacheKey, promise);
+            ObjectStore.cache.set(cacheKey, promise);
         }
     }
 
