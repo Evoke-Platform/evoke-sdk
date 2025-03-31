@@ -546,9 +546,7 @@ export class ObjectStore {
                 .then((result) => {
                     const processedResult = this.processObject(result as ObjWithRoot, options);
 
-                    if (!options?.bypassCache) {
-                        ObjectStore.cache.set(cacheKey, processedResult);
-                    }
+                    ObjectStore.cache.set(cacheKey, processedResult);
 
                     return processedResult;
                 })
@@ -578,9 +576,7 @@ export class ObjectStore {
 
                 const processedResult = this.processObject(result as ObjWithRoot, options);
 
-                if (!options?.bypassCache) {
-                    ObjectStore.cache.set(cacheKey, processedResult);
-                }
+                ObjectStore.cache.set(cacheKey, processedResult);
 
                 callback(null, processedResult);
                 resolve(processedResult);
