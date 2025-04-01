@@ -528,10 +528,7 @@ export class ObjectStore {
 
         const promise = this.services
             .get<ObjWithRoot>(`data/objects/${this.objectId}/effective`, config)
-            .then((result) => {
-                const processedResult = this.processObject(result as ObjWithRoot, options);
-                return processedResult;
-            });
+            .then((result) => this.processObject(result, options));
 
         ObjectStore.cache.set(cacheKey, promise);
 
