@@ -549,12 +549,6 @@ export class ObjectStore {
                     ObjectStore.cache.set(cacheKey, processedResult);
 
                     return processedResult;
-                })
-                .catch((err) => {
-                    if (!options?.bypassCache) {
-                        ObjectStore.cache.delete(cacheKey);
-                    }
-                    throw err;
                 });
 
             if (!options?.bypassCache) {
