@@ -428,9 +428,9 @@ export type ObjectOptions = {
  * creating new instances, and performing actions on existing instances.
  */
 export class ObjectStore {
-    // Cache that stores both resolved objects and in-flight promises
-    // 30 second TTL for resolved objects
-    private static cache = new TTLCache<string, ObjWithRoot | Promise<ObjWithRoot>>({
+    // Cache that stores in-flight promises
+    // 30 second TTL for cached promises
+    private static cache = new TTLCache<string, Promise<ObjWithRoot>>({
         ttl: 30 * 1000,
     });
 
@@ -508,28 +508,15 @@ export class ObjectStore {
         const cacheKey = this.getCacheKey(options);
 
         if (!options?.bypassCache) {
-            const cachedItem = ObjectStore.cache.get(cacheKey);
+            const cachedPromise = ObjectStore.cache.get(cacheKey);
 
-            if (cachedItem) {
-                // If the cached item is a promise (in-flight request)
-                if (cachedItem instanceof Promise) {
-                    if (cb) {
-                        const callback = cb;
-                        cachedItem.then((data) => callback(null, data)).catch((err) => callback(err));
-                        return;
-                    }
-                    return cachedItem;
+            if (cachedPromise) {
+                if (cb) {
+                    const callback = cb;
+                    cachedPromise.then((data) => callback(null, data)).catch((err) => callback(err));
+                    return;
                 }
-                // If the cached item is a resolved object
-                else {
-                    const resolvedCachePromise = Promise.resolve(cachedItem);
-                    if (cb) {
-                        const callback = cb;
-                        resolvedCachePromise.then((data) => callback(null, data)).catch((err) => callback(err));
-                        return;
-                    }
-                    return resolvedCachePromise;
-                }
+                return cachedPromise;
             }
         }
 
@@ -545,15 +532,10 @@ export class ObjectStore {
                 .get<ObjWithRoot>(`data/objects/${this.objectId}/effective`, config)
                 .then((result) => {
                     const processedResult = this.processObject(result as ObjWithRoot, options);
-
-                    ObjectStore.cache.set(cacheKey, processedResult);
-
                     return processedResult;
                 });
 
-            if (!options?.bypassCache) {
-                ObjectStore.cache.set(cacheKey, promise);
-            }
+            ObjectStore.cache.set(cacheKey, promise);
 
             return promise;
         }
@@ -569,17 +551,12 @@ export class ObjectStore {
                 }
 
                 const processedResult = this.processObject(result as ObjWithRoot, options);
-
-                ObjectStore.cache.set(cacheKey, processedResult);
-
                 callback(null, processedResult);
                 resolve(processedResult);
             });
         });
 
-        if (!options?.bypassCache) {
-            ObjectStore.cache.set(cacheKey, promise);
-        }
+        ObjectStore.cache.set(cacheKey, promise);
     }
 
     /**
