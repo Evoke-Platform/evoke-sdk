@@ -35,6 +35,8 @@ const applications = useObject('application');
     -   [getInstanceHistory](#getinstancehistoryinstanceid)
     -   [newInstance](#newinstanceinput)
     -   [instanceAction](#instanceactioninput)
+    -   [invalidateCache](#invalidatecache)
+    -   [invalidateAllCache](#invalidateallcache-static)
 
 #### `useObject(objectId)`
 
@@ -66,15 +68,21 @@ applications.findInstances(callback);
 const results = await applications.findInstances();
 ```
 
+ObjectStore includes built-in caching for object definitions with a 30-second time-to-live (TTL). This improves performance by reducing API calls for frequently accessed objects.
+
 ##### `get(options)`
 
 Get the object definition for this store's object. The returned object includes inherited properties and actions if
-this object is derived from another object.
+this object is derived from another object. Results are cached for improved performance.
 
 -   `options` _[object]_ - _optional_
     -   `sanitized` _[boolean]_
         -   If `true`, returns a sanitized version of the object reflecting only the properties and actions available
             to the current user.
+    -   `bypassCache` _[boolean]_
+        -   If `true`, bypasses the cache and forces a new API call. The cache is still updated with the results of the new API call.
+    -   `skipAlphabetize` _[boolean]_
+        -   If `true`, preserves the original order of properties instead of alphabetizing them (properties are alphabetized by default).
 
 ##### `findInstances(filter)`
 
@@ -122,6 +130,14 @@ Performs an action on an existing instance.
 -   `input` _[object]_
     -   Action to be executed. The action must not be a create action.
 -   Returns updated instance.
+
+##### `invalidateCache()`
+
+Invalidates cached data for this specific object ID and all its option variants. Use this when you know the object definition has changed on the server.
+
+##### `invalidateAllCache()` (static)
+
+Static method that invalidates the entire object cache across all ObjectStore instances. Use this when you need to force fresh data for all objects.
 
 ### Page Context
 
