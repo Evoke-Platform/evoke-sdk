@@ -38,10 +38,13 @@ describe('ObjectStore', () => {
         });
 
         it('returns object in callback', (done) => {
-            sinon
-                .stub(apiServices, 'get')
-                .withArgs('data/objects/testObject/effective', sinon.match.any, sinon.match.func)
-                .yields(null, { id: 'testObject', name: 'Test Object', rootObjectId: 'testObject' });
+            const stub = sinon.stub(apiServices, 'get') as unknown as SinonStub<[string], Promise<ObjWithRoot>>;
+
+            stub.withArgs('data/objects/testObject/effective').resolves({
+                id: 'testObject',
+                name: 'Test Object',
+                rootObjectId: 'testObject',
+            });
 
             objectStore.get(
                 assertionCallback(done, (result) => {

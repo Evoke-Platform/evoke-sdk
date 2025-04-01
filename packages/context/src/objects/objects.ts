@@ -526,37 +526,22 @@ export class ObjectStore {
             },
         };
 
-        // promise-based call
-        if (!cb) {
-            const promise = this.services
-                .get<ObjWithRoot>(`data/objects/${this.objectId}/effective`, config)
-                .then((result) => {
-                    const processedResult = this.processObject(result as ObjWithRoot, options);
-                    return processedResult;
-                });
-
-            ObjectStore.cache.set(cacheKey, promise);
-
-            return promise;
-        }
-
-        const callback = cb;
-        // callback-based call
-        const promise = new Promise<ObjWithRoot>((resolve, reject) => {
-            this.services.get(`data/objects/${this.objectId}/effective`, config, (err, result) => {
-                if (err || !result) {
-                    callback(err, undefined);
-                    reject(err);
-                    return;
-                }
-
+        const promise = this.services
+            .get<ObjWithRoot>(`data/objects/${this.objectId}/effective`, config)
+            .then((result) => {
                 const processedResult = this.processObject(result as ObjWithRoot, options);
-                callback(null, processedResult);
-                resolve(processedResult);
+                return processedResult;
             });
-        });
 
         ObjectStore.cache.set(cacheKey, promise);
+
+        if (cb) {
+            const callback = cb;
+            promise.then((data) => callback(null, data)).catch((err) => callback(err));
+            return;
+        }
+
+        return promise;
     }
 
     /**
