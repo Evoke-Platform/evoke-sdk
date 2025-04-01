@@ -600,6 +600,15 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
+"@evoke-platform/context@^1.0.0", "@evoke-platform/context@^1.0.0-dev.118":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.0.0.tgz#71cedd010afb246c8a3d51d813bd18a3ca375f64"
+  integrity sha512-UFO88KI4PEKXkq38YiCwTaWSMnx00Ii5LjApcYtWzi9maaODxFCGHPzofwQ1Im023tjdmboMWfaZWbB3A+9CMQ==
+  dependencies:
+    "@microsoft/signalr" "^7.0.12"
+    axios "^1.7.9"
+    uuid "^9.0.1"
+
 "@evoke-platform/ui-components@^1.0.0":
   version "1.0.1"
   resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.0.1.tgz#449922d62a071a59dd03797fe6cd10bbbbde6c9b"
@@ -7771,6 +7780,11 @@ react-dropzone@^14.2.2:
     attr-accept "^2.2.2"
     file-selector "^0.6.0"
     prop-types "^15.8.1"
+
+react-idle-timer@^5.7.2:
+  version "5.7.2"
+  resolved "https://registry.npmjs.org/react-idle-timer/-/react-idle-timer-5.7.2.tgz#f506db28a86645dd1b87987116501703e512142b"
+  integrity sha512-+BaPfc7XEUU5JFkwZCx6fO1bLVK+RBlFH+iY4X34urvIzZiZINP6v2orePx3E6pAztJGE7t4DzvL7if2SL/0GQ==
 
 react-input-mask@^2.0.4:
   version "2.0.4"
