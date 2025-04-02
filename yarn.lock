@@ -600,7 +600,7 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
-"@evoke-platform/context@^1.0.0", "@evoke-platform/context@^1.0.0-dev.118":
+"@evoke-platform/context@^1.0.0":
   version "1.0.0"
   resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.0.0.tgz#71cedd010afb246c8a3d51d813bd18a3ca375f64"
   integrity sha512-UFO88KI4PEKXkq38YiCwTaWSMnx00Ii5LjApcYtWzi9maaODxFCGHPzofwQ1Im023tjdmboMWfaZWbB3A+9CMQ==
@@ -609,10 +609,10 @@
     axios "^1.7.9"
     uuid "^9.0.1"
 
-"@evoke-platform/ui-components@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.0.1.tgz#449922d62a071a59dd03797fe6cd10bbbbde6c9b"
-  integrity sha512-OLOqrRMsB8wBO0tkJ2qOIsarQkTRXCAXVunM4jlO3lO7g0irunkEr5vFsgnWAS/uxAzmWcHtGDbT2Yi9Rn35VQ==
+"@evoke-platform/ui-components@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.3.0.tgz#e5c3ddf34a75402135f518b9d3e851de6d3edbe6"
+  integrity sha512-HcYhTyJs7eAWC/+kKr180U8hbo0OYibnoa3JOmHuB0GONv/+tttK7xyTwVbbdD+EcD5f2rHAgAMvboYzkTxWcw==
   dependencies:
     "@date-io/js-joda" "^2.16.1"
     "@dnd-kit/core" "^6.0.6"
@@ -620,7 +620,7 @@
     "@dnd-kit/sortable" "^7.0.1"
     "@emotion/react" "^11.13.5"
     "@emotion/styled" "^11.8.1"
-    "@evoke-platform/context" "^1.0.0-dev.118"
+    "@evoke-platform/context" "^1.1.0-testing.0"
     "@formio/react" "^5.2.4-rc.1"
     "@js-joda/core" "^3.2.0"
     "@js-joda/locale_en-us" "^3.2.2"
@@ -640,11 +640,11 @@
     eslint-plugin-no-inline-styles "^1.0.5"
     flat "^6.0.1"
     formiojs "^4.15.0-rc.23"
-    handlebars "^4.7.8"
     html-react-parser "^5.1.18"
     luxon "^2.5.2"
     nanoid "^5.0.8"
     nanoid-dictionary "^4.3.0"
+    no-eval-handlebars "^1.0.2"
     pluralize "^8.0.0"
     pretty-bytes "^6.1.1"
     react-dropzone "^14.2.2"
@@ -5082,6 +5082,18 @@ grouped-queue@^2.0.0:
   resolved "https://registry.yarnpkg.com/grouped-queue/-/grouped-queue-2.0.0.tgz#a2c6713f2171e45db2c300a3a9d7c119d694dac8"
   integrity sha512-/PiFUa7WIsl48dUeCvhIHnwNmAAzlI/eHoJl0vu3nsFA366JleY7Ff8EVTplZu5kO0MIdZjKTTnzItL61ahbnw==
 
+handlebars@4.7.8:
+  version "4.7.8"
+  resolved "https://registry.npmjs.org/handlebars/-/handlebars-4.7.8.tgz#41c42c18b1be2365439188c77c6afae71c0cd9e9"
+  integrity sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==
+  dependencies:
+    minimist "^1.2.5"
+    neo-async "^2.6.2"
+    source-map "^0.6.1"
+    wordwrap "^1.0.0"
+  optionalDependencies:
+    uglify-js "^3.1.4"
+
 handlebars@^4.7.7:
   version "4.7.7"
   resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.7.tgz#9ce33416aad02dbd6c8fafa8240d5d98004945a1"
@@ -5089,18 +5101,6 @@ handlebars@^4.7.7:
   dependencies:
     minimist "^1.2.5"
     neo-async "^2.6.0"
-    source-map "^0.6.1"
-    wordwrap "^1.0.0"
-  optionalDependencies:
-    uglify-js "^3.1.4"
-
-handlebars@^4.7.8:
-  version "4.7.8"
-  resolved "https://registry.npmjs.org/handlebars/-/handlebars-4.7.8.tgz#41c42c18b1be2365439188c77c6afae71c0cd9e9"
-  integrity sha512-vafaFqs8MZkRrSX7sFVUdo3ap/eNiLnb4IakshzvP56X5Nr1iGKAIqdX6tMlm6HcNRIkr6AxO5jFEoJzzpT8aQ==
-  dependencies:
-    minimist "^1.2.5"
-    neo-async "^2.6.2"
     source-map "^0.6.1"
     wordwrap "^1.0.0"
   optionalDependencies:
@@ -6833,6 +6833,13 @@ nise@^6.0.0:
     "@sinonjs/text-encoding" "^0.7.2"
     just-extend "^6.2.0"
     path-to-regexp "^6.2.1"
+
+no-eval-handlebars@^1.0.2:
+  version "1.0.2"
+  resolved "https://registry.npmjs.org/no-eval-handlebars/-/no-eval-handlebars-1.0.2.tgz#88537008d20fae059cef9b335dff2bf404389417"
+  integrity sha512-T07M2MfndPC19eZKDYJLDTtIbpRh0r39ArmzFQy3qcm2FRUQT5ssCJ7EYN/jjFHNfiugWXotU1g+mM/3Ahci9A==
+  dependencies:
+    handlebars "4.7.8"
 
 node-fetch@^2.6.7, node-fetch@~2.6.1:
   version "2.6.11"
