@@ -632,7 +632,7 @@ export class ObjectStore {
 /**
  * Creates an ObjectStore instance for the specified object.
  * Provides access to object definitions and instance operations.
- * object definitions are cached for performance.
+ * Object definitions are cached for performance.
  *
  * @param objectId - ID of the object to access
  * @returns ObjectStore instance
