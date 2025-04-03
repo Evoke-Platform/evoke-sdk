@@ -28,7 +28,7 @@
     "dependencies": {
         "@evoke-platform/context": "^1.0.0",
         "@evoke-platform/payment": "^1.0.0",
-        "@evoke-platform/ui-components": "^1.0.0"
+        "@evoke-platform/ui-components": "^1.3.0"
     },
     "devDependencies": {
         "commit-and-tag-version": "^12.1.0"

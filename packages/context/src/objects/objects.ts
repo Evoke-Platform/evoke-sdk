@@ -1,6 +1,7 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
+import TTLCache from '@isaacs/ttlcache';
 import { AxiosRequestConfig } from 'axios';
 import { useMemo } from 'react';
 import { ApiServices, Callback, useApiServices } from '../api/index.js';
@@ -403,15 +404,92 @@ export type Reference = {
 };
 
 export type ObjectOptions = {
+    /**
+     * When true, returns a sanitized version of the object reflecting
+     * only the properties and actions available to the current user.
+     */
     sanitized?: boolean;
+
+    /**
+     * When true, bypasses the cache and forces a new API call.
+     */
+    bypassCache?: boolean;
+
+    /**
+     * When true, preserves the original order of properties instead of
+     * alphabetizing them (properties are alphabetized by default).
+     */
+    skipAlphabetize?: boolean;
 };
 
+/**
+ * Provides methods for working with objects and their instances in Evoke.
+ * Supports retrieving object definitions, finding/retrieving instances,
+ * creating new instances, and performing actions on existing instances.
+ */
 export class ObjectStore {
+    // Cache that stores in-flight promises
+    // 30 second TTL for cached promises
+    private static cache = new TTLCache<string, Promise<ObjWithRoot>>({
+        ttl: 30 * 1000,
+    });
+
     constructor(
         private services: ApiServices,
         private objectId: string,
     ) {}
 
+    private getCacheKey(options?: ObjectOptions): string {
+        return `${this.objectId}:${options?.sanitized ? 'sanitized' : 'default'}:${
+            options?.skipAlphabetize ? 'unsorted' : 'sorted'
+        }`;
+    }
+
+    private processObject(object: ObjWithRoot, options?: ObjectOptions): ObjWithRoot {
+        const result = { ...object };
+
+        if (result.properties) {
+            // alphabetize properties by default unless disabled
+            if (!options?.skipAlphabetize) {
+                result.properties = [...result.properties].sort((a, b) =>
+                    a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
+                );
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Invalidates cached data for this specific object ID and all its option variants.
+     * Use this when you know the object definition has changed on the server.
+     */
+    public invalidateCache(): void {
+        const prefix = `${this.objectId}:`;
+        for (const key of ObjectStore.cache.keys()) {
+            if (typeof key === 'string' && key.startsWith(prefix)) {
+                ObjectStore.cache.delete(key);
+            }
+        }
+    }
+
+    /**
+     * Invalidates the entire object cache across all ObjectStore instances.
+     * Use this when you need to force fresh data for all objects.
+     */
+    public static invalidateAllCache(): void {
+        ObjectStore.cache.clear();
+    }
+
+    /**
+     * Retrieves the object definition with inherited properties and actions.
+     * Results are cached with a 30-second TTL to reduce API calls for frequently accessed objects.
+     *
+     * By default, properties are alphabetized by name. Use options to customize behavior.
+     *
+     * @param options - Configuration options for object retrieval and processing
+     * @returns A promise resolving to the object with root
+     */
     get(options?: ObjectOptions): Promise<ObjWithRoot>;
     get(cb?: Callback<ObjWithRoot>): void;
     get(options: ObjectOptions, cb?: Callback<ObjWithRoot>): void;
@@ -427,19 +505,45 @@ export class ObjectStore {
             options = optionsOrCallback;
         }
 
+        const cacheKey = this.getCacheKey(options);
+
+        if (!options?.bypassCache) {
+            const cachedPromise = ObjectStore.cache.get(cacheKey);
+
+            if (cachedPromise) {
+                if (cb) {
+                    const callback = cb;
+                    cachedPromise.then((data) => callback(null, data)).catch((err) => callback(err));
+                    return;
+                }
+                return cachedPromise;
+            }
+        }
+
         const config: AxiosRequestConfig = {
             params: {
                 sanitizedVersion: options?.sanitized,
             },
         };
 
-        if (!cb) {
-            return this.services.get(`data/objects/${this.objectId}/effective`, config);
+        const promise = this.services
+            .get<ObjWithRoot>(`data/objects/${this.objectId}/effective`, config)
+            .then((result) => this.processObject(result, options));
+
+        ObjectStore.cache.set(cacheKey, promise);
+
+        if (cb) {
+            const callback = cb;
+            promise.then((data) => callback(null, data)).catch((err) => callback(err));
+            return;
         }
 
-        this.services.get(`data/objects/${this.objectId}/effective`, config, cb);
+        return promise;
     }
 
+    /**
+     * Finds instances of the object that match the specified filter criteria.
+     */
     findInstances<T extends ObjectInstance = ObjectInstance>(filter?: Filter): Promise<T[]>;
     findInstances<T extends ObjectInstance = ObjectInstance>(cb: Callback<T[]>): void;
     findInstances<T extends ObjectInstance = ObjectInstance>(filter: Filter, cb: Callback<T[]>): void;
@@ -468,6 +572,9 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances`, config, cb);
     }
 
+    /**
+     * Retrieves a specific instance of the object by ID.
+     */
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string): Promise<T>;
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string, cb: Callback<T>): void;
 
@@ -479,6 +586,9 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances/${id}`, cb);
     }
 
+    /**
+     * Retrieves the history of an instance of the object.
+     */
     getInstanceHistory(id: string): Promise<History[]>;
     getInstanceHistory(id: string, cb: Callback<History[]>): void;
 
@@ -490,6 +600,9 @@ export class ObjectStore {
         this.services.get(`data/objects/${this.objectId}/instances/${id}/history`, cb);
     }
 
+    /**
+     * Creates a new instance of the object.
+     */
     newInstance<T extends ObjectInstance = ObjectInstance>(input: ActionRequest): Promise<T>;
     newInstance<T extends ObjectInstance = ObjectInstance>(input: ActionRequest, cb: Callback<T>): void;
 
@@ -501,6 +614,9 @@ export class ObjectStore {
         this.services.post(`data/objects/${this.objectId}/instances/actions`, input, cb);
     }
 
+    /**
+     * Performs an action on an existing instance of the object.
+     */
     instanceAction<T extends ObjectInstance = ObjectInstance>(id: string, input: ActionRequest): Promise<T>;
     instanceAction<T extends ObjectInstance = ObjectInstance>(id: string, input: ActionRequest, cb: Callback<T>): void;
 
@@ -513,6 +629,14 @@ export class ObjectStore {
     }
 }
 
+/**
+ * Creates an ObjectStore instance for the specified object.
+ * Provides access to object definitions and instance operations.
+ * Object definitions are cached for performance.
+ *
+ * @param objectId - ID of the object to access
+ * @returns ObjectStore instance
+ */
 export function useObject(objectId: string) {
     const services = useApiServices();
 
