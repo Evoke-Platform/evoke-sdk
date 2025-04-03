@@ -19,6 +19,7 @@ export type App = {
     pages?: Page[];
     navigation?: NavigationMenu;
     defaultPages?: Record<string, string>;
+    mfa?: 'required' | 'optional';
 };
 
 export type Page = {
