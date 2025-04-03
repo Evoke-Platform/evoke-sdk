@@ -19,10 +19,10 @@
   resolved "https://registry.npmjs.org/@azure/msal-common/-/msal-common-13.3.1.tgz#012465bf940d12375dc47387b754ccf9d6b92180"
   integrity sha512-Lrk1ozoAtaP/cp53May3v6HtcFSVxdFrg2Pa/1xu5oIvsIwhxW6zSPibKefCOVgd5osgykMi5jjcZHv8XkzZEQ==
 
-"@azure/msal-react@^1.5.9":
-  version "1.5.9"
-  resolved "https://registry.npmjs.org/@azure/msal-react/-/msal-react-1.5.9.tgz#8a7c941deabe7bf365204ada1711146846c64825"
-  integrity sha512-OqlBmo3h2ucp+OtpXwjNcKaUdIwRMUoEcixZz9rKzHJJ8VR7rngy2pHf+4tCTqwQXQOsRKdneNKG3Osh/AAhzg==
+"@azure/msal-react@^3.0.7":
+  version "3.0.7"
+  resolved "https://registry.npmjs.org/@azure/msal-react/-/msal-react-3.0.7.tgz#ce733609d1a24a595b6e8ea899e248bb8645f0b1"
+  integrity sha512-77S3eVslJMAXNiLmdrJkJ/gJupjeTdUQinYfc8EzgvLuU5QuLng7Lb5qgSz9DuZfYhC2rbOqvrz4x7o0YBXlBA==
 
 "@babel/code-frame@^7.0.0":
   version "7.18.6"
@@ -584,6 +584,16 @@
   resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.0.0.tgz#71cedd010afb246c8a3d51d813bd18a3ca375f64"
   integrity sha512-UFO88KI4PEKXkq38YiCwTaWSMnx00Ii5LjApcYtWzi9maaODxFCGHPzofwQ1Im023tjdmboMWfaZWbB3A+9CMQ==
   dependencies:
+    "@microsoft/signalr" "^7.0.12"
+    axios "^1.7.9"
+    uuid "^9.0.1"
+
+"@evoke-platform/context@^1.1.0-testing.0":
+  version "1.1.0-testing.3"
+  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.1.0-testing.3.tgz#e36392459cb4cc0f5ac338377b53f41246d5fa37"
+  integrity sha512-p/TutzdJoC0Vmcj7vyVlODm9Pe6/KUIYgY+GBrszirdBFm5e6YZprnmjCUMl5wdYZB5uvyPgUGcpnxXgFKs0eQ==
+  dependencies:
+    "@isaacs/ttlcache" "^1.4.1"
     "@microsoft/signalr" "^7.0.12"
     axios "^1.7.9"
     uuid "^9.0.1"
