@@ -186,14 +186,16 @@ export type SelectOption = {
     value: string;
 };
 
+export type VisibilityCondition = {
+    property: string;
+    operator: 'eq' | 'neq';
+    value: string | number | boolean;
+    isInstanceProperty?: boolean;
+};
+
 export type VisibilityConfiguration = {
     operator?: 'any' | 'all';
-    conditions?: {
-        property: string;
-        operator: 'eq' | 'neq';
-        value: string | number | boolean;
-        isInstanceProperty?: boolean;
-    }[];
+    conditions?: VisibilityCondition[];
 };
 
 export type RelatedObjectDefaultValue = {
