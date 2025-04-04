@@ -204,10 +204,12 @@ export type RelatedObjectDefaultValue = {
 
 export type CriteriaDefaultValue = Record<string, unknown>;
 
+export type JsonLogic = Record<string, unknown> | boolean | number | string | null;
+
 export type DisplayConfiguration = {
     label?: string;
     placeholder?: string;
-    required?: boolean;
+    required?: boolean | string;
     description?: string;
     defaultValue?: string | number | string[] | RelatedObjectDefaultValue | CriteriaDefaultValue;
     readOnly?: boolean;
@@ -219,7 +221,7 @@ export type DisplayConfiguration = {
     charCount?: boolean;
     mode?: 'default' | 'existingOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
-    visibility?: VisibilityConfiguration | string;
+    visibility?: VisibilityConfiguration | JsonLogic;
     viewLayout?: ViewLayoutEntityReference;
     choicesDisplay?: {
         type: 'dropdown' | 'radioButton';
@@ -238,7 +240,7 @@ export type InputParameterReference = {
 export type Content = {
     type: 'content';
     html: string;
-    visibility?: VisibilityConfiguration | string;
+    visibility?: VisibilityConfiguration | JsonLogic;
 };
 
 export type Column = {
@@ -248,19 +250,22 @@ export type Column = {
 
 export type Columns = {
     type: 'columns';
+    label?: string;
     columns: Column[];
-    visibility?: VisibilityConfiguration | string;
+    visibility?: VisibilityConfiguration | JsonLogic;
 };
 
 export type Section = {
+    key?: string;
     label: string;
     entries?: FormEntry[];
 };
 
 export type Sections = {
     type: 'sections';
+    label?: string;
     sections: Section[];
-    visibility?: VisibilityConfiguration | string;
+    visibility?: VisibilityConfiguration | JsonLogic;
 };
 
 export type FormEntry = InputParameterReference | Columns | Sections | Content;
