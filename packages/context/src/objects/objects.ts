@@ -336,7 +336,7 @@ export type ActionInput = {
     input?: boolean;
     widget?: string;
     conditional?: {
-        json?: string;
+        json?: JsonLogic;
         show?: boolean;
         when?: string;
         eq?: string | number | boolean;
