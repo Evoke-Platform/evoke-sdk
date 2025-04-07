@@ -588,6 +588,16 @@
     axios "^1.7.9"
     uuid "^9.0.1"
 
+"@evoke-platform/context@^1.1.0-testing.0":
+  version "1.1.0-testing.3"
+  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.1.0-testing.3.tgz#e36392459cb4cc0f5ac338377b53f41246d5fa37"
+  integrity sha512-p/TutzdJoC0Vmcj7vyVlODm9Pe6/KUIYgY+GBrszirdBFm5e6YZprnmjCUMl5wdYZB5uvyPgUGcpnxXgFKs0eQ==
+  dependencies:
+    "@isaacs/ttlcache" "^1.4.1"
+    "@microsoft/signalr" "^7.0.12"
+    axios "^1.7.9"
+    uuid "^9.0.1"
+
 "@evoke-platform/ui-components@^1.3.0":
   version "1.3.0"
   resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.3.0.tgz#e5c3ddf34a75402135f518b9d3e851de6d3edbe6"
@@ -2363,10 +2373,10 @@ available-typed-arrays@^1.0.5:
   resolved "https://registry.npmjs.org/available-typed-arrays/-/available-typed-arrays-1.0.5.tgz#92f95616501069d07d10edb2fc37d3e1c65123b7"
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
-axios@^1.7.9:
-  version "1.7.9"
-  resolved "https://registry.npmjs.org/axios/-/axios-1.7.9.tgz#d7d071380c132a24accda1b2cfc1535b79ec650a"
-  integrity sha512-LhLcE7Hbiryz8oMDdDptSrWowmB4Bl6RCt6sIJKpRB4XtVf0iEgewX3au/pJqm+Py1kCASkb/FFKjxQaLtxJvw==
+axios@^1.7.9, axios@^1.8.2:
+  version "1.8.2"
+  resolved "https://registry.npmjs.org/axios/-/axios-1.8.2.tgz#fabe06e241dfe83071d4edfbcaa7b1c3a40f7979"
+  integrity sha512-ls4GYBm5aig9vWx8AWDSGLpnpDQRtWAfrjU+EuytuODrFBkqesN2RkOQCBzrA1RQNHw1SmRMSDDDSwzNAYQ6Rg==
   dependencies:
     follow-redirects "^1.15.6"
     form-data "^4.0.0"
