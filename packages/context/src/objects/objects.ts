@@ -361,6 +361,17 @@ export type ActionInput = {
         maxDocuments?: number;
         customMessage?: string;
     };
+    isAddressLine1?: boolean;
+    addressPropertyId?: string;
+    defaultPages?: Record<string, string>;
+    instance?: ObjectInstance;
+    properties?: Property[];
+    canUpdateProperty?: boolean;
+    allCriteriaInputs?: string[];
+    apiServices?: ApiServices;
+    middleObject: ObjWithRoot;
+    initialMiddleObjectInstances: ObjectInstance[];
+    getMiddleObjectInstances: () => Promise<ObjectInstance[]>;
     /**
      * An array of sub-components to be rendered inside sections.
      */
