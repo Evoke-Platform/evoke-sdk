@@ -188,7 +188,7 @@ export type SelectOption = {
 
 export type VisibilityCondition = {
     property: string;
-    operator: 'eq' | 'neq';
+    operator: 'eq' | 'ne';
     value: string | number | boolean;
     isInstanceProperty?: boolean;
 };
