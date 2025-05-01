@@ -579,11 +579,12 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
-"@evoke-platform/context@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.0.0.tgz#71cedd010afb246c8a3d51d813bd18a3ca375f64"
-  integrity sha512-UFO88KI4PEKXkq38YiCwTaWSMnx00Ii5LjApcYtWzi9maaODxFCGHPzofwQ1Im023tjdmboMWfaZWbB3A+9CMQ==
+"@evoke-platform/context@^1.0.0", "@evoke-platform/context@^1.1.0-testing.0":
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.1.0.tgz#3da1ffbec4bc1757620aad92eb9099b2a6de0229"
+  integrity sha512-/0Zz5/4cMyZpjP3ZtIai50p0Cw+1ckJUF4SNk6VHeE0O9vffYIk1emRqwB8wdaCoadYmugQD0eFr5FDnWnBKTw==
   dependencies:
+    "@isaacs/ttlcache" "^1.4.1"
     "@microsoft/signalr" "^7.0.12"
     axios "^1.7.9"
     uuid "^9.0.1"
