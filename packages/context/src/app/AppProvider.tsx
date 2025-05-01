@@ -44,7 +44,10 @@ export type Widget = {
     properties: Record<string, unknown>;
 };
 
+export type NavigationLocation = 'side' | 'top' | 'none';
+
 export type NavigationMenu = {
+    location?: NavigationLocation;
     items?: NavigationItem[];
 };
 
