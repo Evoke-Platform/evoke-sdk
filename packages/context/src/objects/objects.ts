@@ -7,6 +7,16 @@ import { useMemo } from 'react';
 import { ApiServices, Callback, useApiServices } from '../api/index.js';
 import { Filter } from './filters.js';
 
+export type EvokeForm = {
+    id: string;
+    name: string;
+    entries: FormEntry[];
+    objectId: string;
+    formObjectId?: string;
+    actionId?: string;
+    autosaveActionId?: string;
+};
+
 export type BaseObjReference = {
     objectId: string;
     discriminatorValue: unknown;
@@ -65,6 +75,7 @@ export type Obj = {
     baseObject?: BaseObjReference;
     properties?: Property[];
     actions?: Action[];
+    formId?: string;
 };
 
 export type ObjWithRoot = Obj & { rootObjectId: string };
@@ -268,7 +279,20 @@ export type Sections = {
     visibility?: VisibilityConfiguration | JsonLogic;
 };
 
-export type FormEntry = InputParameterReference | Columns | Sections | Content;
+export type ReadonlyField = {
+    type: 'readonlyField';
+    propertyId: string;
+    display?: DisplayConfiguration;
+};
+
+export type InputField = {
+    type: 'inputField';
+    input: InputParameter;
+    display?: DisplayConfiguration;
+    documentMetadata?: Record<string, string>;
+};
+
+export type FormEntry = InputField | InputParameterReference | ReadonlyField | Sections | Columns | Content;
 
 export type Form = {
     entries?: FormEntry[];
