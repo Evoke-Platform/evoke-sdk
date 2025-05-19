@@ -350,7 +350,6 @@ export type ActionInput = {
          */
         values?: SelectOption[];
     };
-    nonStrictEnum?: boolean;
     inputMask?: string;
     inputMaskPlaceholderChar?: string;
     tableView?: boolean;
