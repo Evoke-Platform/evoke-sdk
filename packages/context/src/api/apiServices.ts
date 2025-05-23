@@ -1,7 +1,7 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthenticationContext, useAuthenticationContext } from '../authentication/AuthenticationContextProvider.js';
@@ -192,3 +192,5 @@ export function useApiServices() {
 
     return apiServices;
 }
+
+export type { AxiosError, AxiosRequestConfig };
