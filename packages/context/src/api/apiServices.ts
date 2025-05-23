@@ -193,4 +193,4 @@ export function useApiServices() {
     return apiServices;
 }
 
-export type { AxiosError, AxiosRequestConfig, AxiosResponse };
+export type { AxiosError, AxiosRequestConfig };
