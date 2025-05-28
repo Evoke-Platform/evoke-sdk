@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/context",
-    "version": "1.2.0-dev.4",
+    "version": "1.2.0-dev.5",
     "description": "Utilities that provide context to Evoke platform widgets",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
