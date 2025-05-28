@@ -239,7 +239,7 @@ export type DisplayConfiguration = {
     visibility?: VisibilityConfiguration | JsonLogic;
     viewLayout?: ViewLayoutEntityReference;
     choicesDisplay?: {
-        type: 'dropdown' | 'radioButton';
+        type: 'dropdown' | 'radioButton' | 'checkbox' | 'switch';
         sortBy?: 'ASC' | 'DESC' | 'NONE';
     };
 };
@@ -354,7 +354,7 @@ export type ActionInput = {
     inputMaskPlaceholderChar?: string;
     tableView?: boolean;
     mode?: 'default' | 'existingOnly';
-    displayOption?: 'dropdown' | 'dialogBox' | 'radioButton';
+    displayOption?: 'dropdown' | 'dialogBox' | 'radioButton' | 'checkbox' | 'switch';
     rows?: number;
     showCharCount?: boolean;
     readOnly?: boolean;
