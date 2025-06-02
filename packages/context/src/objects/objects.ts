@@ -332,7 +332,7 @@ export type ActionInput = {
     label?: string;
     type?: ActionInputType;
     key?: string;
-    initialValue?: string | string[] | number | RelatedObjectDefaultValue | SelectOption[] | SelectOption;
+    initialValue?: boolean | string | string[] | number | RelatedObjectDefaultValue | SelectOption[] | SelectOption;
     defaultToCurrentDate?: boolean;
     defaultToCurrentTime?: boolean;
     defaultValueCriteria?: object;
