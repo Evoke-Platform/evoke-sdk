@@ -226,7 +226,7 @@ export type DisplayConfiguration = {
     placeholder?: string;
     required?: boolean;
     description?: string;
-    defaultValue?: string | number | string[] | RelatedObjectDefaultValue | CriteriaDefaultValue;
+    defaultValue?: string | boolean | number | string[] | RelatedObjectDefaultValue | CriteriaDefaultValue;
     readOnly?: boolean;
     tooltip?: string;
     prefix?: string;
@@ -239,9 +239,10 @@ export type DisplayConfiguration = {
     visibility?: VisibilityConfiguration | JsonLogic;
     viewLayout?: ViewLayoutEntityReference;
     choicesDisplay?: {
-        type: 'dropdown' | 'radioButton' | 'checkbox' | 'switch';
+        type: 'dropdown' | 'radioButton';
         sortBy?: 'ASC' | 'DESC' | 'NONE';
     };
+    booleanDisplay?: 'checkbox' | 'switch';
 };
 
 export type InputParameterReference = {
