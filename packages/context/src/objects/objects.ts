@@ -136,7 +136,7 @@ export type Property = {
     id: string;
     name: string;
     type: PropertyType;
-    enum?: string[];
+    enum?: string[] | boolean[];
     nonStrictEnum?: boolean;
     objectId?: string;
     relatedPropertyId?: string;
@@ -163,7 +163,7 @@ export type InputParameter = {
     name?: string;
     type: PropertyType;
     required?: boolean;
-    enum?: string[];
+    enum?: string[] | boolean[];
     nonStrictEnum?: boolean;
     validation?: PropertyValidation | InputStringValidation;
     objectId?: string;
