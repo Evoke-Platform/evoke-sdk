@@ -7,6 +7,10 @@ import { useMemo } from 'react';
 import { ApiServices, Callback, useApiServices } from '../api/index.js';
 import { Filter } from './filters.js';
 
+export type EvokeFormDisplayConfiguration = {
+    submitLabel?: string;
+};
+
 export type EvokeForm = {
     id: string;
     name: string;
@@ -15,6 +19,7 @@ export type EvokeForm = {
     formObjectId?: string;
     actionId?: string;
     autosaveActionId?: string;
+    display?: EvokeFormDisplayConfiguration;
 };
 
 export type BaseObjReference = {
