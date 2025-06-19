@@ -137,6 +137,7 @@ export type Property = {
     name: string;
     type: PropertyType;
     enum?: string[];
+    strictlyTrue?: boolean;
     nonStrictEnum?: boolean;
     objectId?: string;
     relatedPropertyId?: string;
@@ -164,6 +165,7 @@ export type InputParameter = {
     type: PropertyType;
     required?: boolean;
     enum?: string[];
+    strictlyTrue?: boolean;
     nonStrictEnum?: boolean;
     validation?: PropertyValidation | InputStringValidation;
     objectId?: string;
@@ -226,7 +228,7 @@ export type DisplayConfiguration = {
     placeholder?: string;
     required?: boolean;
     description?: string;
-    defaultValue?: string | number | string[] | RelatedObjectDefaultValue | CriteriaDefaultValue;
+    defaultValue?: string | boolean | number | string[] | RelatedObjectDefaultValue | CriteriaDefaultValue;
     readOnly?: boolean;
     tooltip?: string;
     prefix?: string;
@@ -239,9 +241,10 @@ export type DisplayConfiguration = {
     visibility?: VisibilityConfiguration | JsonLogic;
     viewLayout?: ViewLayoutEntityReference;
     choicesDisplay?: {
-        type: 'dropdown' | 'radioButton' | 'checkbox' | 'switch';
+        type: 'dropdown' | 'radioButton';
         sortBy?: 'ASC' | 'DESC' | 'NONE';
     };
+    booleanDisplay?: 'checkbox' | 'switch';
 };
 
 export type InputParameterReference = {
@@ -331,7 +334,7 @@ export type ActionInput = {
     label?: string;
     type?: ActionInputType;
     key?: string;
-    initialValue?: string | string[] | number | RelatedObjectDefaultValue | SelectOption[] | SelectOption;
+    initialValue?: boolean | string | string[] | number | RelatedObjectDefaultValue | SelectOption[] | SelectOption;
     defaultToCurrentDate?: boolean;
     defaultToCurrentTime?: boolean;
     defaultValueCriteria?: object;
