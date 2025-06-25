@@ -162,7 +162,10 @@
                     "properties": { "type": { "const": "documentUpload" } }
                 },
                 {
-                    "properties": { "type": { "const": "columnSelector" } }
+                    "properties": {
+                        "type": { "const": "columnSelector" },
+                        "tooltip": false
+                    }
                 },
                 {
                     "properties": { "type": { "const": "filter" } }
