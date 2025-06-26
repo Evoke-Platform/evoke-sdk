@@ -164,6 +164,8 @@ export type InputStringValidation = StringValidation & {
     mask?: string;
 };
 
+export type BasicInputParameter = Omit<InputParameter, 'name' | 'required'>;
+
 export type InputParameter = {
     id: string;
     name?: string;
@@ -297,7 +299,7 @@ export type ReadonlyField = {
 
 export type InputField = {
     type: 'inputField';
-    input: InputParameter;
+    input: BasicInputParameter;
     display?: DisplayConfiguration;
     documentMetadata?: Record<string, string>;
 };
