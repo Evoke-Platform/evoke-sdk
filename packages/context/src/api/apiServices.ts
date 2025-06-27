@@ -4,7 +4,7 @@
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { AnyAuthenticationContext, useAuthenticationContext } from '../authentication/AuthenticationContextProvider.js';
+import { AuthenticationContext, useAuthenticationContext } from '../authentication/AuthenticationContextProvider.js';
 import { useApiBaseUrl } from './ApiBaseUrlProvider.js';
 import { Callback } from './callback.js';
 import { paramsSerializer } from './paramsSerializer.js';
@@ -16,7 +16,7 @@ const sessionId = uuidv4();
 export class ApiServices {
     constructor(
         private api: AxiosInstance,
-        authContext?: AnyAuthenticationContext,
+        authContext?: AuthenticationContext,
     ) {
         this.api.interceptors.request.use(async (config) => {
             const headers: Record<string, string> = { 'X-Session-Id': sessionId };

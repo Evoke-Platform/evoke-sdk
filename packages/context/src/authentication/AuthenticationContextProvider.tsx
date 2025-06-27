@@ -4,7 +4,7 @@
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
 import { ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
-import { AuthState, useAuth } from 'react-oidc-context';
+import { useAuth } from 'react-oidc-context';
 
 export type AuthenticationContext = {
     account: UserAccount;
@@ -12,16 +12,12 @@ export type AuthenticationContext = {
     getAccessToken: () => Promise<string>;
 };
 
-export type OidcAuthenticationContext = AuthenticationContext & Pick<AuthState, 'isAuthenticated' | 'isLoading'>;
-
-export type AnyAuthenticationContext = AuthenticationContext | OidcAuthenticationContext;
-
 export type UserAccount = {
     id: string;
     name?: string;
 };
 
-const Context = createContext<AnyAuthenticationContext | undefined>(undefined);
+const Context = createContext<AuthenticationContext | undefined>(undefined);
 
 Context.displayName = 'AuthenticationContext';
 
@@ -145,7 +141,7 @@ function OidcProvider({ authRequest, children }: OidcAuthenticationContextProvid
         [auth],
     );
 
-    const context: OidcAuthenticationContext | undefined = useMemo(
+    const context: AuthenticationContext | undefined = useMemo(
         () =>
             auth.isAuthenticated && auth.user
                 ? {
@@ -158,8 +154,6 @@ function OidcProvider({ authRequest, children }: OidcAuthenticationContextProvid
                           });
                       },
                       getAccessToken,
-                      isAuthenticated: true,
-                      isLoading: auth.isLoading,
                   }
                 : undefined,
         [auth, getAccessToken],
