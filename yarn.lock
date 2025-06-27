@@ -600,20 +600,20 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
-"@evoke-platform/context@^1.0.0", "@evoke-platform/context@^1.0.0-dev.118":
-  version "1.2.0"
-  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.2.0.tgz#820753b57269a2e4c9e369b8f77cc0b61c9fa89f"
-  integrity sha512-hYUUoAV8YE3pG04k2PM/E8PlI8+k/PzzxZ0KKldzDax/mKMEvPQjmov91np+zOql4tqCRphcELGnY2qWFFKaUQ==
+"@evoke-platform/context@^1.0.0", "@evoke-platform/context@^1.1.0-testing.0":
+  version "1.1.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.1.0.tgz#3da1ffbec4bc1757620aad92eb9099b2a6de0229"
+  integrity sha512-/0Zz5/4cMyZpjP3ZtIai50p0Cw+1ckJUF4SNk6VHeE0O9vffYIk1emRqwB8wdaCoadYmugQD0eFr5FDnWnBKTw==
   dependencies:
     "@isaacs/ttlcache" "^1.4.1"
     "@microsoft/signalr" "^7.0.12"
     axios "^1.7.9"
     uuid "^9.0.1"
 
-"@evoke-platform/ui-components@^1.0.0":
-  version "1.0.1"
-  resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.0.1.tgz#449922d62a071a59dd03797fe6cd10bbbbde6c9b"
-  integrity sha512-OLOqrRMsB8wBO0tkJ2qOIsarQkTRXCAXVunM4jlO3lO7g0irunkEr5vFsgnWAS/uxAzmWcHtGDbT2Yi9Rn35VQ==
+"@evoke-platform/ui-components@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.3.0.tgz#e5c3ddf34a75402135f518b9d3e851de6d3edbe6"
+  integrity sha512-HcYhTyJs7eAWC/+kKr180U8hbo0OYibnoa3JOmHuB0GONv/+tttK7xyTwVbbdD+EcD5f2rHAgAMvboYzkTxWcw==
   dependencies:
     "@date-io/js-joda" "^2.16.1"
     "@dnd-kit/core" "^6.0.6"
