@@ -589,7 +589,6 @@
     axios "^1.7.9"
     uuid "^9.0.1"
 
-<<<<<<< HEAD
 "@evoke-platform/ui-components@^1.3.0":
   version "1.3.0"
   resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.3.0.tgz#e5c3ddf34a75402135f518b9d3e851de6d3edbe6"
