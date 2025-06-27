@@ -7808,6 +7808,11 @@ react-number-format@^4.9.3:
   dependencies:
     prop-types "^15.7.2"
 
+react-oidc-context@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.npmjs.org/react-oidc-context/-/react-oidc-context-2.4.0.tgz#751ff186af5e731702e35d8b46aa66b1351885d7"
+  integrity sha512-7xbEXlBBlWBQfdSibjeA7jC5w1oKTvZVAodd9A+fmqDRt4bD+gGODWgGT8dX+a0S96Vfo7lzIrEBP7eZCFkwWw==
+
 react-property@2.0.2:
   version "2.0.2"
   resolved "https://registry.npmjs.org/react-property/-/react-property-2.0.2.tgz#d5ac9e244cef564880a610bc8d868bd6f60fdda6"
