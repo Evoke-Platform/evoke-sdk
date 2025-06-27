@@ -34,6 +34,8 @@ export type PageElement = Container | Widget;
 export type Container = {
     id: string;
     type: 'container';
+    isSticky?: boolean;
+    noPadding?: boolean;
     children?: PageElement[];
 };
 
