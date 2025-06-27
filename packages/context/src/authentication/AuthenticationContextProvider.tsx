@@ -4,6 +4,7 @@
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
 import { ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
+import { AuthState, useAuth } from 'react-oidc-context';
 
 export type AuthenticationContext = {
     account: UserAccount;
@@ -11,26 +12,73 @@ export type AuthenticationContext = {
     getAccessToken: () => Promise<string>;
 };
 
+export type OidcAuthenticationContext = AuthenticationContext & Pick<AuthState, 'isAuthenticated' | 'isLoading'>;
+
+export type AnyAuthenticationContext = AuthenticationContext | OidcAuthenticationContext;
+
 export type UserAccount = {
     id: string;
     name?: string;
 };
 
-const Context = createContext<AuthenticationContext | undefined>(undefined);
+const Context = createContext<AnyAuthenticationContext | undefined>(undefined);
 
 Context.displayName = 'AuthenticationContext';
 
+export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
+
+export type OidcAuthenticationRequest = {
+    scopes?: string[];
+    extraQueryParameters?: Record<string, string>;
+    state?: string;
+};
+
+// Original MSAL props
 export type AuthenticationContextProviderProps = {
     msal: IMsalContext;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
 };
 
-export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
+// Alternative OIDC props
+export type OidcAuthenticationContextProviderProps = {
+    authRequest: OidcAuthenticationRequest;
+    children?: ReactNode;
+};
 
-function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
-    const { msal, authRequest, children } = props;
+// Combined props type for auto-detection
+export type CombinedAuthenticationContextProviderProps =
+    | (AuthenticationContextProviderProps & { msal: IMsalContext }) // MSAL with required msal prop
+    | (OidcAuthenticationContextProviderProps & { msal?: never }); // OIDC without msal prop
 
+function AuthenticationContextProvider(props: CombinedAuthenticationContextProviderProps) {
+    // Auto-detect provider type based on presence of msal prop
+    if ('msal' in props && props.msal) {
+        const { msal, authRequest, children } = props;
+
+        return (
+            <MsalProvider msal={msal} authRequest={authRequest}>
+                {children}
+            </MsalProvider>
+        );
+    } else {
+        // OIDC provider
+        const { authRequest, children } = props;
+
+        return <OidcProvider authRequest={authRequest}>{children}</OidcProvider>;
+    }
+}
+
+// MSAL Implementation
+function MsalProvider({
+    msal,
+    authRequest,
+    children,
+}: {
+    msal: IMsalContext;
+    authRequest: AuthenticationRequest;
+    children?: ReactNode;
+}) {
     const account: AccountInfo | undefined = msal.instance.getActiveAccount() ?? msal.instance.getAllAccounts()[0];
 
     const getAccessToken = useCallback(
@@ -45,7 +93,7 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
                 return '';
             }
         },
-        [msal, authRequest],
+        [msal, authRequest, account],
     );
 
     const context: AuthenticationContext | undefined = useMemo(
@@ -64,7 +112,57 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
                       getAccessToken,
                   }
                 : undefined,
-        [account, msal, getAccessToken],
+        [account, msal, getAccessToken, authRequest],
+    );
+
+    return <Context.Provider value={context}>{children}</Context.Provider>;
+}
+
+// OIDC Implementation
+function OidcProvider({ authRequest, children }: OidcAuthenticationContextProviderProps) {
+    const auth = useAuth();
+
+    const getAccessToken = useCallback(
+        async function () {
+            try {
+                if (auth.user?.access_token) {
+                    return auth.user.access_token;
+                }
+
+                // Try to refresh the token silently
+                await auth.signinSilent();
+
+                return auth.user?.access_token || '';
+            } catch (error) {
+                console.error('Failed to get access token:', error);
+
+                // If silent refresh fails, redirect to login
+                auth.signinRedirect();
+
+                return '';
+            }
+        },
+        [auth],
+    );
+
+    const context: OidcAuthenticationContext | undefined = useMemo(
+        () =>
+            auth.isAuthenticated && auth.user
+                ? {
+                      account: { id: auth.user.profile.sub, name: auth.user.profile.name },
+                      logout: () => {
+                          auth.signoutRedirect({
+                              post_logout_redirect_uri: `/logout?p=${encodeURIComponent(
+                                  window.location.pathname + window.location.search,
+                              )}`,
+                          });
+                      },
+                      getAccessToken,
+                      isAuthenticated: true,
+                      isLoading: auth.isLoading,
+                  }
+                : undefined,
+        [auth, getAccessToken],
     );
 
     return <Context.Provider value={context}>{children}</Context.Provider>;

@@ -600,6 +600,16 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
+"@evoke-platform/context@^1.0.0", "@evoke-platform/context@^1.0.0-dev.118":
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.2.0.tgz#820753b57269a2e4c9e369b8f77cc0b61c9fa89f"
+  integrity sha512-hYUUoAV8YE3pG04k2PM/E8PlI8+k/PzzxZ0KKldzDax/mKMEvPQjmov91np+zOql4tqCRphcELGnY2qWFFKaUQ==
+  dependencies:
+    "@isaacs/ttlcache" "^1.4.1"
+    "@microsoft/signalr" "^7.0.12"
+    axios "^1.7.9"
+    uuid "^9.0.1"
+
 "@evoke-platform/ui-components@^1.0.0":
   version "1.0.1"
   resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.0.1.tgz#449922d62a071a59dd03797fe6cd10bbbbde6c9b"
@@ -734,6 +744,11 @@
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/@isaacs/string-locale-compare/-/string-locale-compare-1.1.0.tgz#291c227e93fd407a96ecd59879a35809120e432b"
   integrity sha512-SQ7Kzhh9+D+ZW9MA0zkYv3VXhIDNx+LzM6EJ+/65I3QY+enU6Itte7E5XX7EWrqLW2FN4n06GWzBnPoC3th2aQ==
+
+"@isaacs/ttlcache@^1.4.1":
+  version "1.4.1"
+  resolved "https://registry.npmjs.org/@isaacs/ttlcache/-/ttlcache-1.4.1.tgz#21fb23db34e9b6220c6ba023a0118a2dd3461ea2"
+  integrity sha512-RQgQ4uQ+pLbqXfOmieB91ejmLwvSgv9nLx6sT6sD83s7umBypgg+OIBOBbEUiJXrfpnp9j0mRhYYdzp9uqq3lA==
 
 "@jridgewell/resolve-uri@^3.0.3":
   version "3.1.0"
@@ -7806,6 +7821,11 @@ react-number-format@^4.9.3:
   integrity sha512-Gq20Z3ugqPLFgeaidnx5on9cNpbQZntPN3QgNAL/WJrNNlQnNznY0LCx7g8xtssmRBw0/hw+SCqw6zAcajooiA==
   dependencies:
     prop-types "^15.7.2"
+
+react-oidc-context@^2.4.0:
+  version "2.4.0"
+  resolved "https://registry.npmjs.org/react-oidc-context/-/react-oidc-context-2.4.0.tgz#751ff186af5e731702e35d8b46aa66b1351885d7"
+  integrity sha512-7xbEXlBBlWBQfdSibjeA7jC5w1oKTvZVAodd9A+fmqDRt4bD+gGODWgGT8dX+a0S96Vfo7lzIrEBP7eZCFkwWw==
 
 react-property@2.0.2:
   version "2.0.2"
