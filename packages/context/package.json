@@ -71,6 +71,7 @@
     "dependencies": {
         "@microsoft/signalr": "^7.0.12",
         "axios": "^1.7.9",
+        "oidc-client-ts": "^3.3.0",
         "uuid": "^9.0.1"
     }
 }
