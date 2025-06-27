@@ -1,4 +1,4 @@
-// Copyright (c) 2023 System Automation Corporation.
+// Copyright (c) 2025 System Automation Corporation.
 // This file is licensed under the MIT License.
 
 import { AxiosError } from 'axios';
@@ -42,6 +42,8 @@ export type Widget = {
     pluginId: string;
     widgetKey: string;
     colSpan: number;
+    isSticky?: boolean;
+    noPadding?: boolean;
     properties: Record<string, unknown>;
 };
 
