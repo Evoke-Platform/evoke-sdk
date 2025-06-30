@@ -3,7 +3,9 @@
 
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
+import { ExtraSigninRequestArgs } from 'oidc-client-ts';
 import { ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
+import { useAuth } from 'react-oidc-context';
 
 export type AuthenticationContext = {
     account: UserAccount;
@@ -20,17 +22,44 @@ const Context = createContext<AuthenticationContext | undefined>(undefined);
 
 Context.displayName = 'AuthenticationContext';
 
-export type AuthenticationContextProviderProps = {
+export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
+
+export type OidcAuthenticationRequest = Pick<ExtraSigninRequestArgs, 'scope' | 'extraQueryParams' | 'state'>;
+
+export type MsalAuthenticationContextProviderProps = {
     msal: IMsalContext;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
 };
 
-export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
+export type OidcAuthenticationContextProviderProps = {
+    authRequest: OidcAuthenticationRequest;
+    children?: ReactNode;
+};
+
+export type AuthenticationContextProviderProps =
+    | MsalAuthenticationContextProviderProps
+    | OidcAuthenticationContextProviderProps;
 
 function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
-    const { msal, authRequest, children } = props;
+    // Auto-detect provider type based on presence of msal prop
+    if ('msal' in props && props.msal) {
+        const { msal, authRequest, children } = props;
 
+        return (
+            <MsalProvider msal={msal} authRequest={authRequest}>
+                {children}
+            </MsalProvider>
+        );
+    } else {
+        // OIDC provider
+        const { authRequest, children } = props;
+
+        return <OidcProvider authRequest={authRequest}>{children}</OidcProvider>;
+    }
+}
+
+function MsalProvider({ msal, authRequest, children }: MsalAuthenticationContextProviderProps) {
     const account: AccountInfo | undefined = msal.instance.getActiveAccount() ?? msal.instance.getAllAccounts()[0];
 
     const getAccessToken = useCallback(
@@ -45,7 +74,7 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
                 return '';
             }
         },
-        [msal, authRequest],
+        [msal, authRequest, account],
     );
 
     const context: AuthenticationContext | undefined = useMemo(
@@ -64,7 +93,58 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
                       getAccessToken,
                   }
                 : undefined,
-        [account, msal, getAccessToken],
+        [account, msal, getAccessToken, authRequest],
+    );
+
+    return <Context.Provider value={context}>{children}</Context.Provider>;
+}
+
+function OidcProvider({ authRequest, children }: OidcAuthenticationContextProviderProps) {
+    const auth = useAuth();
+
+    const getAccessToken = useCallback(
+        async function () {
+            try {
+                // Check if we have a valid (non-expired) access token
+                if (auth.user?.access_token && !auth.user.expired) {
+                    return auth.user.access_token;
+                }
+
+                // Token is either missing or expired - attempt silent refresh
+                // This handles both cases:
+                // - automaticSilentRenew: true (should not reach here, but fallback as a sanity check)
+                // - automaticSilentRenew: false (manual refresh when needed)
+                await auth.signinSilent({ ...authRequest });
+
+                return auth.user?.access_token || '';
+            } catch (error) {
+                console.error('Failed to get access token:', error);
+
+                // If silent refresh fails, redirect to login
+                auth.signinRedirect({ ...authRequest });
+
+                return '';
+            }
+        },
+        [auth, authRequest],
+    );
+
+    const context: AuthenticationContext | undefined = useMemo(
+        () =>
+            auth.isAuthenticated && auth.user
+                ? {
+                      account: { id: auth.user.profile.sub, name: auth.user.profile.name },
+                      logout: () => {
+                          auth.signoutRedirect({
+                              post_logout_redirect_uri: `/logout?p=${encodeURIComponent(
+                                  window.location.pathname + window.location.search,
+                              )}`,
+                          });
+                      },
+                      getAccessToken,
+                  }
+                : undefined,
+        [auth, getAccessToken],
     );
 
     return <Context.Provider value={context}>{children}</Context.Provider>;
