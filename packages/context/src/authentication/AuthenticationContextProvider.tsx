@@ -3,6 +3,7 @@
 
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
+import { ExtraSigninRequestArgs } from 'oidc-client-ts';
 import { ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
 import { useAuth } from 'react-oidc-context';
 
@@ -23,31 +24,24 @@ Context.displayName = 'AuthenticationContext';
 
 export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
 
-export type OidcAuthenticationRequest = {
-    scopes?: string[];
-    extraQueryParameters?: Record<string, string>;
-    state?: string;
-};
+export type OidcAuthenticationRequest = Pick<ExtraSigninRequestArgs, 'scope' | 'extraQueryParams' | 'state'>;
 
-// Original MSAL props
-export type AuthenticationContextProviderProps = {
+export type MsalAuthenticationContextProviderProps = {
     msal: IMsalContext;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
 };
 
-// Alternative OIDC props
 export type OidcAuthenticationContextProviderProps = {
     authRequest: OidcAuthenticationRequest;
     children?: ReactNode;
 };
 
-// Combined props type for auto-detection
-export type CombinedAuthenticationContextProviderProps =
-    | (AuthenticationContextProviderProps & { msal: IMsalContext }) // MSAL with required msal prop
-    | (OidcAuthenticationContextProviderProps & { msal?: never }); // OIDC without msal prop
+export type AuthenticationContextProviderProps =
+    | MsalAuthenticationContextProviderProps
+    | OidcAuthenticationContextProviderProps;
 
-function AuthenticationContextProvider(props: CombinedAuthenticationContextProviderProps) {
+function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
     // Auto-detect provider type based on presence of msal prop
     if ('msal' in props && props.msal) {
         const { msal, authRequest, children } = props;
@@ -65,16 +59,7 @@ function AuthenticationContextProvider(props: CombinedAuthenticationContextProvi
     }
 }
 
-// MSAL Implementation
-function MsalProvider({
-    msal,
-    authRequest,
-    children,
-}: {
-    msal: IMsalContext;
-    authRequest: AuthenticationRequest;
-    children?: ReactNode;
-}) {
+function MsalProvider({ msal, authRequest, children }: MsalAuthenticationContextProviderProps) {
     const account: AccountInfo | undefined = msal.instance.getActiveAccount() ?? msal.instance.getAllAccounts()[0];
 
     const getAccessToken = useCallback(
@@ -114,31 +99,34 @@ function MsalProvider({
     return <Context.Provider value={context}>{children}</Context.Provider>;
 }
 
-// OIDC Implementation
 function OidcProvider({ authRequest, children }: OidcAuthenticationContextProviderProps) {
     const auth = useAuth();
 
     const getAccessToken = useCallback(
         async function () {
             try {
-                if (auth.user?.access_token) {
+                // Check if we have a valid (non-expired) access token
+                if (auth.user?.access_token && !auth.user.expired) {
                     return auth.user.access_token;
                 }
 
-                // Try to refresh the token silently
-                await auth.signinSilent();
+                // Token is either missing or expired - attempt silent refresh
+                // This handles both cases:
+                // - automaticSilentRenew: true (should not reach here, but fallback as a sanity check)
+                // - automaticSilentRenew: false (manual refresh when needed)
+                await auth.signinSilent({ ...authRequest });
 
                 return auth.user?.access_token || '';
             } catch (error) {
                 console.error('Failed to get access token:', error);
 
                 // If silent refresh fails, redirect to login
-                auth.signinRedirect();
+                auth.signinRedirect({ ...authRequest });
 
                 return '';
             }
         },
-        [auth],
+        [auth, authRequest],
     );
 
     const context: AuthenticationContext | undefined = useMemo(
