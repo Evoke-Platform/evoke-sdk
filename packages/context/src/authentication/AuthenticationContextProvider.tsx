@@ -24,26 +24,15 @@ Context.displayName = 'AuthenticationContext';
 
 export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
 
-export type OidcAuthenticationRequest = Pick<ExtraSigninRequestArgs, 'scope' | 'extraQueryParams' | 'state'>;
-
-export type MsalAuthenticationContextProviderProps = {
-    msal: IMsalContext;
+export type AuthenticationContextProviderProps = {
+    msal?: IMsalContext;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
 };
 
-export type OidcAuthenticationContextProviderProps = {
-    authRequest: OidcAuthenticationRequest;
-    children?: ReactNode;
-};
-
-export type AuthenticationContextProviderProps =
-    | MsalAuthenticationContextProviderProps
-    | OidcAuthenticationContextProviderProps;
-
 function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
     // Auto-detect provider type based on presence of msal prop
-    if ('msal' in props && props.msal) {
+    if (props.msal) {
         const { msal, authRequest, children } = props;
 
         return (
@@ -52,14 +41,17 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
             </MsalProvider>
         );
     } else {
-        // OIDC provider
         const { authRequest, children } = props;
 
         return <OidcProvider authRequest={authRequest}>{children}</OidcProvider>;
     }
 }
 
-function MsalProvider({ msal, authRequest, children }: MsalAuthenticationContextProviderProps) {
+function MsalProvider({ msal, authRequest, children }: AuthenticationContextProviderProps) {
+    if (!msal) {
+        throw new Error('MSAL instance is required for MsalProvider');
+    }
+
     const account: AccountInfo | undefined = msal.instance.getActiveAccount() ?? msal.instance.getAllAccounts()[0];
 
     const getAccessToken = useCallback(
@@ -99,7 +91,14 @@ function MsalProvider({ msal, authRequest, children }: MsalAuthenticationContext
     return <Context.Provider value={context}>{children}</Context.Provider>;
 }
 
-function OidcProvider({ authRequest, children }: OidcAuthenticationContextProviderProps) {
+function OidcProvider({ authRequest, children }: AuthenticationContextProviderProps) {
+    // The authRequest for react-oidc is formatted slightly differently than msal.
+    const oidcAuthRequest: Pick<ExtraSigninRequestArgs, 'scope' | 'extraQueryParams' | 'state'> = {
+        scope: authRequest.scopes?.join(' ') || 'openid profile email',
+        extraQueryParams: authRequest.extraQueryParameters,
+        state: authRequest.state,
+    };
+
     const auth = useAuth();
 
     const getAccessToken = useCallback(
@@ -114,14 +113,14 @@ function OidcProvider({ authRequest, children }: OidcAuthenticationContextProvid
                 // This handles both cases:
                 // - automaticSilentRenew: true (should not reach here, but fallback as a sanity check)
                 // - automaticSilentRenew: false (manual refresh when needed)
-                await auth.signinSilent({ ...authRequest });
+                await auth.signinSilent(oidcAuthRequest);
 
                 return auth.user?.access_token || '';
             } catch (error) {
                 console.error('Failed to get access token:', error);
 
                 // If silent refresh fails, redirect to login
-                auth.signinRedirect({ ...authRequest });
+                auth.signinRedirect(oidcAuthRequest);
 
                 return '';
             }
