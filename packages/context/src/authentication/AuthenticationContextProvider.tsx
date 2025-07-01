@@ -104,22 +104,30 @@ function OidcProvider({ authRequest, children }: AuthenticationContextProviderPr
     const getAccessToken = useCallback(
         async function () {
             try {
-                // Check if we have a valid (non-expired) access token
+                // With automaticSilentRenew: true, oidc-client-ts will attempt to renew the token in the background before it expires.
+                // However, this is not guaranteed to be perfectly in sync with your API calls. Always check for expiration here and call signinSilent if needed
+                // to ensure you get a valid token on demand.
                 if (auth.user?.access_token && !auth.user.expired) {
                     return auth.user.access_token;
                 }
+                // Token is either missing or expired - attempt silent refresh.
+                const user = await auth.signinSilent(oidcAuthRequest);
 
-                // Token is either missing or expired - attempt silent refresh
-                // This handles both cases:
-                // - automaticSilentRenew: true (should not reach here, but fallback as a sanity check)
-                // - automaticSilentRenew: false (manual refresh when needed)
-                await auth.signinSilent(oidcAuthRequest);
+                // If signinSilent returns null, it means silent login failed
+                if (!user) {
+                    console.log('Silent login failed, redirecting to login');
+
+                    auth.signinRedirect(oidcAuthRequest);
+
+                    return '';
+                }
 
                 return auth.user?.access_token || '';
             } catch (error) {
                 console.error('Failed to get access token:', error);
 
-                // If silent refresh fails, redirect to login
+                // If silent refresh throws an error (e.g., network failure, missing silent_redirect_uri,
+                // invalid session, refresh token expired, or provider returned an error), redirect to login
                 auth.signinRedirect(oidcAuthRequest);
 
                 return '';
