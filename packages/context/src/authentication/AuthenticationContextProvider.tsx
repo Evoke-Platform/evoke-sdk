@@ -22,13 +22,13 @@ const Context = createContext<AuthenticationContext | undefined>(undefined);
 
 Context.displayName = 'AuthenticationContext';
 
-export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
-
 export type AuthenticationContextProviderProps = {
     msal?: IMsalContext;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
 };
+
+export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
 
 function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
     // Auto-detect provider type based on presence of msal prop
@@ -94,7 +94,7 @@ function MsalProvider({ msal, authRequest, children }: AuthenticationContextProv
 function OidcProvider({ authRequest, children }: AuthenticationContextProviderProps) {
     // The authRequest for react-oidc is formatted slightly differently than msal.
     const oidcAuthRequest: Pick<ExtraSigninRequestArgs, 'scope' | 'extraQueryParams' | 'state'> = {
-        scope: authRequest.scopes?.join(' ') || 'openid profile email',
+        scope: authRequest.scopes?.join(' ') ?? 'openid profile email',
         extraQueryParams: authRequest.extraQueryParameters,
         state: authRequest.state,
     };
