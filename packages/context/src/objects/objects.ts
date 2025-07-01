@@ -187,6 +187,7 @@ export type Action = {
     inputProperties?: ActionInput[];
     parameters?: InputParameter[];
     form?: Form;
+    defaultFormId?: string;
     customCode?: string;
     preconditions?: object;
 };
