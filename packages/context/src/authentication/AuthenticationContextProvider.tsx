@@ -16,7 +16,7 @@ export type AuthenticationContext = {
 export type UserAccount = {
     id: string;
     name?: string;
-    lastLogin?: number;
+    lastLoginTime: number;
 };
 
 const Context = createContext<AuthenticationContext | undefined>(undefined);
@@ -77,7 +77,7 @@ function MsalProvider({ msal, authRequest, children }: AuthenticationContextProv
                       account: {
                           id: account.localAccountId,
                           name: account.name,
-                          lastLogin: account.idTokenClaims?.last_login_time,
+                          lastLoginTime: account.idTokenClaims?.last_login_time,
                       },
                       logout: () => {
                           msal.instance.logoutRedirect({
@@ -148,7 +148,7 @@ function OidcProvider({ authRequest, children }: AuthenticationContextProviderPr
                       account: {
                           id: auth.user.profile.sub,
                           name: auth.user.profile.name,
-                          lastLogin: auth.user.profile.auth_time,
+                          lastLoginTime: auth.user.profile.auth_time,
                       },
                       logout: () => {
                           auth.signoutRedirect({
