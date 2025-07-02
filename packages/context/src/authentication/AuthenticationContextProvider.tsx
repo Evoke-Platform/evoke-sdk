@@ -73,7 +73,11 @@ function MsalProvider({ msal, authRequest, children }: AuthenticationContextProv
         () =>
             account
                 ? {
-                      account: { id: account.localAccountId, name: account.name },
+                      account: {
+                          id: account.localAccountId,
+                          name: account.name,
+                          lastLogin: account.idTokenClaims?.last_login_time,
+                      },
                       logout: () => {
                           msal.instance.logoutRedirect({
                               account,
@@ -140,7 +144,11 @@ function OidcProvider({ authRequest, children }: AuthenticationContextProviderPr
         () =>
             auth.isAuthenticated && auth.user
                 ? {
-                      account: { id: auth.user.profile.sub, name: auth.user.profile.name },
+                      account: {
+                          id: auth.user.profile.sub,
+                          name: auth.user.profile.name,
+                          lastLogin: auth.user.profile.auth_time,
+                      },
                       logout: () => {
                           auth.signoutRedirect({
                               post_logout_redirect_uri: `/logout?p=${encodeURIComponent(
