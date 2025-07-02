@@ -16,7 +16,7 @@ export type AuthenticationContext = {
 export type UserAccount = {
     id: string;
     name?: string;
-    lastLoginTime: number;
+    lastLoginTime?: number;
 };
 
 const Context = createContext<AuthenticationContext | undefined>(undefined);
