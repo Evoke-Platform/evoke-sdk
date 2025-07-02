@@ -77,7 +77,7 @@ function MsalProvider({ msal, authRequest, children }: AuthenticationContextProv
                       account: {
                           id: account.localAccountId,
                           name: account.name,
-                          lastLoginTime: account.idTokenClaims?.last_login_time,
+                          lastLoginTime: account.idTokenClaims?.last_login_time as number | undefined,
                       },
                       logout: () => {
                           msal.instance.logoutRedirect({
