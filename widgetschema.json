@@ -76,6 +76,14 @@
                 "$ref": "#/definitions/choice"
             }
         },
+        "presetValues": {
+            "type": "array",
+            "uniqueItems": true,
+            "description": "Array of preset values available for selection within the filter properties",
+            "items": {
+                "$ref": "#/definitions/choice"
+            }
+        },
         "choice": {
             "type": "object",
             "required": ["label", "value"],
@@ -245,6 +253,9 @@
                     "$ref": "#/definitions/api"
                 },
                 "inputGroup": { "$ref": "#/definitions/inputGroup" },
+                "presetValues": {
+                    "$ref": "#/definitions/presetValues"
+                },
                 "disabled": {
                     "type": "object",
                     "properties": {
