@@ -147,7 +147,10 @@ function OidcProvider({ authRequest, children }: AuthenticationContextProviderPr
                 ? {
                       account: {
                           id: auth.user.profile.sub,
-                          name: auth.user.profile.name,
+                          name:
+                              auth.user.profile.name ??
+                              (`${auth.user.profile.given_name ?? ''} ${auth.user.profile.family_name ?? ''}` ||
+                                  undefined),
                           lastLoginTime: auth.user.profile.lastLoginTime as number | undefined,
                       },
                       logout: () => {
