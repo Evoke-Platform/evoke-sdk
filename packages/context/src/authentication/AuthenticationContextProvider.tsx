@@ -155,9 +155,8 @@ function OidcProvider({ authRequest, children }: AuthenticationContextProviderPr
                       },
                       logout: () => {
                           auth.signoutRedirect({
-                              post_logout_redirect_uri: `/logout?p=${encodeURIComponent(
-                                  window.location.pathname + window.location.search,
-                              )}`,
+                              // Fusion auth requires an absolute url.
+                              post_logout_redirect_uri: `${window.location.origin}/logout`,
                           });
                       },
                       getAccessToken,
