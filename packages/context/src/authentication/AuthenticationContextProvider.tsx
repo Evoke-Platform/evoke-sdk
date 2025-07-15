@@ -17,6 +17,7 @@ export type UserAccount = {
     id: string;
     name?: string;
     lastLoginTime?: number;
+    activeMfaSession?: boolean;
 };
 
 const Context = createContext<AuthenticationContext | undefined>(undefined);
@@ -78,6 +79,7 @@ function MsalProvider({ msal, authRequest, children }: AuthenticationContextProv
                           id: account.localAccountId,
                           name: account.name,
                           lastLoginTime: account.idTokenClaims?.last_login_time as number | undefined,
+                          activeMfaSession: Boolean(account.idTokenClaims?.active_mfa_session),
                       },
                       logout: () => {
                           msal.instance.logoutRedirect({
