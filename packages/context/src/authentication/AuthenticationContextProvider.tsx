@@ -16,6 +16,7 @@ export type AuthenticationContext = {
 export type UserAccount = {
     id: string;
     name?: string;
+    username?: string;
     lastLoginTime?: number;
     activeMfaSession?: boolean;
 };
@@ -78,6 +79,7 @@ function MsalProvider({ msal, authRequest, children }: AuthenticationContextProv
                       account: {
                           id: account.localAccountId,
                           name: account.name,
+                          username: account.username,
                           lastLoginTime: account.idTokenClaims?.last_login_time as number | undefined,
                           activeMfaSession: Boolean(account.idTokenClaims?.active_mfa_session),
                       },
@@ -153,6 +155,7 @@ function OidcProvider({ authRequest, children }: AuthenticationContextProviderPr
                               auth.user.profile.name ??
                               (`${auth.user.profile.given_name ?? ''} ${auth.user.profile.family_name ?? ''}` ||
                                   undefined),
+                          username: auth.user.profile.preferred_username,
                           lastLoginTime: auth.user.profile.lastLoginTime as number | undefined,
                       },
                       logout: () => {
