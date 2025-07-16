@@ -155,7 +155,7 @@ function OidcProvider({ authRequest, children }: AuthenticationContextProviderPr
                               auth.user.profile.name ??
                               (`${auth.user.profile.given_name ?? ''} ${auth.user.profile.family_name ?? ''}` ||
                                   undefined),
-                          username: auth.user.profile.preferred_username,
+                          username: auth.user.profile.preferred_username ?? auth.user.profile.email,
                           lastLoginTime: auth.user.profile.lastLoginTime as number | undefined,
                       },
                       logout: () => {
