@@ -128,6 +128,8 @@ export type DocumentValidation = {
     errorMessage?: string;
     maxDocuments?: number;
     minDocuments?: number;
+    allowedTypes?: string[];
+    maxSize?: number; // in KB
 };
 
 export type PropertyValidation =
