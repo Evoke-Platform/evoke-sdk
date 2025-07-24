@@ -129,7 +129,7 @@ export type DocumentValidation = {
     maxDocuments?: number;
     minDocuments?: number;
     allowedTypes?: string[];
-    maxSize?: number; // in KB
+    maxSize?: number; // in MB
 };
 
 export type PropertyValidation =
