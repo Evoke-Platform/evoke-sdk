@@ -43,23 +43,23 @@ export type TableViewLayoutEntity = ViewLayoutEntity & TableViewLayout;
 export type DropdownViewLayoutEntity = ViewLayoutEntity & DropdownViewLayout;
 
 export type ViewLayout = {
-    table?: TableViewLayout;
-    dropdown?: DropdownViewLayout;
+    table?: TableViewLayout | null;
+    dropdown?: DropdownViewLayout | null;
 };
 
 export type DropdownViewLayoutSort = {
     propertyId: string;
-    direction?: 'asc' | 'desc';
+    direction?: 'asc' | 'desc' | null;
 };
 
 export type DropdownViewLayout = {
     secondaryTextExpression: string;
-    sort?: DropdownViewLayoutSort;
+    sort?: DropdownViewLayoutSort | null;
 };
 
 export type TableViewLayout = {
     properties: PropertyReference[];
-    sort?: Sort;
+    sort?: Sort | null;
 };
 
 export type PropertyReference = {
@@ -69,18 +69,18 @@ export type PropertyReference = {
 
 export type Sort = {
     colId: string;
-    sort?: 'asc' | 'desc';
+    sort?: 'asc' | 'desc' | null;
 };
 
 export type Obj = {
     id: string;
     name: string;
-    typeDiscriminatorProperty?: string;
-    viewLayout?: ViewLayout;
-    baseObject?: BaseObjReference;
-    properties?: Property[];
-    actions?: Action[];
-    formId?: string;
+    typeDiscriminatorProperty?: string | null;
+    viewLayout?: ViewLayout | null;
+    baseObject?: BaseObjReference | null;
+    properties?: Property[] | null;
+    actions?: Action[] | null;
+    formId?: string | null;
 };
 
 export type ObjWithRoot = Obj & { rootObjectId: string };
@@ -104,30 +104,30 @@ export type PropertyType =
     | 'user';
 
 export type NumericValidation = {
-    errorMessage?: string;
-    minimum?: number;
-    maximum?: number;
+    errorMessage?: string | null;
+    minimum?: number | null;
+    maximum?: number | null;
 };
 
 export type DateValidation = {
-    errorMessage?: string;
-    to?: string;
-    from?: string;
+    errorMessage?: string | null;
+    to?: string | null;
+    from?: string | null;
 };
 
 export type CriteriaValidation = {
-    criteria?: Record<string, unknown>;
+    criteria?: Record<string, unknown> | null;
 };
 
 export type StringValidation = {
     operator: 'any' | 'all';
-    rules?: RegexValidation[];
+    rules?: RegexValidation[] | null;
 };
 
 export type DocumentValidation = {
-    errorMessage?: string;
-    maxDocuments?: number;
-    minDocuments?: number;
+    errorMessage?: string | null;
+    maxDocuments?: number | null;
+    minDocuments?: number | null;
 };
 
 export type PropertyValidation =
@@ -141,55 +141,55 @@ export type Property = {
     id: string;
     name: string;
     type: PropertyType;
-    enum?: string[];
-    strictlyTrue?: boolean;
-    nonStrictEnum?: boolean;
-    objectId?: string;
-    relatedPropertyId?: string;
-    required?: boolean;
-    searchable?: boolean;
-    formula?: string;
-    formulaType?: 'aggregate' | 'custom' | 'arithmetic';
-    mask?: string;
-    validation?: PropertyValidation;
-    manyToManyPropertyId?: string;
-    textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase';
+    enum?: string[] | null;
+    strictlyTrue?: boolean | null;
+    nonStrictEnum?: boolean | null;
+    objectId?: string | null;
+    relatedPropertyId?: string | null;
+    required?: boolean | null;
+    searchable?: boolean | null;
+    formula?: string | null;
+    formulaType?: 'aggregate' | 'custom' | 'arithmetic' | null;
+    mask?: string | null;
+    validation?: PropertyValidation | null;
+    manyToManyPropertyId?: string | null;
+    textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase' | null;
 };
 
 export type ActionType = 'create' | 'update' | 'delete';
 
 export type InputStringValidation = StringValidation & {
-    minLength?: number;
-    maxLength?: number;
-    mask?: string;
+    minLength?: number | null;
+    maxLength?: number | null;
+    mask?: string | null;
 };
 
 export type BasicInputParameter = Omit<InputParameter, 'name' | 'required'>;
 
 export type InputParameter = {
     id: string;
-    name?: string;
+    name?: string | null;
     type: PropertyType;
-    required?: boolean;
-    enum?: string[];
-    strictlyTrue?: boolean;
-    nonStrictEnum?: boolean;
-    validation?: PropertyValidation | InputStringValidation;
-    objectId?: string;
-    relatedPropertyId?: string;
-    manyToManyPropertyId?: string;
+    required?: boolean | null;
+    enum?: string[] | null;
+    strictlyTrue?: boolean | null;
+    nonStrictEnum?: boolean | null;
+    validation?: PropertyValidation | InputStringValidation | null;
+    objectId?: string | null;
+    relatedPropertyId?: string | null;
+    manyToManyPropertyId?: string | null;
 };
 export type Action = {
     id: string;
     name: string;
     type: ActionType;
     outputEvent: string;
-    inputProperties?: ActionInput[];
-    parameters?: InputParameter[];
-    form?: Form;
-    defaultFormId?: string;
-    customCode?: string;
-    preconditions?: object;
+    inputProperties?: ActionInput[] | null;
+    parameters?: InputParameter[] | null;
+    form?: Form | null;
+    defaultFormId?: string | null;
+    customCode?: string | null;
+    preconditions?: object | null;
 };
 
 export type ObjectInstance = {
@@ -201,7 +201,7 @@ export type ObjectInstance = {
 
 export type RegexValidation = {
     regex: string;
-    errorMessage?: string;
+    errorMessage?: string | null;
 };
 
 export type SelectOption = {
@@ -213,18 +213,18 @@ export type VisibilityCondition = {
     property: string;
     operator: 'eq' | 'ne';
     value: string | number | boolean;
-    isInstanceProperty?: boolean;
+    isInstanceProperty?: boolean | null;
 };
 
 export type VisibilityConfiguration = {
-    operator?: 'any' | 'all';
-    conditions?: VisibilityCondition[];
+    operator?: 'any' | 'all' | null;
+    conditions?: VisibilityCondition[] | null;
 };
 
 export type RelatedObjectDefaultValue = {
     criteria: Record<string, unknown>;
-    sortBy?: string;
-    orderBy?: 'asc' | 'desc' | 'ASC' | 'DESC';
+    sortBy?: string | null;
+    orderBy?: 'asc' | 'desc' | 'ASC' | 'DESC' | null;
 };
 
 export type CriteriaDefaultValue = Record<string, unknown>;
@@ -232,83 +232,83 @@ export type CriteriaDefaultValue = Record<string, unknown>;
 export type JsonLogic = Record<string, unknown> | boolean | number | string | null;
 
 export type DisplayConfiguration = {
-    label?: string;
-    placeholder?: string;
-    required?: boolean;
-    description?: string;
-    defaultValue?: string | boolean | number | string[] | RelatedObjectDefaultValue | CriteriaDefaultValue;
-    readOnly?: boolean;
-    tooltip?: string;
-    prefix?: string;
-    suffix?: string;
-    placeholderChar?: string;
-    rowCount?: number;
-    charCount?: boolean;
-    mode?: 'default' | 'existingOnly';
-    relatedObjectDisplay?: 'dropdown' | 'dialogBox';
-    visibility?: VisibilityConfiguration | JsonLogic;
-    viewLayout?: ViewLayoutEntityReference;
+    label?: string | null;
+    placeholder?: string | null;
+    required?: boolean | null;
+    description?: string | null;
+    defaultValue?: string | boolean | number | string[] | RelatedObjectDefaultValue | CriteriaDefaultValue | null;
+    readOnly?: boolean | null;
+    tooltip?: string | null;
+    prefix?: string | null;
+    suffix?: string | null;
+    placeholderChar?: string | null;
+    rowCount?: number | null;
+    charCount?: boolean | null;
+    mode?: 'default' | 'existingOnly' | null;
+    relatedObjectDisplay?: 'dropdown' | 'dialogBox' | null;
+    visibility?: VisibilityConfiguration | JsonLogic | null;
+    viewLayout?: ViewLayoutEntityReference | null;
     choicesDisplay?: {
         type: 'dropdown' | 'radioButton';
-        sortBy?: 'ASC' | 'DESC' | 'NONE';
-    };
-    booleanDisplay?: 'checkbox' | 'switch';
+        sortBy?: 'ASC' | 'DESC' | 'NONE' | null;
+    } | null;
+    booleanDisplay?: 'checkbox' | 'switch' | null;
 };
 
 export type InputParameterReference = {
     type: 'input';
     parameterId: string;
-    display?: DisplayConfiguration;
-    enumWithLabels?: SelectOption[];
-    documentMetadata?: Record<string, string>;
+    display?: DisplayConfiguration | null;
+    enumWithLabels?: SelectOption[] | null;
+    documentMetadata?: Record<string, string> | null;
 };
 
 export type Content = {
     type: 'content';
     html: string;
-    visibility?: VisibilityConfiguration | JsonLogic;
+    visibility?: VisibilityConfiguration | JsonLogic | null;
 };
 
 export type Column = {
     width: number;
-    entries?: FormEntry[];
+    entries?: FormEntry[] | null;
 };
 
 export type Columns = {
     type: 'columns';
     columns: Column[];
-    visibility?: VisibilityConfiguration | JsonLogic;
+    visibility?: VisibilityConfiguration | JsonLogic | null;
 };
 
 export type Section = {
     label: string;
-    entries?: FormEntry[];
+    entries?: FormEntry[] | null;
 };
 
 export type Sections = {
     type: 'sections';
-    label?: string;
+    label?: string | null;
     sections: Section[];
-    visibility?: VisibilityConfiguration | JsonLogic;
+    visibility?: VisibilityConfiguration | JsonLogic | null;
 };
 
 export type ReadonlyField = {
     type: 'readonlyField';
     propertyId: string;
-    display?: DisplayConfiguration;
+    display?: DisplayConfiguration | null;
 };
 
 export type InputField = {
     type: 'inputField';
     input: BasicInputParameter;
-    display?: DisplayConfiguration;
-    documentMetadata?: Record<string, string>;
+    display?: DisplayConfiguration | null;
+    documentMetadata?: Record<string, string> | null;
 };
 
 export type FormEntry = InputField | InputParameterReference | ReadonlyField | Sections | Columns | Content;
 
 export type Form = {
-    entries?: FormEntry[];
+    entries?: FormEntry[] | null;
 };
 
 export type ActionInputType =
@@ -338,83 +338,95 @@ export type ActionInputType =
  * Represents an object action inputProperty object.
  */
 export type ActionInput = {
-    id?: string;
-    label?: string;
-    type?: ActionInputType;
-    key?: string;
-    initialValue?: boolean | string | string[] | number | RelatedObjectDefaultValue | SelectOption[] | SelectOption;
-    defaultToCurrentDate?: boolean;
-    defaultToCurrentTime?: boolean;
-    defaultValueCriteria?: object;
-    sortBy?: string;
-    orderBy?: 'asc' | 'desc' | 'ASC' | 'DESC';
-    html?: string;
-    labelPosition?: string;
-    placeholder?: string;
-    description?: string;
-    tooltip?: string;
-    prefix?: string;
-    suffix?: string;
+    id?: string | null;
+    label?: string | null;
+    type?: ActionInputType | null;
+    key?: string | null;
+    initialValue?:
+        | boolean
+        | string
+        | string[]
+        | number
+        | RelatedObjectDefaultValue
+        | SelectOption[]
+        | SelectOption
+        | null;
+    defaultToCurrentDate?: boolean | null;
+    defaultToCurrentTime?: boolean | null;
+    defaultValueCriteria?: object | null;
+    sortBy?: string | null;
+    orderBy?: 'asc' | 'desc' | 'ASC' | 'DESC' | null;
+    html?: string | null;
+    labelPosition?: string | null;
+    placeholder?: string | null;
+    description?: string | null;
+    tooltip?: string | null;
+    prefix?: string | null;
+    suffix?: string | null;
     data?: {
         /**
          * An array of values required for select options.
          */
-        values?: SelectOption[];
-    };
-    inputMask?: string;
-    inputMaskPlaceholderChar?: string;
-    tableView?: boolean;
-    mode?: 'default' | 'existingOnly';
-    displayOption?: 'dropdown' | 'dialogBox' | 'radioButton' | 'checkbox' | 'switch';
-    rows?: number;
-    showCharCount?: boolean;
-    readOnly?: boolean;
-    isMultiLineText?: boolean;
-    verticalLayout?: boolean;
-    input?: boolean;
-    widget?: string;
+        values?: SelectOption[] | null;
+    } | null;
+    inputMask?: string | null;
+    inputMaskPlaceholderChar?: string | null;
+    tableView?: boolean | null;
+    mode?: 'default' | 'existingOnly' | null;
+    displayOption?: 'dropdown' | 'dialogBox' | 'radioButton' | 'checkbox' | 'switch' | null;
+    rows?: number | null;
+    showCharCount?: boolean | null;
+    readOnly?: boolean | null;
+    isMultiLineText?: boolean | null;
+    verticalLayout?: boolean | null;
+    input?: boolean | null;
+    widget?: string | null;
     conditional?: {
-        json?: JsonLogic;
-        show?: boolean;
-        when?: string;
-        eq?: string | number | boolean;
-    };
-    property?: InputParameter;
-    viewLayout?: ViewLayoutEntityReference;
-    documentMetadata?: Record<string, string>;
+        json?: JsonLogic | null;
+        show?: boolean | null;
+        when?: string | null;
+        eq?: string | number | boolean | null;
+    } | null;
+    property?: InputParameter | null;
+    viewLayout?: ViewLayoutEntityReference | null;
+    documentMetadata?: Record<string, string> | null;
     validate?: {
-        required?: boolean;
-        criteria?: object;
-        operator?: 'any' | 'all';
-        regexes?: RegexValidation[];
-        minLength?: number;
-        maxLength?: number;
-        minDate?: string;
-        maxDate?: string;
-        minTime?: string;
-        maxTime?: string;
-        min?: number;
-        max?: number;
-        minDocuments?: number;
-        maxDocuments?: number;
-        customMessage?: string;
+        required?: boolean | null;
+        criteria?: object | null;
+        operator?: 'any' | 'all' | null;
+        regexes?: RegexValidation[] | null;
+        minLength?: number | null;
+        maxLength?: number | null;
+        minDate?: string | null;
+        maxDate?: string | null;
+        minTime?: string | null;
+        maxTime?: string | null;
+        min?: number | null;
+        max?: number | null;
+        minDocuments?: number | null;
+        maxDocuments?: number | null;
+        customMessage?: string | null;
     };
     /**
      * An array of sub-components to be rendered inside sections.
      */
-    components?: {
-        key: string;
-        label?: string;
-        components: ActionInput[];
-    }[];
+    components?:
+        | {
+              key: string;
+              label?: string | null;
+              components: ActionInput[];
+          }[]
+        | null;
     /**
      * An array of sub-components to be rendered inside columns.
      */
-    columns?: {
-        width: number;
-        currentWidth?: number;
-        components: ActionInput[];
-    }[];
+    columns?:
+        | {
+              width: number;
+              currentWidth?: number | null;
+              components: ActionInput[];
+          }[]
+        | null;
 };
 
 export type ActionRequest = {
