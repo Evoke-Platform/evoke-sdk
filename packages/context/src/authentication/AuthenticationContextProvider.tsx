@@ -3,7 +3,9 @@
 
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
+import { ExtraSigninRequestArgs } from 'oidc-client-ts';
 import { ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
+import { useAuth } from 'react-oidc-context';
 
 export type AuthenticationContext = {
     account: UserAccount;
@@ -14,6 +16,9 @@ export type AuthenticationContext = {
 export type UserAccount = {
     id: string;
     name?: string;
+    username?: string;
+    lastLoginTime?: number;
+    activeMfaSession?: boolean;
 };
 
 const Context = createContext<AuthenticationContext | undefined>(undefined);
@@ -21,7 +26,7 @@ const Context = createContext<AuthenticationContext | undefined>(undefined);
 Context.displayName = 'AuthenticationContext';
 
 export type AuthenticationContextProviderProps = {
-    msal: IMsalContext;
+    msal?: IMsalContext;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
 };
@@ -29,7 +34,26 @@ export type AuthenticationContextProviderProps = {
 export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
 
 function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
-    const { msal, authRequest, children } = props;
+    // Auto-detect provider type based on presence of msal prop
+    if (props.msal) {
+        const { msal, authRequest, children } = props;
+
+        return (
+            <MsalProvider msal={msal} authRequest={authRequest}>
+                {children}
+            </MsalProvider>
+        );
+    } else {
+        const { authRequest, children } = props;
+
+        return <OidcProvider authRequest={authRequest}>{children}</OidcProvider>;
+    }
+}
+
+function MsalProvider({ msal, authRequest, children }: AuthenticationContextProviderProps) {
+    if (!msal) {
+        throw new Error('MSAL instance is required for MsalProvider');
+    }
 
     const account: AccountInfo | undefined = msal.instance.getActiveAccount() ?? msal.instance.getAllAccounts()[0];
 
@@ -45,14 +69,20 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
                 return '';
             }
         },
-        [msal, authRequest],
+        [msal, authRequest, account],
     );
 
     const context: AuthenticationContext | undefined = useMemo(
         () =>
             account
                 ? {
-                      account: { id: account.localAccountId, name: account.name },
+                      account: {
+                          id: account.localAccountId,
+                          name: account.name,
+                          username: account.username,
+                          lastLoginTime: account.idTokenClaims?.last_login_time as number | undefined,
+                          activeMfaSession: Boolean(account.idTokenClaims?.active_mfa_session),
+                      },
                       logout: () => {
                           msal.instance.logoutRedirect({
                               account,
@@ -64,7 +94,82 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
                       getAccessToken,
                   }
                 : undefined,
-        [account, msal, getAccessToken],
+        [account, msal, getAccessToken, authRequest],
+    );
+
+    return <Context.Provider value={context}>{children}</Context.Provider>;
+}
+
+function OidcProvider({ authRequest, children }: AuthenticationContextProviderProps) {
+    // The authRequest for react-oidc is formatted slightly differently than msal.
+    const oidcAuthRequest: Pick<ExtraSigninRequestArgs, 'scope' | 'extraQueryParams' | 'state'> = {
+        scope: authRequest.scopes?.join(' ') ?? 'openid profile email',
+        extraQueryParams: authRequest.extraQueryParameters,
+        state: authRequest.state,
+    };
+
+    const auth = useAuth();
+
+    const getAccessToken = useCallback(
+        async function () {
+            try {
+                // With automaticSilentRenew: true, oidc-client-ts will attempt to renew the token in the background before it expires.
+                // However, this is not guaranteed to be perfectly in sync with your API calls. Always check for expiration here and call signinSilent if needed
+                // to ensure you get a valid token on demand.
+                if (auth.user?.access_token && !auth.user.expired) {
+                    return auth.user.access_token;
+                }
+                // Token is either missing or expired - attempt silent refresh.
+                const user = await auth.signinSilent(oidcAuthRequest);
+
+                // If signinSilent returns null, it means silent login failed
+                if (!user) {
+                    console.log('Silent login failed, redirecting to login');
+
+                    auth.signinRedirect(oidcAuthRequest);
+
+                    return '';
+                }
+
+                return auth.user?.access_token || '';
+            } catch (error) {
+                console.error('Failed to get access token:', error);
+
+                // If silent refresh throws an error (e.g., network failure, missing silent_redirect_uri,
+                // invalid session, refresh token expired, or provider returned an error), redirect to login
+                auth.signinRedirect(oidcAuthRequest);
+
+                return '';
+            }
+        },
+        [auth, authRequest],
+    );
+
+    const context: AuthenticationContext | undefined = useMemo(
+        () =>
+            auth.isAuthenticated && auth.user
+                ? {
+                      account: {
+                          id: auth.user.profile.sub,
+                          name:
+                              auth.user.profile.name ??
+                              (`${auth.user.profile.given_name ?? ''} ${auth.user.profile.family_name ?? ''}` ||
+                                  undefined),
+                          username: auth.user.profile.preferred_username ?? auth.user.profile.email,
+                          lastLoginTime: auth.user.profile.lastLoginTime as number | undefined,
+                      },
+                      logout: () => {
+                          auth.signoutRedirect({
+                              // Fusion auth requires an absolute url.
+                              post_logout_redirect_uri: `${window.location.origin}/logout?p=${encodeURIComponent(
+                                  window.location.pathname + window.location.search,
+                              )}`,
+                          });
+                      },
+                      getAccessToken,
+                  }
+                : undefined,
+        [auth, getAccessToken],
     );
 
     return <Context.Provider value={context}>{children}</Context.Provider>;
