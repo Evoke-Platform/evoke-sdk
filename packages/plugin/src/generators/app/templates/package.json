@@ -46,8 +46,7 @@
         "clean": "rm -rf dist",
         "prepackage": "npm run build",
         "package": "pkgplugin",
-        "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build",
-        "worker": "npx msw init .storybook/public --save"
+        "storybook": "npx msw init .storybook/public --save && storybook dev -p 6006",
+        "build-storybook": "storybook build"
     }
 }

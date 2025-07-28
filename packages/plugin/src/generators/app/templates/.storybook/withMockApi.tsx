@@ -20,7 +20,7 @@ export const WithMockApi = ({ mocks, children }: WithApiProps) => {
     useEffect(() => {
         const worker = (window as any).msw?.worker;
         if (!worker) {
-            console.warn('[WithRemount] MSW worker not found on window');
+            console.warn('[WithMockAPI] MSW worker not found on window');
             return;
         }
 
@@ -34,7 +34,7 @@ export const WithMockApi = ({ mocks, children }: WithApiProps) => {
             });
         });
 
-        console.log('[WithRemount] Registering handlers:', mocks);
+        console.log('[WithMockAPI] Registering handlers:', mocks);
         worker.resetHandlers(...handlers);
     }, [JSON.stringify(mocks)]);
 
