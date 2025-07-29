@@ -141,19 +141,19 @@ export type Property = {
     id: string;
     name: string;
     type: PropertyType;
-    enum?: string[];
-    strictlyTrue?: boolean;
-    nonStrictEnum?: boolean;
-    objectId?: string;
-    relatedPropertyId?: string;
-    required?: boolean;
-    searchable?: boolean;
-    formula?: string;
-    formulaType?: 'aggregate' | 'custom' | 'arithmetic';
-    mask?: string;
-    validation?: PropertyValidation;
-    manyToManyPropertyId?: string;
-    textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase';
+    enum?: string[] | null;
+    strictlyTrue?: boolean | null;
+    nonStrictEnum?: boolean | null;
+    objectId?: string | null;
+    relatedPropertyId?: string | null;
+    required?: boolean | null;
+    searchable?: boolean | null;
+    formula?: string | null;
+    formulaType?: 'aggregate' | 'custom' | 'arithmetic' | null;
+    mask?: string | null;
+    validation?: PropertyValidation | null;
+    manyToManyPropertyId?: string | null;
+    textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase' | null;
 };
 
 export type ActionType = 'create' | 'update' | 'delete';
@@ -184,12 +184,12 @@ export type Action = {
     name: string;
     type: ActionType;
     outputEvent: string;
-    inputProperties?: ActionInput[];
-    parameters?: InputParameter[];
-    form?: Form;
-    defaultFormId?: string;
-    customCode?: string;
-    preconditions?: object;
+    inputProperties?: ActionInput[] | null;
+    parameters?: InputParameter[] | null;
+    form?: Form | null;
+    defaultFormId?: string | null;
+    customCode?: string | null;
+    preconditions?: object | null;
 };
 
 export type ObjectInstance = {
