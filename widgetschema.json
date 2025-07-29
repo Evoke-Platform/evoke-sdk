@@ -55,6 +55,9 @@
         "deprecated": {
             "type": "boolean"
         },
+        "betaRelease": {
+            "type": "boolean"
+        },
         "properties": {
             "type": "array",
             "uniqueItems": true,
