@@ -128,6 +128,8 @@ export type DocumentValidation = {
     errorMessage?: string;
     maxDocuments?: number;
     minDocuments?: number;
+    allowedFileExtensions?: string[];
+    maxSizeInKB?: number; // in KB
 };
 
 export type PropertyValidation =
@@ -398,6 +400,8 @@ export type ActionInput = {
         minDocuments?: number;
         maxDocuments?: number;
         customMessage?: string;
+        allowedFileExtensions?: string[];
+        maxSizeInKB?: number; // in KB
     };
     /**
      * An array of sub-components to be rendered inside sections.
