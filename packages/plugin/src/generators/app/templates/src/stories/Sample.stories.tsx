@@ -1,62 +1,29 @@
-// src/stories/SampleWidget.stories.tsx
-import type { Meta, StoryObj } from '@storybook/react';
-import React, { useEffect, useState } from 'react';
-import { MockDefinition, WithMockApi } from '../../.storybook/withMockApi';
+
+import type {Meta, StoryObj} from '@storybook/react';
+import {http, HttpResponse} from 'msw';
 import SampleWidget from '../widgets/SampleWidget';
 
-type SampleWidgetStoryArgs = React.ComponentProps<typeof SampleWidget> & {
-    mocks: MockDefinition[];
-};
-
-const meta: Meta<SampleWidgetStoryArgs> = {
-    title: 'Widgets/SampleWidget',
+const meta: Meta<typeof SampleWidget> = {
     component: SampleWidget,
-    tags: ['autodocs'],
-    argTypes: {
-        mocks: {
-            control: 'object',
-            table: { category: 'Mock Config' },
-            description: 'Array of mock definitions to apply to the widget',
+    parameters: {
+        msw: {
+            handlers: [
+                http.get(`${window.location.origin}/api/test`, () => {
+                    return HttpResponse.json({message: 'Hello from mock!'});
+                }),
+                http.post(`${window.location.origin}/api/out`, () => {
+                    return HttpResponse.json({status: 'posted'});
+                }),
+            ],
         },
-        message: { control: 'text' },
-    },
-    // Default args for the story with multiple API mocks
-    args: {
-        mocks: [
-            {
-                method: 'GET',
-                endpoint: '/api/test',
-                response: { message: 'Mock 1' },
-                status: 200,
-            },
-            {
-                method: 'POST',
-                endpoint: '/api/out',
-                response: { success: true },
-                status: 200,
-            },
-        ],
-        message: 'Testing multiple mocks',
     },
 };
+
 export default meta;
+type Story = StoryObj<typeof SampleWidget>;
 
-type Story = StoryObj<SampleWidgetStoryArgs>;
-
-export const DynamicWithMultipleMocks: Story = {
-    render: (args) => {
-        const [mockState, setMockState] = useState<MockDefinition[]>(args.mocks);
-        const { message } = args;
-
-        useEffect(() => {
-            setMockState(args.mocks);
-        }, [args.mocks]);
-        return (
-            <>
-                <WithMockApi mocks={mockState}>
-                    <SampleWidget message={message} />
-                </WithMockApi>
-            </>
-        );
+export const Primary: Story = {
+    args: {
+        message: 'Using MSW Addon!',
     },
 };

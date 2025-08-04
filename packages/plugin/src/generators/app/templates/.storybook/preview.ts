@@ -1,14 +1,19 @@
 import type { Preview } from '@storybook/react';
-import { worker } from '../src/mocks/browser'; // Import the worker setup
+import { initialize, mswLoader } from 'storybook-msw-addon';
 
-// Start the worker and expose it globally
-worker.start({ onUnhandledRequest: 'warn' }).then(() => {
-    (window as any).msw = { worker };
-    console.log('[MSW] Worker started and exposed globally');
+// ✅ Initialize MSW (starts the worker)
+initialize({
+    onUnhandledRequest: 'warn',
 });
+
+// ✅ Provide MSW loader globally (ensures handlers are ready before stories render)
+export const loaders = [mswLoader];
 
 const preview: Preview = {
     parameters: {
+        msw: {
+            handlers: [], // stories can override this
+        },
         actions: { argTypesRegex: '^on[A-Z].*' },
         controls: {
             matchers: {
