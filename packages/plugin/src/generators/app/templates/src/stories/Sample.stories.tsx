@@ -1,6 +1,5 @@
-
-import type {Meta, StoryObj} from '@storybook/react';
-import {http, HttpResponse} from 'msw';
+import type { Meta, StoryObj } from '@storybook/react';
+import { http, HttpResponse } from 'msw';
 import SampleWidget from '../widgets/SampleWidget';
 
 const meta: Meta<typeof SampleWidget> = {
@@ -9,10 +8,10 @@ const meta: Meta<typeof SampleWidget> = {
         msw: {
             handlers: [
                 http.get(`${window.location.origin}/api/test`, () => {
-                    return HttpResponse.json({message: 'Hello from mock!'});
+                    return HttpResponse.json({ message: 'Hello from mock!' });
                 }),
                 http.post(`${window.location.origin}/api/out`, () => {
-                    return HttpResponse.json({status: 'posted'});
+                    return HttpResponse.json({ status: 'posted' });
                 }),
             ],
         },
