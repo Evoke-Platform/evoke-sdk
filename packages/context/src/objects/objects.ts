@@ -144,7 +144,6 @@ export type PropertyValidation =
 
 export type ParameterValidation =
     | InputStringValidation
-    | StringValidation
     | NumericValidation
     | DateValidation
     | CriteriaValidation
