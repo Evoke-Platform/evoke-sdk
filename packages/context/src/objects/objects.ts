@@ -143,6 +143,7 @@ export type PropertyValidation =
     | DocumentValidation;
 
 export type ParameterValidation =
+    | InputStringValidation
     | StringValidation
     | NumericValidation
     | DateValidation
@@ -186,7 +187,7 @@ export type InputParameter = {
     enum?: string[];
     strictlyTrue?: boolean;
     nonStrictEnum?: boolean;
-    validation?: ParameterValidation | InputStringValidation;
+    validation?: ParameterValidation;
     objectId?: string;
     relatedPropertyId?: string;
     manyToManyPropertyId?: string;
