@@ -255,6 +255,12 @@ export type DisplayConfiguration = {
         sortBy?: 'ASC' | 'DESC' | 'NONE';
     };
     booleanDisplay?: 'checkbox' | 'switch';
+    createActionId?: string;
+    createFormId?: string;
+    updateActionId?: string;
+    updateFormId?: string;
+    deleteActionId?: string;
+    deleteFormId?: string;
 };
 
 export type InputParameterReference = {
