@@ -4,7 +4,7 @@
 import axios from 'axios';
 import chai, { expect } from 'chai';
 import dirtyChai from 'dirty-chai';
-import { rest } from 'msw';
+import { http, HttpResponse } from 'msw';
 import { setupServer } from 'msw/node';
 import { ApiServices } from '../../api/index.js';
 import { paramsSerializer } from '../../api/paramsSerializer.js';
@@ -16,53 +16,60 @@ const testItem = { id: 'item1', name: 'Item 1' };
 
 const server = setupServer(
     // Return testItem
-    rest.get('http://localhost/item', (req, res, ctx) => {
-        return res(ctx.json(testItem));
+    http.get('http://localhost/item', () => {
+        return HttpResponse.json(testItem);
     }),
-    rest.post('http://localhost/item', (req, res, ctx) => {
-        return res(ctx.json(testItem));
+    http.post('http://localhost/item', () => {
+        return HttpResponse.json(testItem);
     }),
-    rest.put('http://localhost/item', (req, res, ctx) => {
-        return res(ctx.json(testItem));
+    http.put('http://localhost/item', () => {
+        return HttpResponse.json(testItem);
     }),
-    rest.patch('http://localhost/item', (req, res, ctx) => {
-        return res(ctx.json(testItem));
+    http.patch('http://localhost/item', () => {
+        return HttpResponse.json(testItem);
     }),
-    rest.delete('http://localhost/item', (req, res, ctx) => {
-        return res(ctx.json(testItem));
+    http.delete('http://localhost/item', () => {
+        return HttpResponse.json(testItem);
     }),
 
     // Return request body in response
-    rest.post('http://localhost/echo', async (req, res, ctx) => {
-        return res(ctx.json(await req.json()));
+    http.post('http://localhost/echo', async ({ request }: { request: Request }) => {
+        return HttpResponse.json(await request.json());
     }),
-    rest.put('http://localhost/echo', async (req, res, ctx) => {
-        return res(ctx.json(await req.json()));
+    http.put('http://localhost/echo', async ({ request }: { request: Request }) => {
+        return HttpResponse.json(await request.json());
     }),
-    rest.patch('http://localhost/echo', async (req, res, ctx) => {
-        return res(ctx.json(await req.json()));
+    http.patch('http://localhost/echo', async ({ request }: { request: Request }) => {
+        return HttpResponse.json(await request.json());
     }),
 
     // Return contents of Echo-Header in response
-    rest.get('http://localhost/echoHeader', (req, res, ctx) => {
-        return res(ctx.text(req.headers.get('Echo-Header') ?? ''));
+    http.get('http://localhost/echoHeader', ({ request }: { request: Request }) => {
+        return HttpResponse.text(request.headers.get('Echo-Header') ?? '');
     }),
-    rest.post('http://localhost/echoHeader', (req, res, ctx) => {
-        return res(ctx.text(req.headers.get('Echo-Header') ?? ''));
+    http.post('http://localhost/echoHeader', ({ request }: { request: Request }) => {
+        return HttpResponse.text(request.headers.get('Echo-Header') ?? '');
     }),
-    rest.put('http://localhost/echoHeader', (req, res, ctx) => {
-        return res(ctx.text(req.headers.get('Echo-Header') ?? ''));
+    http.put('http://localhost/echoHeader', ({ request }: { request: Request }) => {
+        return HttpResponse.text(request.headers.get('Echo-Header') ?? '');
     }),
-    rest.patch('http://localhost/echoHeader', (req, res, ctx) => {
-        return res(ctx.text(req.headers.get('Echo-Header') ?? ''));
+    http.patch('http://localhost/echoHeader', ({ request }: { request: Request }) => {
+        return HttpResponse.text(request.headers.get('Echo-Header') ?? '');
     }),
-    rest.delete('http://localhost/echoHeader', (req, res, ctx) => {
-        return res(ctx.text(req.headers.get('Echo-Header') ?? ''));
+    http.delete('http://localhost/echoHeader', ({ request }: { request: Request }) => {
+        return HttpResponse.text(request.headers.get('Echo-Header') ?? '');
     }),
 
     // Return contents of params in response
-    rest.get('http://localhost/params', (req, res, ctx) => {
-        return res(ctx.text(req.url.search ?? ''));
+    http.get('http://localhost/params', ({ request }: { request: Request }) => {
+        const url = new URL(request.url);
+        return HttpResponse.text(url.search ?? '');
+    }),
+
+    // Fix handlers for authentication context
+    http.get('http://localhost/', ({ request }: { request: Request }) => {
+        const authHeader = request.headers.get('Authorization');
+        return HttpResponse.text(authHeader ?? '');
     }),
 );
 
@@ -86,10 +93,9 @@ describe('ApiServices', () => {
             let authHeader: string | null = null;
 
             server.use(
-                rest.get('http://localhost/', (req, res) => {
-                    authHeader = req.headers.get('Authorization');
-
-                    return res();
+                http.get('http://localhost/', ({ request }: { request: Request }) => {
+                    authHeader = request.headers.get('Authorization');
+                    return HttpResponse.text('');
                 }),
             );
 
@@ -113,10 +119,9 @@ describe('ApiServices', () => {
             let authHeader: string | null = null;
 
             server.use(
-                rest.get('http://localhost/', (req, res) => {
-                    authHeader = req.headers.get('Authorization');
-
-                    return res();
+                http.get('http://localhost/', ({ request }: { request: Request }) => {
+                    authHeader = request.headers.get('Authorization');
+                    return HttpResponse.text('');
                 }),
             );
 
