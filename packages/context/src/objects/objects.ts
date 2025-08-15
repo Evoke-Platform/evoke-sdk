@@ -128,6 +128,9 @@ export type DocumentValidation = {
     errorMessage?: string;
     maxDocuments?: number;
     minDocuments?: number;
+};
+
+export type DocumentParameterValidation = DocumentValidation & {
     allowedFileExtensions?: string[];
     maxSizeInKB?: number; // in KB
 };
@@ -138,6 +141,13 @@ export type PropertyValidation =
     | DateValidation
     | CriteriaValidation
     | DocumentValidation;
+
+export type ParameterValidation =
+    | InputStringValidation
+    | NumericValidation
+    | DateValidation
+    | CriteriaValidation
+    | DocumentParameterValidation;
 
 export type Property = {
     id: string;
@@ -176,7 +186,7 @@ export type InputParameter = {
     enum?: string[];
     strictlyTrue?: boolean;
     nonStrictEnum?: boolean;
-    validation?: PropertyValidation | InputStringValidation;
+    validation?: ParameterValidation;
     objectId?: string;
     relatedPropertyId?: string;
     manyToManyPropertyId?: string;
