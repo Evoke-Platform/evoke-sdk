@@ -5,7 +5,7 @@ import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
 import { ExtraSigninRequestArgs } from 'oidc-client-ts';
 import { ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
-import { useAuth } from 'react-oidc-context';
+import { AuthContextProps } from 'react-oidc-context';
 
 export type AuthenticationContext = {
     account: UserAccount;
@@ -27,6 +27,7 @@ Context.displayName = 'AuthenticationContext';
 
 export type AuthenticationContextProviderProps = {
     msal?: IMsalContext;
+    oidcInstance?: AuthContextProps;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
 };
@@ -44,9 +45,13 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
             </MsalProvider>
         );
     } else {
-        const { authRequest, children } = props;
+        const { oidcInstance, authRequest, children } = props;
 
-        return <OidcProvider authRequest={authRequest}>{children}</OidcProvider>;
+        return (
+            <OidcProvider oidcInstance={oidcInstance} authRequest={authRequest}>
+                {children}
+            </OidcProvider>
+        );
     }
 }
 
@@ -100,7 +105,11 @@ function MsalProvider({ msal, authRequest, children }: AuthenticationContextProv
     return <Context.Provider value={context}>{children}</Context.Provider>;
 }
 
-function OidcProvider({ authRequest, children }: AuthenticationContextProviderProps) {
+function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationContextProviderProps) {
+    if (!oidcInstance) {
+        throw new Error('OIDC instance is required for OidcProvider');
+    }
+
     // The authRequest for react-oidc is formatted slightly differently than msal.
     const oidcAuthRequest: Pick<ExtraSigninRequestArgs, 'scope' | 'extraQueryParams' | 'state'> = {
         scope: authRequest.scopes?.join(' ') ?? 'openid profile email',
@@ -108,59 +117,57 @@ function OidcProvider({ authRequest, children }: AuthenticationContextProviderPr
         state: authRequest.state,
     };
 
-    const auth = useAuth();
-
     const getAccessToken = useCallback(
         async function () {
             try {
                 // With automaticSilentRenew: true, oidc-client-ts will attempt to renew the token in the background before it expires.
                 // However, this is not guaranteed to be perfectly in sync with your API calls. Always check for expiration here and call signinSilent if needed
                 // to ensure you get a valid token on demand.
-                if (auth.user?.access_token && !auth.user.expired) {
-                    return auth.user.access_token;
+                if (oidcInstance.user?.access_token && !oidcInstance.user.expired) {
+                    return oidcInstance.user.access_token;
                 }
                 // Token is either missing or expired - attempt silent refresh.
-                const user = await auth.signinSilent(oidcAuthRequest);
+                const user = await oidcInstance.signinSilent(oidcAuthRequest);
 
                 // If signinSilent returns null, it means silent login failed
                 if (!user) {
                     console.log('Silent login failed, redirecting to login');
 
-                    auth.signinRedirect(oidcAuthRequest);
+                    oidcInstance.signinRedirect(oidcAuthRequest);
 
                     return '';
                 }
 
-                return auth.user?.access_token || '';
+                return oidcInstance.user?.access_token || '';
             } catch (error) {
                 console.error('Failed to get access token:', error);
 
                 // If silent refresh throws an error (e.g., network failure, missing silent_redirect_uri,
                 // invalid session, refresh token expired, or provider returned an error), redirect to login
-                auth.signinRedirect(oidcAuthRequest);
+                oidcInstance.signinRedirect(oidcAuthRequest);
 
                 return '';
             }
         },
-        [auth, authRequest],
+        [oidcInstance, authRequest],
     );
 
     const context: AuthenticationContext | undefined = useMemo(
         () =>
-            auth.isAuthenticated && auth.user
+            oidcInstance.isAuthenticated && oidcInstance.user
                 ? {
                       account: {
-                          id: auth.user.profile.sub,
+                          id: oidcInstance.user.profile.sub,
                           name:
-                              auth.user.profile.name ??
-                              (`${auth.user.profile.given_name ?? ''} ${auth.user.profile.family_name ?? ''}` ||
+                              oidcInstance.user.profile.name ??
+                              (`${oidcInstance.user.profile.given_name ?? ''} ${oidcInstance.user.profile.family_name ?? ''}` ||
                                   undefined),
-                          username: auth.user.profile.preferred_username ?? auth.user.profile.email,
-                          lastLoginTime: auth.user.profile.lastLoginTime as number | undefined,
+                          username: oidcInstance.user.profile.preferred_username ?? oidcInstance.user.profile.email,
+                          lastLoginTime: oidcInstance.user.profile.lastLoginTime as number | undefined,
                       },
                       logout: () => {
-                          auth.signoutRedirect({
-                              // Fusion auth requires an absolute url.
+                          oidcInstance.signoutRedirect({
+                              // Fusion oidcInstance requires an absolute url.
                               post_logout_redirect_uri: `${window.location.origin}/logout?p=${encodeURIComponent(
                                   window.location.pathname + window.location.search,
                               )}`,
@@ -169,7 +176,7 @@ function OidcProvider({ authRequest, children }: AuthenticationContextProviderPr
                       getAccessToken,
                   }
                 : undefined,
-        [auth, getAccessToken],
+        [oidcInstance, getAccessToken],
     );
 
     return <Context.Provider value={context}>{children}</Context.Provider>;
