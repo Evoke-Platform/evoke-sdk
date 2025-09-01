@@ -5,7 +5,7 @@ import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
 import { ExtraSigninRequestArgs } from 'oidc-client-ts';
 import { ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
-import { AuthContextProps } from 'react-oidc-context';
+import { AuthContextProps, useAuth } from 'react-oidc-context';
 
 export type AuthenticationContext = {
     account: UserAccount;
@@ -106,8 +106,12 @@ function MsalProvider({ msal, authRequest, children }: AuthenticationContextProv
 }
 
 function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationContextProviderProps) {
-    if (!oidcInstance) {
-        throw new Error('OIDC instance is required for OidcProvider');
+    const instance = useAuth() ?? oidcInstance;
+
+    if (!instance) {
+        throw new Error(
+            `OidcProvider must be used within an 'AuthProvider', or the OIDC instance must be provided as a prop.`,
+        );
     }
 
     // The authRequest for react-oidc is formatted slightly differently than msal.
@@ -123,50 +127,51 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
                 // With automaticSilentRenew: true, oidc-client-ts will attempt to renew the token in the background before it expires.
                 // However, this is not guaranteed to be perfectly in sync with your API calls. Always check for expiration here and call signinSilent if needed
                 // to ensure you get a valid token on demand.
-                if (oidcInstance.user?.access_token && !oidcInstance.user.expired) {
-                    return oidcInstance.user.access_token;
+                if (instance.user?.access_token && !instance.user.expired) {
+                    return instance.user.access_token;
                 }
+
                 // Token is either missing or expired - attempt silent refresh.
-                const user = await oidcInstance.signinSilent(oidcAuthRequest);
+                const user = await instance.signinSilent(oidcAuthRequest);
 
                 // If signinSilent returns null, it means silent login failed
                 if (!user) {
                     console.log('Silent login failed, redirecting to login');
 
-                    oidcInstance.signinRedirect(oidcAuthRequest);
+                    instance.signinRedirect(oidcAuthRequest);
 
                     return '';
                 }
 
-                return oidcInstance.user?.access_token || '';
+                return instance.user?.access_token || '';
             } catch (error) {
                 console.error('Failed to get access token:', error);
 
                 // If silent refresh throws an error (e.g., network failure, missing silent_redirect_uri,
                 // invalid session, refresh token expired, or provider returned an error), redirect to login
-                oidcInstance.signinRedirect(oidcAuthRequest);
+                instance.signinRedirect(oidcAuthRequest);
 
                 return '';
             }
         },
-        [oidcInstance, authRequest],
+        [instance, authRequest],
     );
 
     const context: AuthenticationContext | undefined = useMemo(
         () =>
-            oidcInstance.isAuthenticated && oidcInstance.user
+            instance.isAuthenticated && instance.user
                 ? {
                       account: {
-                          id: oidcInstance.user.profile.sub,
+                          id: instance.user.profile.sub,
                           name:
-                              oidcInstance.user.profile.name ??
-                              (`${oidcInstance.user.profile.given_name ?? ''} ${oidcInstance.user.profile.family_name ?? ''}` ||
+                              instance.user.profile.name ??
+                              (`${instance.user.profile.given_name ?? ''} ${instance.user.profile.family_name ?? ''}` ||
                                   undefined),
-                          username: oidcInstance.user.profile.preferred_username ?? oidcInstance.user.profile.email,
-                          lastLoginTime: oidcInstance.user.profile.lastLoginTime as number | undefined,
+                          username: instance.user.profile.preferred_username ?? instance.user.profile.email,
+                          lastLoginTime: instance.user.profile.lastLoginTime as number | undefined,
                       },
                       logout: () => {
-                          oidcInstance.signoutRedirect({
+                          instance.signoutRedirect({
                               // Fusion oidcInstance requires an absolute url.
                               post_logout_redirect_uri: `${window.location.origin}/logout?p=${encodeURIComponent(
                                   window.location.pathname + window.location.search,
