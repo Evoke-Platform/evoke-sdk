@@ -9,7 +9,7 @@ import { useApiBaseUrl } from './ApiBaseUrlProvider.js';
 import { Callback } from './callback.js';
 import { paramsSerializer } from './paramsSerializer.js';
 
-export type Data = Record<string, unknown> | FormData;
+export type Data = Record<string, unknown> | FormData | File;
 
 const sessionId = uuidv4();
 
@@ -87,7 +87,7 @@ export class ApiServices {
             config = configOrCallback;
 
             if (typeof dataOrCallback === 'function') {
-                cb = dataOrCallback;
+                cb = dataOrCallback as Callback<T>;
             } else {
                 data = dataOrCallback;
             }
@@ -120,7 +120,7 @@ export class ApiServices {
             config = configOrCallback;
 
             if (typeof dataOrCallback === 'function') {
-                cb = dataOrCallback;
+                cb = dataOrCallback as Callback<T>;
             } else {
                 data = dataOrCallback;
             }
@@ -153,7 +153,7 @@ export class ApiServices {
             config = configOrCallback;
 
             if (typeof dataOrCallback === 'function') {
-                cb = dataOrCallback;
+                cb = dataOrCallback as Callback<T>;
             } else {
                 data = dataOrCallback;
             }
