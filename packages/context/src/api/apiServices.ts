@@ -86,10 +86,10 @@ export class ApiServices {
         } else {
             config = configOrCallback;
 
-            if (typeof dataOrCallback === 'function') {
-                cb = dataOrCallback as Callback<T>;
+            if (typeof dataOrCallback === 'function' && !(dataOrCallback instanceof File)) {
+                cb = dataOrCallback;
             } else {
-                data = dataOrCallback;
+                data = dataOrCallback as D;
             }
         }
 
@@ -119,10 +119,10 @@ export class ApiServices {
         } else {
             config = configOrCallback;
 
-            if (typeof dataOrCallback === 'function') {
-                cb = dataOrCallback as Callback<T>;
+            if (typeof dataOrCallback === 'function' && !(dataOrCallback instanceof File)) {
+                cb = dataOrCallback;
             } else {
-                data = dataOrCallback;
+                data = dataOrCallback as D;
             }
         }
 
@@ -152,10 +152,10 @@ export class ApiServices {
         } else {
             config = configOrCallback;
 
-            if (typeof dataOrCallback === 'function') {
-                cb = dataOrCallback as Callback<T>;
+            if (typeof dataOrCallback === 'function' && !(dataOrCallback instanceof File)) {
+                cb = dataOrCallback;
             } else {
-                data = dataOrCallback;
+                data = dataOrCallback as D;
             }
         }
 
