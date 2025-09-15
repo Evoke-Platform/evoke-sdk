@@ -70,7 +70,7 @@
     },
     "dependencies": {
         "@isaacs/ttlcache": "^1.4.1",
-        "@microsoft/signalr": "^7.0.12",
+        "@microsoft/signalr": "^9.0.6",
         "axios": "^1.11.0",
         "oidc-client-ts": "^3.3.0",
         "uuid": "^9.0.1"
