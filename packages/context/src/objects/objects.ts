@@ -75,6 +75,7 @@ export type Sort = {
 export type Obj = {
     id: string;
     name: string;
+    description?: string;
     typeDiscriminatorProperty?: string;
     viewLayout?: ViewLayout;
     baseObject?: BaseObjReference;
@@ -152,6 +153,7 @@ export type ParameterValidation =
 export type Property = {
     id: string;
     name: string;
+    description?: string;
     type: PropertyType;
     enum?: string[];
     strictlyTrue?: boolean;
@@ -194,6 +196,7 @@ export type InputParameter = {
 export type Action = {
     id: string;
     name: string;
+    description?: string;
     type: ActionType;
     outputEvent: string;
     inputProperties?: ActionInput[];
