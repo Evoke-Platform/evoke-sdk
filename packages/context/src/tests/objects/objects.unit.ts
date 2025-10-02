@@ -29,12 +29,18 @@ describe('ObjectStore', () => {
             stub.withArgs('data/objects/testObject/effective').resolves({
                 id: 'testObject',
                 name: 'Test Object',
+                description: 'Test Object Description',
                 rootObjectId: 'testObject',
             });
 
             const result = await objectStore.get();
 
-            expect(result).to.eql({ id: 'testObject', name: 'Test Object', rootObjectId: 'testObject' });
+            expect(result).to.eql({
+                id: 'testObject',
+                name: 'Test Object',
+                description: 'Test Object Description',
+                rootObjectId: 'testObject',
+            });
         });
 
         it('returns object in callback', (done) => {
@@ -43,12 +49,18 @@ describe('ObjectStore', () => {
             stub.withArgs('data/objects/testObject/effective').resolves({
                 id: 'testObject',
                 name: 'Test Object',
+                description: 'Test Object Description',
                 rootObjectId: 'testObject',
             });
 
             objectStore.get(
                 assertionCallback(done, (result) => {
-                    expect(result).to.eql({ id: 'testObject', name: 'Test Object', rootObjectId: 'testObject' });
+                    expect(result).to.eql({
+                        id: 'testObject',
+                        name: 'Test Object',
+                        description: 'Test Object Description',
+                        rootObjectId: 'testObject',
+                    });
                 }),
             );
         });
@@ -59,15 +71,26 @@ describe('ObjectStore', () => {
             stub.withArgs('data/objects/testObject/effective').resolves({
                 id: 'testObject',
                 name: 'Test Object',
+                description: 'Test Object Description',
                 rootObjectId: 'testObject',
             });
 
             const result1 = await objectStore.get();
-            expect(result1).to.eql({ id: 'testObject', name: 'Test Object', rootObjectId: 'testObject' });
+            expect(result1).to.eql({
+                id: 'testObject',
+                name: 'Test Object',
+                description: 'Test Object Description',
+                rootObjectId: 'testObject',
+            });
             expect(stub.callCount).to.equal(1);
 
             const result2 = await objectStore.get();
-            expect(result2).to.eql({ id: 'testObject', name: 'Test Object', rootObjectId: 'testObject' });
+            expect(result2).to.eql({
+                id: 'testObject',
+                name: 'Test Object',
+                description: 'Test Object Description',
+                rootObjectId: 'testObject',
+            });
             expect(stub.callCount).to.equal(1); // still only called once
         });
 
@@ -77,6 +100,7 @@ describe('ObjectStore', () => {
             stub.withArgs('data/objects/testObject/effective').resolves({
                 id: 'testObject',
                 name: 'Test Object',
+                description: 'Test Object Description',
                 rootObjectId: 'testObject',
             });
 
@@ -99,11 +123,12 @@ describe('ObjectStore', () => {
             const testObj = {
                 id: 'testObject',
                 name: 'Test Object',
+                description: 'Test Object Description',
                 rootObjectId: 'testObject',
                 properties: [
-                    { id: 'c', name: 'C Prop', type: 'string' },
-                    { id: 'a', name: 'A Prop', type: 'string' },
-                    { id: 'b', name: 'B Prop', type: 'string' },
+                    { id: 'c', name: 'C Prop', description: 'Property C description', type: 'string' },
+                    { id: 'a', name: 'A Prop', description: 'Property A description', type: 'string' },
+                    { id: 'b', name: 'B Prop', description: 'Property B description', type: 'string' },
                 ],
             };
 
@@ -122,6 +147,7 @@ describe('ObjectStore', () => {
             stub.withArgs('data/objects/testObject/effective').resolves({
                 id: 'testObject',
                 name: 'Test Object',
+                description: 'Test Object Description',
                 rootObjectId: 'testObject',
             });
 
@@ -138,6 +164,7 @@ describe('ObjectStore', () => {
             stub.withArgs('data/objects/testObject/effective').resolves({
                 id: 'testObject',
                 name: 'Test Object',
+                description: 'Test Object Description',
                 rootObjectId: 'testObject',
             });
 
