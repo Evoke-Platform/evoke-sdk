@@ -258,7 +258,7 @@ export type DisplayConfiguration = {
     placeholderChar?: string;
     rowCount?: number;
     charCount?: boolean;
-    mode?: 'default' | 'existingOnly';
+    mode?: 'default' | 'existingOnly' | 'newOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
     visibility?: VisibilityConfiguration | JsonLogic;
     viewLayout?: ViewLayoutEntityReference;
