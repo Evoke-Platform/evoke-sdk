@@ -24,7 +24,7 @@ export type EvokeForm = {
 
 export type BaseObjReference = {
     objectId: string;
-    discriminatorValue: unknown;
+    discriminatorValue?: unknown;
 };
 
 export type ViewLayoutEntityReference = {
