@@ -260,6 +260,7 @@ export type DisplayConfiguration = {
     charCount?: boolean;
     mode?: 'default' | 'existingOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
+    relatedObjectId?: string;
     visibility?: VisibilityConfiguration | JsonLogic;
     viewLayout?: ViewLayoutEntityReference;
     choicesDisplay?: {
