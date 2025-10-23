@@ -261,6 +261,12 @@ export type DisplayConfiguration = {
     charCount?: boolean;
     mode?: 'default' | 'existingOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
+    /**
+     * The ID of the related object for parameters of type 'object'.
+     * When a parameter is of type 'object' whose objectId is not configured,
+     * this specifies which object it relates to when the field entry is rendered.
+     */
+    relatedObjectId?: string;
     visibility?: VisibilityConfiguration | JsonLogic;
     viewLayout?: ViewLayoutEntityReference;
     choicesDisplay?: {
