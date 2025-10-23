@@ -261,8 +261,8 @@ export type DisplayConfiguration = {
     mode?: 'default' | 'existingOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
     /**
-     * The ID of the related object for parameters/properties of type 'object'.
-     * When a parameter/property is of type 'object' whose objectId is not configured,
+     * The ID of the related object for parameters of type 'object'.
+     * When a parameter is of type 'object' whose objectId is not configured,
      * this specifies which object it relates to when the field entry is rendered.
      */
     relatedObjectId?: string;
