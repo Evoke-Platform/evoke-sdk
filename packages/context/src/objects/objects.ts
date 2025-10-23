@@ -82,6 +82,7 @@ export type Obj = {
     properties?: Property[];
     actions?: Action[];
     formId?: string;
+    defaultPanelLayoutId?: string;
 };
 
 export type ObjWithRoot = Obj & { rootObjectId: string };
