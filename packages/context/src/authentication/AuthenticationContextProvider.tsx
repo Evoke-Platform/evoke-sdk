@@ -4,7 +4,7 @@
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
 import { ExtraSigninRequestArgs } from 'oidc-client-ts';
-import { ReactNode, createContext, useCallback, useContext, useMemo } from 'react';
+import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { AuthContextProps } from 'react-oidc-context';
 
 export type AuthenticationContext = {
@@ -110,6 +110,12 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
         throw new Error('OIDC instance is required for OidcProvider');
     }
 
+    const userRef = useRef(oidcInstance.user);
+
+    useEffect(() => {
+        userRef.current = oidcInstance.user;
+    }, [oidcInstance.user]);
+
     // The authRequest for react-oidc is formatted slightly differently than msal.
     const oidcAuthRequest: Pick<ExtraSigninRequestArgs, 'scope' | 'extraQueryParams' | 'state'> = {
         scope: authRequest.scopes?.join(' ') ?? 'openid profile email',
@@ -123,8 +129,8 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
                 // With automaticSilentRenew: true, oidc-client-ts will attempt to renew the token in the background before it expires.
                 // However, this is not guaranteed to be perfectly in sync with your API calls. Always check for expiration here and call signinSilent if needed
                 // to ensure you get a valid token on demand.
-                if (oidcInstance.user?.access_token && !oidcInstance.user.expired) {
-                    return oidcInstance.user.access_token;
+                if (userRef.current?.access_token && !userRef.current.expired) {
+                    return userRef.current.access_token;
                 }
                 // Token is either missing or expired - attempt silent refresh.
                 const user = await oidcInstance.signinSilent(oidcAuthRequest);
@@ -138,7 +144,7 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
                     return '';
                 }
 
-                return oidcInstance.user?.access_token || '';
+                return user.access_token;
             } catch (error) {
                 console.error('Failed to get access token:', error);
 
@@ -149,21 +155,21 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
                 return '';
             }
         },
-        [oidcInstance, authRequest],
+        [oidcInstance.signinSilent, oidcInstance.signinRedirect, authRequest],
     );
 
     const context: AuthenticationContext | undefined = useMemo(
         () =>
-            oidcInstance.isAuthenticated && oidcInstance.user
+            oidcInstance.isAuthenticated && userRef.current
                 ? {
                       account: {
-                          id: oidcInstance.user.profile.sub,
+                          id: userRef.current.profile.sub,
                           name:
-                              oidcInstance.user.profile.name ??
-                              (`${oidcInstance.user.profile.given_name ?? ''} ${oidcInstance.user.profile.family_name ?? ''}` ||
+                              userRef.current.profile.name ??
+                              (`${userRef.current.profile.given_name ?? ''} ${userRef.current.profile.family_name ?? ''}` ||
                                   undefined),
-                          username: oidcInstance.user.profile.preferred_username ?? oidcInstance.user.profile.email,
-                          lastLoginTime: oidcInstance.user.profile.lastLoginTime as number | undefined,
+                          username: userRef.current.profile.preferred_username ?? userRef.current.profile.email,
+                          lastLoginTime: userRef.current.profile.lastLoginTime as number | undefined,
                       },
                       logout: () => {
                           oidcInstance.signoutRedirect({
@@ -176,7 +182,13 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
                       getAccessToken,
                   }
                 : undefined,
-        [oidcInstance, getAccessToken],
+        [
+            // Make sure to update authentication context if the logged-in user changes.
+            userRef.current?.profile.sub,
+            oidcInstance.isAuthenticated,
+            oidcInstance.signoutRedirect,
+            getAccessToken,
+        ],
     );
 
     return <Context.Provider value={context}>{children}</Context.Provider>;
