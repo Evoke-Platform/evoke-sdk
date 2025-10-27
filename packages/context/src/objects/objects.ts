@@ -42,6 +42,8 @@ export type TableViewLayoutEntity = ViewLayoutEntity & TableViewLayout;
 
 export type DropdownViewLayoutEntity = ViewLayoutEntity & DropdownViewLayout;
 
+export type PanelViewLayoutEntity = ViewLayoutEntity & PanelViewLayout;
+
 export type ViewLayout = {
     table?: TableViewLayout;
     dropdown?: DropdownViewLayout;
@@ -60,6 +62,28 @@ export type DropdownViewLayout = {
 export type TableViewLayout = {
     properties: PropertyReference[];
     sort?: Sort;
+};
+
+export type ViewSection = {
+    entries?: ViewEntry[];
+};
+
+export type ViewSections = {
+    sections: ViewSection[];
+};
+
+export type ViewColumn = {
+    entries?: ViewEntry[];
+};
+
+export type ViewColumns = {
+    columns: ViewColumn[];
+};
+
+export type ViewEntry = ReadonlyField | ViewSections | ViewColumns;
+
+export type PanelViewLayout = {
+    entries: ViewEntry[];
 };
 
 export type PropertyReference = {
