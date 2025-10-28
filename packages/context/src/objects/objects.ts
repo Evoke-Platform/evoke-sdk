@@ -169,6 +169,13 @@ export type Property = {
     validation?: PropertyValidation;
     manyToManyPropertyId?: string;
     textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase';
+    protection?: PropertyProtection;
+};
+
+export type PropertyProtection = {
+    maskChar: string;
+    preserveFirst?: number;
+    preserveLast?: number;
 };
 
 export type ActionType = 'create' | 'update' | 'delete';
