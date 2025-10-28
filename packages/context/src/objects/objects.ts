@@ -24,7 +24,11 @@ export type EvokeForm = {
 
 export type BaseObjReference = {
     objectId: string;
-    discriminatorValue?: unknown;
+    discriminatorValue: unknown;
+};
+
+export type SystemObjReference = {
+    objectId: string;
 };
 
 export type ViewLayoutEntityReference = {
@@ -41,6 +45,8 @@ type ViewLayoutEntity = {
 export type TableViewLayoutEntity = ViewLayoutEntity & TableViewLayout;
 
 export type DropdownViewLayoutEntity = ViewLayoutEntity & DropdownViewLayout;
+
+export type PanelViewLayoutEntity = ViewLayoutEntity & PanelViewLayout;
 
 export type ViewLayout = {
     table?: TableViewLayout;
@@ -62,6 +68,28 @@ export type TableViewLayout = {
     sort?: Sort;
 };
 
+export type ViewSection = {
+    entries?: ViewEntry[];
+};
+
+export type ViewSections = {
+    sections: ViewSection[];
+};
+
+export type ViewColumn = {
+    entries?: ViewEntry[];
+};
+
+export type ViewColumns = {
+    columns: ViewColumn[];
+};
+
+export type ViewEntry = ReadonlyField | ViewSections | ViewColumns;
+
+export type PanelViewLayout = {
+    entries: ViewEntry[];
+};
+
 export type PropertyReference = {
     id: string;
     format?: string;
@@ -78,7 +106,7 @@ export type Obj = {
     description?: string;
     typeDiscriminatorProperty?: string;
     viewLayout?: ViewLayout;
-    baseObject?: BaseObjReference;
+    baseObject?: BaseObjReference | SystemObjReference;
     properties?: Property[];
     actions?: Action[];
     formId?: string;
