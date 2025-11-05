@@ -84,7 +84,7 @@ export type ViewColumns = {
     columns: ViewColumn[];
 };
 
-export type ViewEntry = ReadonlyField | ViewSections | ViewColumns;
+export type ViewEntry = ReadonlyField | ViewSections | ViewColumns | Content;
 
 export type PanelViewLayout = {
     entries: ViewEntry[];
