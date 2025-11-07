@@ -68,26 +68,26 @@ export type TableViewLayout = {
     sort?: Sort;
 };
 
-export type ViewSection = {
-    entries?: ViewEntry[];
+export type PanelViewSection = {
+    entries?: PanelViewEntry[];
 };
 
-export type ViewSections = {
-    sections: ViewSection[];
+export type PanelViewSections = {
+    sections: PanelViewSection[];
 };
 
-export type ViewColumn = {
-    entries?: ViewEntry[];
+export type PanelViewColumn = {
+    entries?: PanelViewEntry[];
 };
 
-export type ViewColumns = {
-    columns: ViewColumn[];
+export type PanelViewColumns = {
+    columns: PanelViewColumn[];
 };
 
-export type ViewEntry = ReadonlyField | ViewSections | ViewColumns;
+export type PanelViewEntry = ReadonlyField | PanelViewSections | PanelViewColumns | Content;
 
 export type PanelViewLayout = {
-    entries: ViewEntry[];
+    entries: PanelViewEntry[];
 };
 
 export type PropertyReference = {
