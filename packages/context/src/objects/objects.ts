@@ -307,6 +307,12 @@ export type Columns = {
     visibility?: VisibilityConfiguration | JsonLogic;
 };
 
+export type FileUpload = {
+    type: 'fileUpload';
+    display?: Pick<DisplayConfiguration, 'label' | 'description' | 'required' | 'tooltip' | 'visibility'>;
+    validate?: DocumentParameterValidation;
+};
+
 export type Section = {
     label: string;
     entries?: FormEntry[];
@@ -332,7 +338,14 @@ export type InputField = {
     documentMetadata?: Record<string, string>;
 };
 
-export type FormEntry = InputField | InputParameterReference | ReadonlyField | Sections | Columns | Content;
+export type FormEntry =
+    | InputField
+    | InputParameterReference
+    | ReadonlyField
+    | Sections
+    | Columns
+    | Content
+    | FileUpload;
 
 export type Form = {
     entries?: FormEntry[];
