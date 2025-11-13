@@ -124,7 +124,7 @@ export type PropertyType =
     | 'date'
     | 'date-time'
     | 'document'
-    | 'fileUpload'
+    | 'fileContent'
     | 'image'
     | 'integer'
     | 'number'
