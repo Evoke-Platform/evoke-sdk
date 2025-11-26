@@ -84,7 +84,6 @@ function MsalProvider({ msal, authRequest, children }: AuthenticationContextProv
                       account: {
                           id: account.localAccountId,
                           name: account.name,
-                          username: account.username,
                           lastLoginTime: account.idTokenClaims?.last_login_time as number | undefined,
                           activeMfaSession: Boolean(account.idTokenClaims?.active_mfa_session),
                       },
@@ -118,7 +117,7 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
 
     // The authRequest for react-oidc is formatted slightly differently than msal.
     const oidcAuthRequest: Pick<ExtraSigninRequestArgs, 'scope' | 'extraQueryParams' | 'state'> = {
-        scope: authRequest.scopes?.join(' ') ?? 'openid profile email',
+        scope: authRequest.scopes?.join(' ') ?? 'openid profile',
         extraQueryParams: authRequest.extraQueryParameters,
         state: authRequest.state,
     };
@@ -168,7 +167,6 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
                               userRef.current.profile.name ??
                               (`${userRef.current.profile.given_name ?? ''} ${userRef.current.profile.family_name ?? ''}` ||
                                   undefined),
-                          username: userRef.current.profile.preferred_username ?? userRef.current.profile.email,
                           lastLoginTime: userRef.current.profile.lastLoginTime as number | undefined,
                       },
                       logout: () => {
