@@ -295,7 +295,7 @@ export type DisplayConfiguration = {
     placeholderChar?: string;
     rowCount?: number;
     charCount?: boolean;
-    mode?: 'default' | 'existingOnly';
+    mode?: 'default' | 'existingOnly' | 'newOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
     /**
      * The ID of the related object for parameters of type 'object'.
