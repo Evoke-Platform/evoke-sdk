@@ -151,7 +151,7 @@ export type CriteriaValidation = {
 };
 
 export type StringValidation = {
-    operator: 'any' | 'all';
+    operator?: 'any' | 'all';
     rules?: RegexValidation[];
 };
 
