@@ -69,7 +69,13 @@
 
     "definitions": {
         "dataType": {
-            "enum": ["documents", "objectInstances", "documentVersions", "relatedObjectInstances"]
+            "enum": [
+                "documents",
+                "objectInstances",
+                "documentVersions",
+                "relatedObjectInstances",
+                "relatedPeerObjectInstances"
+            ]
         },
         "choices": {
             "type": "array",
