@@ -316,6 +316,7 @@ export type DisplayConfiguration = {
     createFormId?: string;
     updateFormId?: string;
     deleteFormId?: string;
+    criteria?: Record<string, unknown>;
 };
 
 export type InputParameterReference = {
