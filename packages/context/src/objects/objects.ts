@@ -316,6 +316,9 @@ export type DisplayConfiguration = {
     createFormId?: string;
     updateFormId?: string;
     deleteFormId?: string;
+    /**
+     * Criteria to filter related object options in case of dynamic related object references.
+     */
     criteria?: Record<string, unknown>;
 };
 
