@@ -12,6 +12,7 @@ export type App = {
     id: string;
     name: string;
     type: AppType;
+    offlineEnabled?: boolean;
     description?: string;
     initials?: string;
     icon?: string;
@@ -63,6 +64,7 @@ const defaultApp: App = {
     id: '_evoke',
     name: 'Evoke Platform',
     type: 'public',
+    offlineEnabled: false,
 };
 
 export type AppExtended = App & {
