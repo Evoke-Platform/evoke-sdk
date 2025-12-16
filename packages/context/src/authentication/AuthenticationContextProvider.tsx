@@ -3,6 +3,7 @@
 
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
+import { FusionAuthProviderContext } from '@fusionauth/react-sdk';
 import { ExtraSigninRequestArgs } from 'oidc-client-ts';
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { AuthContextProps } from 'react-oidc-context';
@@ -10,7 +11,8 @@ import { AuthContextProps } from 'react-oidc-context';
 export type AuthenticationContext = {
     account: UserAccount;
     logout: VoidFunction;
-    getAccessToken: () => Promise<string>;
+    getAccessToken?: () => Promise<string>;
+    tenantId?: string;
 };
 
 export type UserAccount = {
@@ -21,30 +23,46 @@ export type UserAccount = {
     activeMfaSession?: boolean;
 };
 
+type FusionUserInfo = NonNullable<FusionAuthProviderContext['userInfo']> & {
+    aud?: string;
+    username?: string;
+    lastLoginTime?: number;
+};
+
 const Context = createContext<AuthenticationContext | undefined>(undefined);
 
 Context.displayName = 'AuthenticationContext';
 
 export type AuthenticationContextProviderProps = {
     msal?: IMsalContext;
+    fusionInstance?: FusionAuthProviderContext;
     oidcInstance?: AuthContextProps;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
+    logout?: (reason?: string) => void;
 };
 
 export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
 
-function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
-    // Auto-detect provider type based on presence of msal prop
-    if (props.msal) {
-        const { msal, authRequest, children } = props;
+export function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
+    const { msal, oidcInstance, fusionInstance, authRequest, children, logout } = props;
 
+    // Auto-detect provider type based on presence of msal prop
+    if (msal) {
         return (
             <MsalProvider msal={msal} authRequest={authRequest}>
                 {children}
             </MsalProvider>
         );
-    } else {
+    } else if (fusionInstance) {
+        const { fusionInstance, authRequest, children } = props;
+
+        return (
+            <FusionAuthProvider fusionInstance={fusionInstance} authRequest={authRequest} logout={logout}>
+                {children}
+            </FusionAuthProvider>
+        );
+    } else if (oidcInstance) {
         const { oidcInstance, authRequest, children } = props;
 
         return (
@@ -187,6 +205,58 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
             oidcInstance.signoutRedirect,
             getAccessToken,
         ],
+    );
+
+    return <Context.Provider value={context}>{children}</Context.Provider>;
+}
+
+function FusionAuthProvider({ fusionInstance, children, logout }: AuthenticationContextProviderProps) {
+    if (!fusionInstance) {
+        throw new Error('Fusion instance is required for FusionAuthProvider.');
+    }
+
+    const { isLoggedIn, userInfo } = fusionInstance;
+
+    const user = userInfo as FusionUserInfo | null;
+
+    const context: AuthenticationContext | undefined = useMemo(
+        () =>
+            isLoggedIn && user?.sub
+                ? {
+                      tenantId: user.tid,
+                      account: {
+                          id: user.sub,
+                          name: user.name,
+                          username: user.username,
+                          lastLoginTime: user.lastLoginTime,
+                      },
+                      logout: () => {
+                          if (logout) {
+                              // If a `logout` function is provided, use it to perform a logout.
+                              // Since FusoinAuth does not currently support a dynamic `post_logout_redirect_uri`
+                              // through the FusionAuth SDK, the redirect to the `/logout` route is manual.
+                              // However, manually handling the redirection doesn't allow the logout to be
+                              // broadcasted to other tabs. Therefore, if cross-tab logout is supported,
+                              // a function that implements that logic should be provided here.
+                              logout();
+                          }
+
+                          // Fallback to direct logout if no `logout` function is provided.
+                          const logoutUrl = new URL(`${window.location.origin}/auth/logout`);
+
+                          logoutUrl.searchParams.set('client_id', user.aud ?? '');
+                          logoutUrl.searchParams.set(
+                              'post_logout_redirect_uri',
+                              `${window.location.origin}/logout?p=${encodeURIComponent(
+                                  window.location.pathname + window.location.search,
+                              )}`,
+                          );
+
+                          window.location.href = logoutUrl.toString();
+                      },
+                  }
+                : undefined,
+        [userInfo, isLoggedIn],
     );
 
     return <Context.Provider value={context}>{children}</Context.Provider>;
