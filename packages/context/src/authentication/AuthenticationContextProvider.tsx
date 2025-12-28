@@ -4,6 +4,7 @@
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
 import { FusionAuthProviderContext } from '@fusionauth/react-sdk';
+import axios from 'axios';
 import { ExtraSigninRequestArgs } from 'oidc-client-ts';
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { AuthContextProps } from 'react-oidc-context';
@@ -11,7 +12,7 @@ import { AuthContextProps } from 'react-oidc-context';
 export type AuthenticationContext = {
     account: UserAccount;
     logout: VoidFunction;
-    getAccessToken?: () => Promise<string>;
+    getAccessToken: () => Promise<string>;
     tenantId?: string;
 };
 
@@ -253,6 +254,15 @@ function FusionAuthProvider({ fusionInstance, children, logout }: Authentication
                           );
 
                           window.location.href = logoutUrl.toString();
+                      },
+                      getAccessToken: async () => {
+                          const tokenResponse = await axios.post(`api/accessManagement/auth/user/token`, {
+                              params: {
+                                  client_id: user.aud,
+                              },
+                          });
+
+                          return tokenResponse.data;
                       },
                   }
                 : undefined,

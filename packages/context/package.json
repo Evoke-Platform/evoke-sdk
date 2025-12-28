@@ -69,6 +69,7 @@
         "react-router-dom": ">=6"
     },
     "dependencies": {
+        "@fusionauth/react-sdk": "^2.5.1",
         "@isaacs/ttlcache": "^1.4.1",
         "@microsoft/signalr": "^7.0.12",
         "axios": "^1.11.0",
