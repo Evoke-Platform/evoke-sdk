@@ -256,7 +256,7 @@ function FusionAuthProvider({ fusionInstance, children, logout }: Authentication
                           window.location.href = logoutUrl.toString();
                       },
                       getAccessToken: async () => {
-                          const tokenResponse = await axios.post(`api/accessManagement/auth/user/token`, {
+                          const tokenResponse = await axios.post(`api/accessManagement/auth/user/token`, undefined, {
                               params: {
                                   client_id: user.aud,
                               },
