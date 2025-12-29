@@ -37,6 +37,7 @@
     "devDependencies": {
         "@azure/msal-browser": "^2.38.4",
         "@azure/msal-react": "^1.5.9",
+        "@fusionauth/react-sdk": "^2.5.1",
         "@testing-library/dom": "^10.4.0",
         "@testing-library/react": "^16.0.1",
         "@types/chai": "^4.3.11",
@@ -69,7 +70,6 @@
         "react-router-dom": ">=6"
     },
     "dependencies": {
-        "@fusionauth/react-sdk": "^2.5.1",
         "@isaacs/ttlcache": "^1.4.1",
         "@microsoft/signalr": "^7.0.12",
         "axios": "^1.11.0",

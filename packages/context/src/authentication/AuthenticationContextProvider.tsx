@@ -3,7 +3,7 @@
 
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
-import { FusionAuthProviderContext } from '@fusionauth/react-sdk';
+import type { FusionAuthProviderContext } from '@fusionauth/react-sdk';
 import axios from 'axios';
 import { ExtraSigninRequestArgs } from 'oidc-client-ts';
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
