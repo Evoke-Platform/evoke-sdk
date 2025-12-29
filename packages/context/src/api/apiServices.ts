@@ -19,9 +19,12 @@ export class ApiServices {
         authContext?: AuthenticationContext,
     ) {
         this.api.interceptors.request.use(async (config) => {
-            const headers: Record<string, string> = { 'X-Session-Id': sessionId };
+            const headers: Record<string, string> = {
+                'X-Session-Id': sessionId,
+                ...(authContext?.tenantId ? { 'X-Tenant-Id': authContext.tenantId } : {}),
+            };
 
-            if (authContext) {
+            if (authContext?.getAccessToken) {
                 const token = await authContext.getAccessToken();
                 headers['Authorization'] = `Bearer ${token}`;
             }
