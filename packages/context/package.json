@@ -41,6 +41,7 @@
         "@testing-library/react": "^16.0.1",
         "@types/chai": "^4.3.11",
         "@types/dirty-chai": "^2.0.4",
+        "@types/js-cookie": "^3.0.6",
         "@types/mocha": "^10.0.6",
         "@types/node": "^18.15.7",
         "@types/react": "^18.2.28",
@@ -72,6 +73,7 @@
         "@isaacs/ttlcache": "^1.4.1",
         "@microsoft/signalr": "^7.0.12",
         "axios": "^1.11.0",
+        "js-cookie": "^3.0.5",
         "oidc-client-ts": "^3.3.0",
         "uuid": "^9.0.1"
     }

@@ -579,17 +579,6 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
-"@evoke-platform/context@^1.0.0", "@evoke-platform/context@^1.1.0-testing.0":
-  version "1.3.0"
-  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.3.0.tgz#4ffd8ba8d1584a031e21a524406b35253af7a014"
-  integrity sha512-5OGCdhoO1sb4CNmGmSW7bxAKqMgP7qYpBA3TRTjNMj9cMK7TcIunpiziSX2tbUo92ZSlvis3KIwl/4Tj2CgccA==
-  dependencies:
-    "@isaacs/ttlcache" "^1.4.1"
-    "@microsoft/signalr" "^7.0.12"
-    axios "^1.7.9"
-    oidc-client-ts "^3.3.0"
-    uuid "^9.0.1"
-
 "@evoke-platform/ui-components@^1.3.0":
   version "1.3.0"
   resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.3.0.tgz#e5c3ddf34a75402135f518b9d3e851de6d3edbe6"
@@ -1613,6 +1602,11 @@
     "@types/through" "*"
     rxjs "^7.2.0"
 
+"@types/js-cookie@^3.0.6":
+  version "3.0.6"
+  resolved "https://registry.npmjs.org/@types/js-cookie/-/js-cookie-3.0.6.tgz#a04ca19e877687bd449f5ad37d33b104b71fdf95"
+  integrity sha512-wkw9yd1kEXOPnvEeEV1Go1MmxtBJL0RR79aOTAApecWFVu7w0NNXNqhcWgvw2YgZDYadliXkl14pa3WXw5jlCQ==
+
 "@types/js-levenshtein@^1.1.1":
   version "1.1.1"
   resolved "https://registry.npmjs.org/@types/js-levenshtein/-/js-levenshtein-1.1.1.tgz#ba05426a43f9e4e30b631941e0aa17bf0c890ed5"
@@ -2365,7 +2359,7 @@ available-typed-arrays@^1.0.5:
   resolved "https://registry.npmjs.org/available-typed-arrays/-/available-typed-arrays-1.0.5.tgz#92f95616501069d07d10edb2fc37d3e1c65123b7"
   integrity sha512-DMD0KiN46eipeziST1LPP/STfDU0sufISXmjSgvVsoU2tqxctQeASejWcfNtxYKqETM1UxQ8sp2OrSBWpHY6sw==
 
-axios@^1.11.0, axios@^1.7.9:
+axios@^1.11.0:
   version "1.11.0"
   resolved "https://registry.npmjs.org/axios/-/axios-1.11.0.tgz#c2ec219e35e414c025b2095e8b8280278478fdb6"
   integrity sha512-1Lx3WLFQWm3ooKDYZD1eXmoGO9fxYQjrycfHFC8P0sCfQVXyROp0p9PFWBehewBOdCwHc+f/b8I0fMto5eSfwA==
@@ -5971,6 +5965,11 @@ jake@^10.8.5:
     chalk "^4.0.2"
     filelist "^1.0.1"
     minimatch "^3.0.4"
+
+js-cookie@^3.0.5:
+  version "3.0.5"
+  resolved "https://registry.npmjs.org/js-cookie/-/js-cookie-3.0.5.tgz#0b7e2fd0c01552c58ba86e0841f94dc2557dcdbc"
+  integrity sha512-cEiJEAEoIbWfCZYKWhVwFuvPX1gETRYPw6LlaTKoxD3s2AkXzkCjnp6h0V77ozyqj0jakteJ4YqDJT830+lVGw==
 
 js-levenshtein@^1.1.6:
   version "1.1.6"

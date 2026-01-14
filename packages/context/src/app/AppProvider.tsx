@@ -2,6 +2,7 @@
 // This file is licensed under the MIT License.
 
 import { AxiosError } from 'axios';
+import Cookies from 'js-cookie';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useApiServices } from '../api/index.js';
 import { Obj } from '../objects/index.js';
@@ -116,7 +117,7 @@ async function clearPrivateOfflineCaches(): Promise<void> {
 }
 
 const offlineOptInCookieName = 'evoke_offline_opt_in';
-const defaultOfflineOptInMaxAgeDays = 365;
+const defaultOfflineOptInMaxAgeDays = 90;
 
 /**
  * Returns `true` when the offline opt-in cookie is present and truthy.
@@ -124,16 +125,11 @@ const defaultOfflineOptInMaxAgeDays = 365;
 function hasOfflineOptInCookie(): boolean {
     if (typeof window === 'undefined') return false;
 
-    const cookie = window.document.cookie ?? '';
-    const rawValue = cookie
-        .split(';')
-        .map((part) => part.trim())
-        .find((part) => part.startsWith(`${offlineOptInCookieName}=`))
-        ?.split('=')[1];
+    const rawValue = Cookies.get(offlineOptInCookieName);
 
     if (!rawValue) return false;
 
-    const normalized = decodeURIComponent(rawValue).trim().toLowerCase();
+    const normalized = rawValue.trim().toLowerCase();
     return normalized === 'true' || normalized === '1';
 }
 
@@ -144,18 +140,15 @@ function setOfflineOptInCookie(value: boolean, options?: { maxAgeDays?: number }
     if (typeof window === 'undefined') return;
 
     const maxAgeDays = options?.maxAgeDays ?? defaultOfflineOptInMaxAgeDays;
-    const maxAgeSeconds = Math.max(1, Math.floor(maxAgeDays * 24 * 60 * 60));
+    const secure = window.location.protocol === 'https:';
+    const cookieOptions = {
+        expires: Math.max(1, Math.floor(maxAgeDays)),
+        path: '/',
+        sameSite: 'lax' as const,
+        ...(secure ? { secure: true } : {}),
+    };
 
-    const parts = [
-        `${offlineOptInCookieName}=${encodeURIComponent(value ? 'true' : 'false')}`,
-        'path=/',
-        'samesite=lax',
-        `max-age=${maxAgeSeconds}`,
-    ];
-
-    if (window.location.protocol === 'https:') parts.push('secure');
-
-    window.document.cookie = parts.join('; ');
+    Cookies.set(offlineOptInCookieName, value ? 'true' : 'false', cookieOptions);
 }
 
 /**
@@ -164,17 +157,14 @@ function setOfflineOptInCookie(value: boolean, options?: { maxAgeDays?: number }
 function clearOfflineOptInCookie(): void {
     if (typeof window === 'undefined') return;
 
-    const parts = [
-        `${offlineOptInCookieName}=`,
-        'path=/',
-        'samesite=lax',
-        'expires=Thu, 01 Jan 1970 00:00:00 GMT',
-        'max-age=0',
-    ];
+    const secure = window.location.protocol === 'https:';
+    const cookieOptions = {
+        path: '/',
+        sameSite: 'lax' as const,
+        ...(secure ? { secure: true } : {}),
+    };
 
-    if (window.location.protocol === 'https:') parts.push('secure');
-
-    window.document.cookie = parts.join('; ');
+    Cookies.remove(offlineOptInCookieName, cookieOptions);
 }
 
 export type App = {
