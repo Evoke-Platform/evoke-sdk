@@ -29,8 +29,10 @@
         "@types/react": "^18.0.12",
         "@types/react-dom": "^18.0.5",
         "babel-loader": "^9.1.2",
+        "msw": "^2.10.4",
         "serve": "^14.2.0",
         "storybook": "^7.0.2",
+        "storybook-msw-addon": "^1.3.0",
         "ts-loader": "^9.3.0",
         "typescript": "^5.0.2",
         "webpack": "^5.70.0",
@@ -45,7 +47,7 @@
         "clean": "rm -rf dist",
         "prepackage": "npm run build",
         "package": "pkgplugin",
-        "storybook": "storybook dev -p 6006",
+        "storybook": "npx msw init .storybook/public --save && storybook dev -p 6006",
         "build-storybook": "storybook build"
     }
 }
