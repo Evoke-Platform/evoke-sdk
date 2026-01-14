@@ -10,6 +10,8 @@ export type AppType = 'public' | 'portal' | 'private';
 
 type ServiceWorkerAppPolicy = {
     appId: string;
+    appName?: string;
+    appShortName?: string;
     offlineEnabled: boolean;
     trustedDeviceOptIn: boolean;
     policyVersion: number;
@@ -322,9 +324,13 @@ function AppProvider(props: AppProviderProps) {
     const [trustedDeviceCookieVersion, setTrustedDeviceCookieVersion] = useState<number>(0);
 
     const appIdRef = useRef(app.id);
+    const appNameRef = useRef(app.name);
     useEffect(() => {
         appIdRef.current = app.id;
     }, [app.id]);
+    useEffect(() => {
+        appNameRef.current = app.name;
+    }, [app.name]);
 
     useEffect(() => {
         const onOnline = () => setIsOnline(true);
@@ -345,8 +351,11 @@ function AppProvider(props: AppProviderProps) {
             if (!('serviceWorker' in navigator)) return;
 
             try {
+                const appName = appNameRef.current?.trim() || appIdRef.current;
                 await setAppPolicy({
                     appId: appIdRef.current,
+                    appName,
+                    appShortName: appName,
                     offlineEnabled: isStructuralOfflineEnabled,
                     trustedDeviceOptIn: Boolean(isStructuralOfflineEnabled && nextTrustedDeviceOptIn),
                     policyVersion: 1,
@@ -360,7 +369,7 @@ function AppProvider(props: AppProviderProps) {
 
     useEffect(() => {
         void syncOfflinePolicy(hasOfflineOptInCookie());
-    }, [app.id, isStructuralOfflineEnabled, trustedDeviceCookieVersion, syncOfflinePolicy]);
+    }, [app.id, app.name, isStructuralOfflineEnabled, trustedDeviceCookieVersion, syncOfflinePolicy]);
 
     const enableOfflineData = useCallback(async () => {
         setOfflineOptInCookie(true);
