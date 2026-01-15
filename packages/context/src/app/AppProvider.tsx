@@ -134,8 +134,7 @@ async function clearPrivateOfflineCaches(): Promise<void> {
     const keys = await caches.keys();
     const privateCacheKeys = keys.filter(
         (key) =>
-            shellRuntimeCachePrefixes.some((prefix) => key.startsWith(prefix)) &&
-            (key.includes('-data-objects') || key.includes('-data-instances')),
+            key.startsWith(shellRuntimeCachePrefix) && (key.includes('-data-objects') || key.includes('-data-instances')),
     );
 
     await Promise.all(privateCacheKeys.map((key) => caches.delete(key)));
@@ -143,11 +142,8 @@ async function clearPrivateOfflineCaches(): Promise<void> {
 
 const offlineOptInCookieName = 'evoke_offline_opt_in';
 const shellCachePrefix = 'evoke:shell';
-const legacyShellCachePrefix = 'evoke-shell';
-const shellCachePrefixes = [`${shellCachePrefix}-`, `${legacyShellCachePrefix}-`];
-const shellRuntimeCachePrefixes = [`${shellCachePrefix}-runtime-`, `${legacyShellCachePrefix}-runtime-`];
+const shellRuntimeCachePrefix = `${shellCachePrefix}-runtime-`;
 const offlineEnabledStoragePrefix = 'evoke:shell:offlineEnabled:';
-const legacyOfflineEnabledStoragePrefix = 'evoke:offlineEnabled:';
 // Default trusted-device cookie lifetime in days; can be overridden via enableOfflineData options.
 const defaultOfflineOptInMaxAgeDays = 90;
 
@@ -420,17 +416,12 @@ function AppProvider(props: AppProviderProps) {
 
         if (result.ok !== true && typeof caches !== 'undefined') {
             const keys = await caches.keys();
-            await Promise.all(
-                keys.filter((key) => shellCachePrefixes.some((prefix) => key.startsWith(prefix))).map((key) =>
-                    caches.delete(key),
-                ),
-            );
+            await Promise.all(keys.filter((key) => key.startsWith(`${shellCachePrefix}-`)).map((key) => caches.delete(key)));
         }
 
-        const prefixes = [offlineEnabledStoragePrefix, legacyOfflineEnabledStoragePrefix];
         for (let i = window.sessionStorage.length - 1; i >= 0; i -= 1) {
             const key = window.sessionStorage.key(i);
-            if (key && prefixes.some((prefix) => key.startsWith(prefix))) {
+            if (key && key.startsWith(offlineEnabledStoragePrefix)) {
                 window.sessionStorage.removeItem(key);
             }
         }
