@@ -11,10 +11,19 @@ export type AppType = 'public' | 'portal' | 'private';
 
 type ServiceWorkerAppPolicy = {
     appId: string;
+    /**
+     * Full display name for installable PWA metadata (manifest `name`).
+     */
     appName?: string;
+    /**
+     * Short display name for installable PWA metadata (manifest `short_name`).
+     */
     appShortName?: string;
     offlineEnabled: boolean;
     trustedDeviceOptIn: boolean;
+    /**
+     * Version of the policy schema shared with the service worker.
+     */
     policyVersion: number;
 };
 
@@ -23,8 +32,23 @@ type ServiceWorkerMessage =
     | { type: 'CLEAR_OFFLINE_DATA' }
     | { type: 'SKIP_WAITING' };
 
-type ServiceWorkerMessageResponse = { ok: true } | { ok: false; error: string };
+enum ServiceWorkerMessageError {
+    NoWindow = 'no-window',
+    Unsupported = 'unsupported',
+    NoActiveWorker = 'no-active-worker',
+    Timeout = 'timeout',
+    NoResponse = 'no-response',
+    PostMessageFailed = 'postMessage-failed',
+}
 
+type ServiceWorkerMessageResponse = { ok: true } | { ok: false; error: ServiceWorkerMessageError };
+
+// Bump when the SW policy schema changes.
+const offlinePolicyVersion = 1;
+
+/**
+ * Finds the active service worker to message, preferring the controller when available.
+ */
 async function getActiveServiceWorkerTarget(): Promise<ServiceWorker | null> {
     const controller = navigator.serviceWorker.controller as ServiceWorker | null;
     if (controller) return controller;
@@ -48,15 +72,16 @@ async function sendServiceWorkerMessage(
     message: ServiceWorkerMessage,
     options?: { timeoutMs?: number },
 ): Promise<ServiceWorkerMessageResponse> {
-    if (typeof window === 'undefined') return { ok: false, error: 'no-window' };
-    if (!('serviceWorker' in navigator)) return { ok: false, error: 'unsupported' };
+    if (typeof window === 'undefined') return { ok: false, error: ServiceWorkerMessageError.NoWindow };
+    if (!('serviceWorker' in navigator)) return { ok: false, error: ServiceWorkerMessageError.Unsupported };
 
     const timeoutMs = options?.timeoutMs ?? 5_000;
 
     const target = await getActiveServiceWorkerTarget();
-    if (!target) return { ok: false, error: 'no-active-worker' };
+    if (!target) return { ok: false, error: ServiceWorkerMessageError.NoActiveWorker };
 
     return await new Promise<ServiceWorkerMessageResponse>((resolve) => {
+        // port1 stays with this page and receives responses; port2 is transferred so the SW can reply on the channel.
         const channel = new MessageChannel();
         const cleanup = () => {
             channel.port1.onmessage = null;
@@ -66,14 +91,14 @@ async function sendServiceWorkerMessage(
 
         const timeoutId = window.setTimeout(() => {
             cleanup();
-            resolve({ ok: false, error: 'timeout' });
+            resolve({ ok: false, error: ServiceWorkerMessageError.Timeout });
         }, timeoutMs);
 
         channel.port1.onmessage = (event: MessageEvent) => {
             window.clearTimeout(timeoutId);
             const data = event.data as ServiceWorkerMessageResponse | undefined;
             cleanup();
-            resolve(data ?? { ok: false, error: 'no-response' });
+            resolve(data ?? { ok: false, error: ServiceWorkerMessageError.NoResponse });
         };
 
         try {
@@ -81,7 +106,7 @@ async function sendServiceWorkerMessage(
         } catch (error: unknown) {
             window.clearTimeout(timeoutId);
             cleanup();
-            resolve({ ok: false, error: (error as Error)?.message ?? 'postMessage-failed' });
+            resolve({ ok: false, error: ServiceWorkerMessageError.PostMessageFailed });
         }
     });
 }
@@ -109,7 +134,7 @@ async function clearPrivateOfflineCaches(): Promise<void> {
     const keys = await caches.keys();
     const privateCacheKeys = keys.filter(
         (key) =>
-            key.startsWith('evoke-shell-runtime-') &&
+            shellRuntimeCachePrefixes.some((prefix) => key.startsWith(prefix)) &&
             (key.includes('-data-objects') || key.includes('-data-instances')),
     );
 
@@ -117,6 +142,13 @@ async function clearPrivateOfflineCaches(): Promise<void> {
 }
 
 const offlineOptInCookieName = 'evoke_offline_opt_in';
+const shellCachePrefix = 'evoke:shell';
+const legacyShellCachePrefix = 'evoke-shell';
+const shellCachePrefixes = [`${shellCachePrefix}-`, `${legacyShellCachePrefix}-`];
+const shellRuntimeCachePrefixes = [`${shellCachePrefix}-runtime-`, `${legacyShellCachePrefix}-runtime-`];
+const offlineEnabledStoragePrefix = 'evoke:shell:offlineEnabled:';
+const legacyOfflineEnabledStoragePrefix = 'evoke:offlineEnabled:';
+// Default trusted-device cookie lifetime in days; can be overridden via enableOfflineData options.
 const defaultOfflineOptInMaxAgeDays = 90;
 
 /**
@@ -228,14 +260,6 @@ const defaultApp: App = {
 
 export type OfflineController = {
     /**
-     * `true` when the current browser has network connectivity.
-     */
-    isOnline: boolean;
-    /**
-     * `true` when the current browser is offline.
-     */
-    isOffline: boolean;
-    /**
      * `true` when the current app is configured as offline-capable (`offlineEnabled=true`).
      * This enables structural offline (booting UI/chrome offline after one online visit).
      */
@@ -247,8 +271,9 @@ export type OfflineController = {
     /**
      * Enables private data offline caching for this device.
      * Writes the trusted-device cookie and updates the Shell service worker policy.
+     * Pass `maxAgeDays` to override the default cookie lifetime.
      */
-    enableOfflineData: () => Promise<void>;
+    enableOfflineData: (options?: { maxAgeDays?: number }) => Promise<void>;
     /**
      * Disables private data offline caching for this device.
      * Clears the trusted-device cookie and updates the Shell service worker policy.
@@ -258,6 +283,13 @@ export type OfflineController = {
      * Clears all offline data caches managed by the Shell service worker.
      */
     clearOfflineData: () => Promise<void>;
+};
+
+export type ConnectivityState = {
+    /**
+     * `true` when the current browser reports network connectivity.
+     */
+    isOnline: boolean;
 };
 
 export type AppExtended = App & {
@@ -272,24 +304,28 @@ export type AppExtended = App & {
      * Offline tooling for the current app.
      *
      * Provides:
-     * - connectivity state (online/offline)
      * - trusted-device opt-in (private data offline)
      * - actions that update the Shell service worker policy for caching
      */
     offline: OfflineController;
+    /**
+     * Network connectivity state for the current browser session.
+     */
+    connectivity: ConnectivityState;
 };
 
 const defaultAppExtended: AppExtended = {
     ...defaultApp,
     findDefaultPageSlugFor: (objectId: string) => Promise.resolve(undefined),
     offline: {
-        isOnline: true,
-        isOffline: false,
         isStructuralOfflineEnabled: false,
         isTrustedDevice: false,
         enableOfflineData: async () => undefined,
         disableOfflineData: async () => undefined,
         clearOfflineData: async () => undefined,
+    },
+    connectivity: {
+        isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
     },
 };
 
@@ -311,7 +347,8 @@ function AppProvider(props: AppProviderProps) {
     const [isOnline, setIsOnline] = useState<boolean>(() =>
         typeof navigator !== 'undefined' ? navigator.onLine : true,
     );
-    const [trustedDeviceCookieVersion, setTrustedDeviceCookieVersion] = useState<number>(0);
+    // Bumped after cookie writes to force policy sync even if app inputs are unchanged.
+    const [policySyncCounter, setPolicySyncCounter] = useState<number>(0);
 
     const appIdRef = useRef(app.id);
     const appNameRef = useRef(app.name);
@@ -348,7 +385,7 @@ function AppProvider(props: AppProviderProps) {
                     appShortName: appName,
                     offlineEnabled: isStructuralOfflineEnabled,
                     trustedDeviceOptIn: Boolean(isStructuralOfflineEnabled && nextTrustedDeviceOptIn),
-                    policyVersion: 1,
+                    policyVersion: offlinePolicyVersion,
                 });
             } catch {
                 // Best-effort: service worker may not be registered/controlling yet.
@@ -359,17 +396,17 @@ function AppProvider(props: AppProviderProps) {
 
     useEffect(() => {
         void syncOfflinePolicy(hasOfflineOptInCookie());
-    }, [app.id, app.name, isStructuralOfflineEnabled, trustedDeviceCookieVersion, syncOfflinePolicy]);
+    }, [app.id, app.name, isStructuralOfflineEnabled, policySyncCounter, syncOfflinePolicy]);
 
-    const enableOfflineData = useCallback(async () => {
-        setOfflineOptInCookie(true);
-        setTrustedDeviceCookieVersion((value) => value + 1);
+    const enableOfflineData = useCallback(async (options?: { maxAgeDays?: number }) => {
+        setOfflineOptInCookie(true, options);
+        setPolicySyncCounter((value) => value + 1);
         await syncOfflinePolicy(true);
     }, [syncOfflinePolicy]);
 
     const disableOfflineData = useCallback(async () => {
         clearOfflineOptInCookie();
-        setTrustedDeviceCookieVersion((value) => value + 1);
+        setPolicySyncCounter((value) => value + 1);
         await syncOfflinePolicy(false);
         try {
             await clearPrivateOfflineCaches();
@@ -383,20 +420,24 @@ function AppProvider(props: AppProviderProps) {
 
         if (result.ok !== true && typeof caches !== 'undefined') {
             const keys = await caches.keys();
-            await Promise.all(keys.filter((key) => key.startsWith('evoke-shell-')).map((key) => caches.delete(key)));
+            await Promise.all(
+                keys.filter((key) => shellCachePrefixes.some((prefix) => key.startsWith(prefix))).map((key) =>
+                    caches.delete(key),
+                ),
+            );
         }
 
-        const prefix = 'evoke:offlineEnabled:';
+        const prefixes = [offlineEnabledStoragePrefix, legacyOfflineEnabledStoragePrefix];
         for (let i = window.sessionStorage.length - 1; i >= 0; i -= 1) {
             const key = window.sessionStorage.key(i);
-            if (key && key.startsWith(prefix)) window.sessionStorage.removeItem(key);
+            if (key && prefixes.some((prefix) => key.startsWith(prefix))) {
+                window.sessionStorage.removeItem(key);
+            }
         }
     }, []);
 
     const offline = useMemo<OfflineController>(
         () => ({
-            isOnline,
-            isOffline: !isOnline,
             isStructuralOfflineEnabled,
             get isTrustedDevice() {
                 return hasOfflineOptInCookie();
@@ -405,8 +446,10 @@ function AppProvider(props: AppProviderProps) {
             disableOfflineData,
             clearOfflineData,
         }),
-        [clearOfflineData, disableOfflineData, enableOfflineData, isOnline, isStructuralOfflineEnabled],
+        [clearOfflineData, disableOfflineData, enableOfflineData, isStructuralOfflineEnabled],
     );
+
+    const connectivity = useMemo<ConnectivityState>(() => ({ isOnline }), [isOnline]);
 
     const appExtended: AppExtended = {
         ...app,
@@ -453,6 +496,7 @@ function AppProvider(props: AppProviderProps) {
             [app],
         ),
         offline,
+        connectivity,
     };
 
     return <AppContext.Provider value={appExtended}>{children}</AppContext.Provider>;
