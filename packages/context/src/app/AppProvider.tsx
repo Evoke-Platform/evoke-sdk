@@ -134,7 +134,8 @@ async function clearPrivateOfflineCaches(): Promise<void> {
     const keys = await caches.keys();
     const privateCacheKeys = keys.filter(
         (key) =>
-            key.startsWith(shellRuntimeCachePrefix) && (key.includes('-data-objects') || key.includes('-data-instances')),
+            key.startsWith(shellRuntimeCachePrefix) &&
+            (key.includes('-data-objects') || key.includes('-data-instances')),
     );
 
     await Promise.all(privateCacheKeys.map((key) => caches.delete(key)));
@@ -385,6 +386,7 @@ function AppProvider(props: AppProviderProps) {
                 });
             } catch {
                 // Best-effort: service worker may not be registered/controlling yet.
+                console.warn('[evoke-sdk] Failed to sync offline policy to service worker.');
             }
         },
         [isStructuralOfflineEnabled],
@@ -394,11 +396,14 @@ function AppProvider(props: AppProviderProps) {
         void syncOfflinePolicy(hasOfflineOptInCookie());
     }, [app.id, app.name, isStructuralOfflineEnabled, policySyncCounter, syncOfflinePolicy]);
 
-    const enableOfflineData = useCallback(async (options?: { maxAgeDays?: number }) => {
-        setOfflineOptInCookie(true, options);
-        setPolicySyncCounter((value) => value + 1);
-        await syncOfflinePolicy(true);
-    }, [syncOfflinePolicy]);
+    const enableOfflineData = useCallback(
+        async (options?: { maxAgeDays?: number }) => {
+            setOfflineOptInCookie(true, options);
+            setPolicySyncCounter((value) => value + 1);
+            await syncOfflinePolicy(true);
+        },
+        [syncOfflinePolicy],
+    );
 
     const disableOfflineData = useCallback(async () => {
         clearOfflineOptInCookie();
@@ -408,6 +413,7 @@ function AppProvider(props: AppProviderProps) {
             await clearPrivateOfflineCaches();
         } catch {
             // Best-effort: cache storage may be unavailable or restricted.
+            console.warn('[evoke-sdk] Failed to clear private offline caches during opt-out.');
         }
     }, [syncOfflinePolicy]);
 
@@ -416,7 +422,9 @@ function AppProvider(props: AppProviderProps) {
 
         if (result.ok !== true && typeof caches !== 'undefined') {
             const keys = await caches.keys();
-            await Promise.all(keys.filter((key) => key.startsWith(`${shellCachePrefix}-`)).map((key) => caches.delete(key)));
+            await Promise.all(
+                keys.filter((key) => key.startsWith(`${shellCachePrefix}-`)).map((key) => caches.delete(key)),
+            );
         }
 
         for (let i = window.sessionStorage.length - 1; i >= 0; i -= 1) {
