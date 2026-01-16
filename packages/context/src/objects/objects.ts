@@ -691,13 +691,34 @@ export class ObjectStore {
      */
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string): Promise<T>;
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string, cb: Callback<T>): void;
+    getInstance<T extends ObjectInstance = ObjectInstance>(
+        id: string,
+        cb?: Callback<T>,
+        paramOptions?: {
+            collection?: boolean;
+            expand?: string[];
+        },
+    ): Promise<T> | void;
 
-    getInstance<T extends ObjectInstance>(id: string, cb?: Callback<T>) {
+    getInstance<T extends ObjectInstance>(
+        id: string,
+        cb?: Callback<T>,
+        paramOptions?: {
+            collection?: boolean;
+            expand?: string[];
+        },
+    ) {
+        const config: AxiosRequestConfig = {
+            params: {
+                ...paramOptions,
+            },
+        };
+
         if (!cb) {
-            return this.services.get<T, unknown>(`data/objects/${this.objectId}/instances/${id}`);
+            return this.services.get<T, unknown>(`data/objects/${this.objectId}/instances/${id}`, config);
         }
 
-        this.services.get(`data/objects/${this.objectId}/instances/${id}`, cb);
+        this.services.get(`data/objects/${this.objectId}/instances/${id}`, config, cb);
     }
 
     /**
