@@ -46,6 +46,13 @@ type ServiceWorkerMessageResponse = { ok: true } | { ok: false; error: ServiceWo
 // Bump when the SW policy schema changes.
 const offlinePolicyVersion = 1;
 
+const offlineOptInCookieName = 'evoke_offline_opt_in';
+const shellCachePrefix = 'evoke:shell';
+const shellRuntimeCachePrefix = `${shellCachePrefix}-runtime-`;
+const offlineEnabledStoragePrefix = 'evoke:shell:offlineEnabled:';
+// Default trusted-device cookie lifetime in days; can be overridden via enableOfflineData options.
+const defaultOfflineOptInMaxAgeDays = 90;
+
 /**
  * Finds the active service worker to message, preferring the controller when available.
  */
@@ -168,13 +175,6 @@ async function waitForServiceWorkerController(timeoutMs: number): Promise<boolea
         navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
     });
 }
-
-const offlineOptInCookieName = 'evoke_offline_opt_in';
-const shellCachePrefix = 'evoke:shell';
-const shellRuntimeCachePrefix = `${shellCachePrefix}-runtime-`;
-const offlineEnabledStoragePrefix = 'evoke:shell:offlineEnabled:';
-// Default trusted-device cookie lifetime in days; can be overridden via enableOfflineData options.
-const defaultOfflineOptInMaxAgeDays = 90;
 
 /**
  * Returns `true` when the offline opt-in cookie is present and truthy.
