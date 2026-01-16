@@ -141,6 +141,34 @@ async function clearPrivateOfflineCaches(): Promise<void> {
     await Promise.all(privateCacheKeys.map((key) => caches.delete(key)));
 }
 
+async function waitForServiceWorkerController(timeoutMs: number): Promise<boolean> {
+    /**
+     * On first load, a service worker can be registered/active but not yet "controlling" this tab.
+     * If we try to sync offline policy or warm caches before the tab is controlled, it becomes a timing gamble:
+     * sometimes the service worker won't see/intercept the requests, and offline setup won't stick until a refresh.
+     *
+     * This helper waits (briefly) for the browser to hand control of this tab to the service worker.
+     */
+    if (typeof window === 'undefined') return false;
+    if (!('serviceWorker' in navigator)) return false;
+    if (navigator.serviceWorker.controller) return true;
+
+    return await new Promise<boolean>((resolve) => {
+        const onControllerChange = () => {
+            window.clearTimeout(timeoutId);
+            navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+            resolve(Boolean(navigator.serviceWorker.controller));
+        };
+
+        const timeoutId = window.setTimeout(() => {
+            navigator.serviceWorker.removeEventListener('controllerchange', onControllerChange);
+            resolve(Boolean(navigator.serviceWorker.controller));
+        }, timeoutMs);
+
+        navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
+    });
+}
+
 const offlineOptInCookieName = 'evoke_offline_opt_in';
 const shellCachePrefix = 'evoke:shell';
 const shellRuntimeCachePrefix = `${shellCachePrefix}-runtime-`;
@@ -255,7 +283,7 @@ const defaultApp: App = {
     offlineEnabled: false,
 };
 
-export type OfflineController = {
+export type OfflineTools = {
     /**
      * `true` when the current app is configured as offline-capable (`offlineEnabled=true`).
      * This enables structural offline (booting UI/chrome offline after one online visit).
@@ -298,13 +326,13 @@ export type AppExtended = App & {
      */
     findDefaultPageSlugFor: (objectId: string) => Promise<string | undefined>;
     /**
-     * Offline tooling for the current app.
+     * Offline tooling for the current app (not connectivity status).
      *
      * Provides:
      * - trusted-device opt-in (private data offline)
      * - actions that update the Shell service worker policy for caching
      */
-    offline: OfflineController;
+    offlineTools: OfflineTools;
     /**
      * Network connectivity state for the current browser session.
      */
@@ -314,7 +342,7 @@ export type AppExtended = App & {
 const defaultAppExtended: AppExtended = {
     ...defaultApp,
     findDefaultPageSlugFor: (objectId: string) => Promise.resolve(undefined),
-    offline: {
+    offlineTools: {
         isStructuralOfflineEnabled: false,
         isTrustedDevice: false,
         enableOfflineData: async () => undefined,
@@ -322,7 +350,7 @@ const defaultAppExtended: AppExtended = {
         clearOfflineData: async () => undefined,
     },
     connectivity: {
-        isOnline: typeof navigator !== 'undefined' ? navigator.onLine : true,
+        isOnline: typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
     },
 };
 
@@ -342,7 +370,7 @@ function AppProvider(props: AppProviderProps) {
     const isStructuralOfflineEnabled = Boolean(app.offlineEnabled);
 
     const [isOnline, setIsOnline] = useState<boolean>(() =>
-        typeof navigator !== 'undefined' ? navigator.onLine : true,
+        typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
     );
     // Bumped after cookie writes to force policy sync even if app inputs are unchanged.
     const [policySyncCounter, setPolicySyncCounter] = useState<number>(0);
@@ -370,13 +398,13 @@ function AppProvider(props: AppProviderProps) {
     }, []);
 
     const syncOfflinePolicy = useCallback(
-        async (nextTrustedDeviceOptIn: boolean) => {
-            if (typeof window === 'undefined') return;
-            if (!('serviceWorker' in navigator)) return;
+        async (nextTrustedDeviceOptIn: boolean): Promise<boolean> => {
+            if (typeof window === 'undefined') return false;
+            if (!('serviceWorker' in navigator)) return false;
 
             try {
                 const appName = appNameRef.current?.trim() || appIdRef.current;
-                await setAppPolicy({
+                const result = await setAppPolicy({
                     appId: appIdRef.current,
                     appName,
                     appShortName: appName,
@@ -384,22 +412,38 @@ function AppProvider(props: AppProviderProps) {
                     trustedDeviceOptIn: Boolean(isStructuralOfflineEnabled && nextTrustedDeviceOptIn),
                     policyVersion: offlinePolicyVersion,
                 });
+                return result.ok === true;
             } catch {
                 // Best-effort: service worker may not be registered/controlling yet.
                 console.warn('[evoke-sdk] Failed to sync offline policy to service worker.');
+                return false;
             }
         },
         [isStructuralOfflineEnabled],
     );
 
     useEffect(() => {
-        void syncOfflinePolicy(hasOfflineOptInCookie());
+        void (async () => {
+            const ok = await syncOfflinePolicy(hasOfflineOptInCookie());
+            if (ok) return;
+
+            const controlled = await waitForServiceWorkerController(10000);
+            if (!controlled) return;
+
+            await syncOfflinePolicy(hasOfflineOptInCookie());
+        })();
     }, [app.id, app.name, isStructuralOfflineEnabled, policySyncCounter, syncOfflinePolicy]);
 
     const enableOfflineData = useCallback(
         async (options?: { maxAgeDays?: number }) => {
             setOfflineOptInCookie(true, options);
             setPolicySyncCounter((value) => value + 1);
+            const ok = await syncOfflinePolicy(true);
+            if (ok) return;
+
+            const controlled = await waitForServiceWorkerController(10_000);
+            if (!controlled) return;
+
             await syncOfflinePolicy(true);
         },
         [syncOfflinePolicy],
@@ -408,7 +452,13 @@ function AppProvider(props: AppProviderProps) {
     const disableOfflineData = useCallback(async () => {
         clearOfflineOptInCookie();
         setPolicySyncCounter((value) => value + 1);
-        await syncOfflinePolicy(false);
+        const ok = await syncOfflinePolicy(false);
+        if (!ok) {
+            const controlled = await waitForServiceWorkerController(10_000);
+            if (controlled) {
+                await syncOfflinePolicy(false);
+            }
+        }
         try {
             await clearPrivateOfflineCaches();
         } catch {
@@ -435,7 +485,7 @@ function AppProvider(props: AppProviderProps) {
         }
     }, []);
 
-    const offline = useMemo<OfflineController>(
+    const offlineTools = useMemo<OfflineTools>(
         () => ({
             isStructuralOfflineEnabled,
             get isTrustedDevice() {
@@ -494,7 +544,7 @@ function AppProvider(props: AppProviderProps) {
             },
             [app],
         ),
-        offline,
+        offlineTools,
         connectivity,
     };
 
