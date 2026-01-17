@@ -288,11 +288,11 @@ export type OfflineTools = {
      * `true` when the current app is configured as offline-capable (`offlineEnabled=true`).
      * This enables structural offline (booting UI/chrome offline after one online visit).
      */
-    isStructuralOfflineEnabled: boolean;
+    readonly isStructuralOfflineEnabled: boolean;
     /**
      * `true` when the user has opted this device into private offline data caching (trusted device).
      */
-    isTrustedDevice: boolean;
+    readonly isTrustedDevice: boolean;
     /**
      * Enables private data offline caching for this device.
      * Writes the trusted-device cookie and updates the Shell service worker policy.
@@ -367,7 +367,7 @@ function AppProvider(props: AppProviderProps) {
     const { app, children } = props;
     const apiServices = useApiServices();
 
-    const isStructuralOfflineEnabled = Boolean(app.offlineEnabled);
+    const structuralOfflineEnabled = Boolean(app.offlineEnabled);
 
     const [isOnline, setIsOnline] = useState<boolean>(() =>
         typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
@@ -408,8 +408,8 @@ function AppProvider(props: AppProviderProps) {
                     appId: appIdRef.current,
                     appName,
                     appShortName: appName,
-                    offlineEnabled: isStructuralOfflineEnabled,
-                    trustedDeviceOptIn: Boolean(isStructuralOfflineEnabled && nextTrustedDeviceOptIn),
+                    offlineEnabled: structuralOfflineEnabled,
+                    trustedDeviceOptIn: Boolean(structuralOfflineEnabled && nextTrustedDeviceOptIn),
                     policyVersion: offlinePolicyVersion,
                 });
                 return result.ok === true;
@@ -419,7 +419,7 @@ function AppProvider(props: AppProviderProps) {
                 return false;
             }
         },
-        [isStructuralOfflineEnabled],
+        [structuralOfflineEnabled],
     );
 
     useEffect(() => {
@@ -432,7 +432,7 @@ function AppProvider(props: AppProviderProps) {
 
             await syncOfflinePolicy(hasOfflineOptInCookie());
         })();
-    }, [app.id, app.name, isStructuralOfflineEnabled, policySyncCounter, syncOfflinePolicy]);
+    }, [app.id, app.name, structuralOfflineEnabled, policySyncCounter, syncOfflinePolicy]);
 
     const enableOfflineData = useCallback(
         async (options?: { maxAgeDays?: number }) => {
@@ -487,7 +487,9 @@ function AppProvider(props: AppProviderProps) {
 
     const offlineTools = useMemo<OfflineTools>(
         () => ({
-            isStructuralOfflineEnabled,
+            get isStructuralOfflineEnabled() {
+                return structuralOfflineEnabled;
+            },
             get isTrustedDevice() {
                 return hasOfflineOptInCookie();
             },
@@ -495,7 +497,7 @@ function AppProvider(props: AppProviderProps) {
             disableOfflineData,
             clearOfflineData,
         }),
-        [clearOfflineData, disableOfflineData, enableOfflineData, isStructuralOfflineEnabled],
+        [clearOfflineData, disableOfflineData, enableOfflineData, structuralOfflineEnabled],
     );
 
     const connectivity = useMemo<ConnectivityState>(() => ({ isOnline }), [isOnline]);
