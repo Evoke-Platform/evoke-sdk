@@ -82,18 +82,16 @@ export type AppExtended = App & {
      */
     isOnline: boolean;
     /**
-     * `true` when the current device has opted in to offline private-data caching.
-     *
-     * This value is expected to be driven by the app layer (e.g., AppViewer OfflineProvider) so it is reactive.
+     * `true` when this device is trusted to store offline private data for the current app.
      */
-    hasOfflineOptIn: boolean;
+    isTrustedDevice: boolean;
 };
 
 const defaultAppExtended: AppExtended = {
     ...defaultApp,
     findDefaultPageSlugFor: (objectId: string) => Promise.resolve(undefined),
     isOnline: typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
-    hasOfflineOptIn: false,
+    isTrustedDevice: false,
 };
 
 const AppContext = createContext<AppExtended>(defaultAppExtended);
@@ -102,12 +100,15 @@ AppContext.displayName = 'AppContext';
 
 export type AppProviderProps = {
     app: App;
-    hasOfflineOptIn?: boolean;
+    /**
+     * `true` when this device is trusted to store offline private data for the current app.
+     */
+    isTrustedDevice?: boolean;
     children?: ReactNode;
 };
 
 function AppProvider(props: AppProviderProps) {
-    const { app, children, hasOfflineOptIn } = props;
+    const { app, children, isTrustedDevice } = props;
     const apiServices = useApiServices();
 
     const [isOnline, setIsOnline] = useState<boolean>(() =>
@@ -176,9 +177,9 @@ function AppProvider(props: AppProviderProps) {
             ...app,
             findDefaultPageSlugFor,
             isOnline,
-            hasOfflineOptIn: Boolean(hasOfflineOptIn),
+            isTrustedDevice: Boolean(isTrustedDevice),
         }),
-        [app, findDefaultPageSlugFor, hasOfflineOptIn, isOnline],
+        [app, findDefaultPageSlugFor, isOnline, isTrustedDevice],
     );
 
     return <AppContext.Provider value={appExtended}>{children}</AppContext.Provider>;
