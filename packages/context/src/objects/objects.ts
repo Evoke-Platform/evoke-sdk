@@ -298,12 +298,20 @@ export type DisplayConfiguration = {
     charCount?: boolean;
     mode?: 'default' | 'existingOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
+
     /**
      * The ID of the related object for parameters of type 'object'.
      * When a parameter is of type 'object' whose objectId is not configured,
      * this specifies which object it relates to when the field entry is rendered.
      */
     relatedObjectId?: string;
+
+    /**
+     * The ID of the file object for parameters of type 'file'.
+     * This can be either the system File object or one of its subtypes.
+     */
+    fileObjectId?: string;
+
     visibility?: VisibilityConfiguration | JsonLogic;
     viewLayout?: ViewLayoutEntityReference;
     choicesDisplay?: {
@@ -317,6 +325,7 @@ export type DisplayConfiguration = {
     createFormId?: string;
     updateFormId?: string;
     deleteFormId?: string;
+
     /**
      * Criteria to filter related object options in case of dynamic related object references.
      */
