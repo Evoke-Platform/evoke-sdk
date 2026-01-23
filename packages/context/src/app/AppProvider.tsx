@@ -2,7 +2,7 @@
 // This file is licensed under the MIT License.
 
 import { AxiosError } from 'axios';
-import { createContext, ReactNode, useCallback, useContext } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useApiServices } from '../api/index.js';
 import { Obj } from '../objects/index.js';
 
@@ -75,11 +75,23 @@ export type AppExtended = App & {
      * @returns {Promise<string | undefined>} The default page slug, or `undefined` if no default page is found.
      */
     findDefaultPageSlugFor: (objectId: string) => Promise<string | undefined>;
+    /**
+     * `true` when the current browser reports network connectivity.
+     *
+     * Note: this is a browser signal (`navigator.onLine` + online/offline events), not a guarantee that APIs are reachable.
+     */
+    isOnline: boolean;
+    /**
+     * `true` when this device is trusted to store offline private data for the current app.
+     */
+    isTrustedDevice: boolean;
 };
 
 const defaultAppExtended: AppExtended = {
     ...defaultApp,
     findDefaultPageSlugFor: (objectId: string) => Promise.resolve(undefined),
+    isOnline: typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
+    isTrustedDevice: false,
 };
 
 const AppContext = createContext<AppExtended>(defaultAppExtended);
@@ -88,58 +100,87 @@ AppContext.displayName = 'AppContext';
 
 export type AppProviderProps = {
     app: App;
+    /**
+     * `true` when this device is trusted to store offline private data for the current app.
+     */
+    isTrustedDevice?: boolean;
     children?: ReactNode;
 };
 
 function AppProvider(props: AppProviderProps) {
-    const { app, children } = props;
+    const { app, children, isTrustedDevice } = props;
     const apiServices = useApiServices();
 
-    const appExtended: AppExtended = {
-        ...app,
-        findDefaultPageSlugFor: useCallback(
-            async (objectId: string) => {
-                let defaultPageId: string | undefined;
-                let currentObjectId: string | undefined = objectId;
-                while (currentObjectId !== undefined) {
-                    if (app.defaultPages?.[currentObjectId]) {
-                        defaultPageId = app.defaultPages[currentObjectId];
-                        break;
-                    }
+    const [isOnline, setIsOnline] = useState<boolean>(() =>
+        typeof navigator !== 'undefined' && typeof navigator.onLine === 'boolean' ? navigator.onLine : true,
+    );
 
-                    const effectiveObject: Obj | undefined = await apiServices.get<Obj>(
-                        `data/objects/${currentObjectId}/effective`,
-                        {
-                            params: { filter: { fields: ['baseObject'] } },
-                        },
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const onOnline = () => setIsOnline(true);
+        const onOffline = () => setIsOnline(false);
+
+        window.addEventListener('online', onOnline);
+        window.addEventListener('offline', onOffline);
+
+        return () => {
+            window.removeEventListener('online', onOnline);
+            window.removeEventListener('offline', onOffline);
+        };
+    }, []);
+
+    const findDefaultPageSlugFor = useCallback(
+        async (objectId: string) => {
+            let defaultPageId: string | undefined;
+            let currentObjectId: string | undefined = objectId;
+            while (currentObjectId !== undefined) {
+                if (app.defaultPages?.[currentObjectId]) {
+                    defaultPageId = app.defaultPages[currentObjectId];
+                    break;
+                }
+
+                const effectiveObject: Obj | undefined = await apiServices.get<Obj>(
+                    `data/objects/${currentObjectId}/effective`,
+                    {
+                        params: { filter: { fields: ['baseObject'] } },
+                    },
+                );
+
+                currentObjectId = effectiveObject?.baseObject?.objectId ?? undefined;
+            }
+
+            let defaultPage: Page | undefined;
+            if (defaultPageId) {
+                const pageId = defaultPageId.includes('/')
+                    ? defaultPageId.split('/').slice(2).join('/')
+                    : defaultPageId;
+                try {
+                    defaultPage = await apiServices.get<Page>(
+                        `/webContent/apps/${app.id}/pages/${encodeURIComponent(encodeURIComponent(pageId))}`,
                     );
-
-                    currentObjectId = effectiveObject?.baseObject?.objectId ?? undefined;
-                }
-
-                let defaultPage: Page | undefined;
-                if (defaultPageId) {
-                    const pageId = defaultPageId.includes('/')
-                        ? defaultPageId.split('/').slice(2).join('/')
-                        : defaultPageId;
-                    try {
-                        defaultPage = await apiServices.get<Page>(
-                            `/webContent/apps/${app.id}/pages/${encodeURIComponent(encodeURIComponent(pageId))}`,
-                        );
-                    } catch (error) {
-                        const err = error as AxiosError;
-                        if (err.response?.status === 404) {
-                            defaultPage = undefined;
-                        }
+                } catch (error) {
+                    const err = error as AxiosError;
+                    if (err.response?.status === 404) {
+                        defaultPage = undefined;
                     }
                 }
-                if (defaultPage?.slug) {
-                    return `/${app.id}/${defaultPage.slug}`;
-                }
-            },
-            [app],
-        ),
-    };
+            }
+            if (defaultPage?.slug) {
+                return `/${app.id}/${defaultPage.slug}`;
+            }
+        },
+        [apiServices, app],
+    );
+
+    const appExtended = useMemo<AppExtended>(
+        () => ({
+            ...app,
+            findDefaultPageSlugFor,
+            isOnline,
+            isTrustedDevice: Boolean(isTrustedDevice),
+        }),
+        [app, findDefaultPageSlugFor, isOnline, isTrustedDevice],
+    );
 
     return <AppContext.Provider value={appExtended}>{children}</AppContext.Provider>;
 }
