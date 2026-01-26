@@ -73,7 +73,9 @@ export type PanelViewSection = {
 };
 
 export type PanelViewSections = {
+    type: 'sections';
     sections: PanelViewSection[];
+    visibility?: VisibilityConfiguration | JsonLogic;
 };
 
 export type PanelViewColumn = {
@@ -81,7 +83,9 @@ export type PanelViewColumn = {
 };
 
 export type PanelViewColumns = {
+    type: 'columns';
     columns: PanelViewColumn[];
+    visibility?: VisibilityConfiguration | JsonLogic;
 };
 
 export type PanelViewEntry = ReadonlyField | PanelViewSections | PanelViewColumns | Content;
