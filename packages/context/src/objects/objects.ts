@@ -80,6 +80,7 @@ export type PanelViewSections = {
 
 export type PanelViewColumn = {
     entries?: PanelViewEntry[];
+    width: number;
 };
 
 export type PanelViewColumns = {
