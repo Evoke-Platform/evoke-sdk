@@ -8,7 +8,7 @@
     ],
     "repository": {
         "type": "git",
-        "url": "https://github.com/Evoke-Platform/evoke-sdk"
+        "url": "https://github.com/Evoke-Platform/evoke-sdk.git"
     },
     "author": "System Automation Corp.",
     "license": "MIT",

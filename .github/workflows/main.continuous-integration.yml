@@ -6,6 +6,9 @@ on:
             - main
     workflow_dispatch:
 
+permissions:
+    id-token: write
+
 concurrency:
     group: branch-main
 
@@ -25,6 +28,7 @@ jobs:
                   token: ${{ steps.generate_token.outputs.token }}
             - uses: actions/setup-node@v3
               with:
+                  registry-url: 'https://registry.npmjs.org'
                   node-version: 18
             - name: Setup
               run: |
@@ -38,13 +42,10 @@ jobs:
               run: |
                   git config user.name "GitHub Actions Bot"
                   git config user.email "<>"
-                  mv npmrc-ci .npmrc
                   npx turbo run release --concurrency 1 --filter=...[baseline] -- --prerelease dev --skip.tag --skip.changelog
                   npx turbo run deploy --filter=...[baseline] -- --tag dev
-              env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-            - name: Push Changes
-              run: |
-                  git fetch origin
-                  git merge -m "Merge branch 'main' [skip ci]" origin/main
-                  git push origin HEAD:main
+            # - name: Push Changes
+            #   run: |
+            #       git fetch origin
+            #       git merge -m "Merge branch 'main' [skip ci]" origin/main
+            #       git push origin HEAD:main
