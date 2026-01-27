@@ -6,6 +6,10 @@ on:
             - main
     workflow_dispatch:
 
+permissions:
+    id-token: write
+    contents: read
+
 concurrency:
     group: branch-main
 
@@ -19,6 +23,8 @@ jobs:
               with:
                   app_id: ${{ vars.TOKEN_APP_ID }}
                   private_key: ${{ secrets.TOKEN_APP_PRIVATE_KEY }}
+            - name: Upgrade npm
+              run: npm install -g npm@latest
             - uses: actions/checkout@v3
               with:
                   fetch-depth: 5
@@ -38,13 +44,5 @@ jobs:
               run: |
                   git config user.name "GitHub Actions Bot"
                   git config user.email "<>"
-                  mv npmrc-ci .npmrc
-                  npx turbo run release --concurrency 1 --filter=...[baseline] -- --prerelease dev --skip.tag --skip.changelog
-                  npx turbo run deploy --filter=...[baseline] -- --tag dev
-              env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-            - name: Push Changes
-              run: |
-                  git fetch origin
-                  git merge -m "Merge branch 'main' [skip ci]" origin/main
-                  git push origin HEAD:main
+                  npx turbo run release --concurrency 1 --filter=...[baseline] -- --prerelease internal --skip.tag --skip.changelog
+                  npx turbo run deploy --filter=...[baseline] -- --tag internal
