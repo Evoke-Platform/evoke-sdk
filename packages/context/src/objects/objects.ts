@@ -69,6 +69,7 @@ export type TableViewLayout = {
 };
 
 export type PanelViewSection = {
+    label: string;
     entries?: PanelViewEntry[];
 };
 
