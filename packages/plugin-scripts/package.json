@@ -27,7 +27,7 @@
         "test": "mocha \"dist/__tests__/**/*.unit.js\"",
         "release": "commit-and-tag-version -t plugin-scripts@ --releaseCommitMessageFormat \"chore(release): plugin-scripts@{{currentTag}} [skip ci]\"",
         "predeploy": "cp ../../LICENSE .",
-        "deploy": "npm publish --access=public"
+        "deploy": "npm publish --provenance --access=public"
     },
     "author": "System Automation Corp.",
     "license": "MIT",

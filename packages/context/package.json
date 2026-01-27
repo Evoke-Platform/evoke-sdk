@@ -11,7 +11,7 @@
         "test": "mocha --recursive dist/tests",
         "release": "commit-and-tag-version -t context@ --releaseCommitMessageFormat \"chore(release): context@{{currentTag}} [skip ci]\"",
         "predeploy": "cp ../../LICENSE .",
-        "deploy": "npm publish"
+        "deploy": "npm publish --provenance"
     },
     "repository": {
         "type": "git",
