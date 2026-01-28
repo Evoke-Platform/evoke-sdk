@@ -13,7 +13,6 @@ export type AuthenticationContext = {
     account: UserAccount;
     logout: VoidFunction;
     getAccessToken: () => Promise<string>;
-    tenantId?: string;
 };
 
 export type UserAccount = {
@@ -220,54 +219,106 @@ function FusionAuthProvider({ fusionInstance, children, logout }: Authentication
 
     const user = userInfo as FusionUserInfo | null;
 
-    const context: AuthenticationContext | undefined = useMemo(
-        () =>
-            isLoggedIn && user?.sub
-                ? {
-                      tenantId: user.tid,
-                      account: {
-                          id: user.sub,
-                          name: user.name,
-                          username: user.username,
-                          lastLoginTime: user.lastLoginTime,
-                      },
-                      logout: () => {
-                          if (logout) {
-                              // If a `logout` function is provided, use it to perform a logout.
-                              // Since FusoinAuth does not currently support a dynamic `post_logout_redirect_uri`
-                              // through the FusionAuth SDK, the redirect to the `/logout` route is manual.
-                              // However, manually handling the redirection doesn't allow the logout to be
-                              // broadcasted to other tabs. Therefore, if cross-tab logout is supported,
-                              // a function that implements that logic should be provided here.
-                              logout();
-                          }
+    // Use a cache key specific to the tenant to support multi-tenant logins.
+    const CACHE_KEY = `${user?.tid}-fusionauth.at`;
 
-                          // Fallback to direct logout if no `logout` function is provided.
-                          const logoutUrl = new URL(`${window.location.origin}/auth/logout`);
+    const getTokenFromCache = useCallback(() => {
+        const cached = sessionStorage.getItem(CACHE_KEY);
 
-                          logoutUrl.searchParams.set('client_id', user.aud ?? '');
-                          logoutUrl.searchParams.set(
-                              'post_logout_redirect_uri',
-                              `${window.location.origin}/logout?p=${encodeURIComponent(
-                                  window.location.pathname + window.location.search,
-                              )}`,
-                          );
+        if (!cached) return null;
 
-                          window.location.href = logoutUrl.toString();
-                      },
-                      getAccessToken: async () => {
-                          const tokenResponse = await axios.post(`api/accessManagement/auth/user/token`, undefined, {
-                              params: {
-                                  client_id: user.aud,
-                              },
-                          });
+        const parsed = JSON.parse(cached);
+        const now = Date.now();
 
-                          return tokenResponse.data;
-                      },
-                  }
-                : undefined,
-        [userInfo, isLoggedIn],
+        // Return cached token if it hasn't expired.
+        if (parsed.expires_in > now) {
+            return parsed.token;
+        }
+
+        // If the token has expired, remove it from cache.
+        sessionStorage.removeItem(CACHE_KEY);
+
+        return null;
+    }, [CACHE_KEY]);
+
+    const setTokenInCache = useCallback(
+        (token: string, expires_in: number) => {
+            const now = Date.now();
+
+            sessionStorage.setItem(
+                CACHE_KEY,
+                JSON.stringify({
+                    token,
+                    // Set expiration before actual expiration
+                    // to allow buffer time for usage.
+                    expires_in: now + expires_in * 1000 - 30000,
+                }),
+            );
+        },
+        [CACHE_KEY],
     );
+
+    const context: AuthenticationContext | undefined = useMemo(() => {
+        return isLoggedIn && user?.sub
+            ? {
+                  tenantId: user.tid,
+                  account: {
+                      id: user.sub,
+                      name: user.name,
+                      username: user.username,
+                      lastLoginTime: user.lastLoginTime,
+                  },
+                  logout: () => {
+                      if (logout) {
+                          // If a `logout` function is provided, use it to perform a logout.
+                          // Since FusoinAuth does not currently support a dynamic `post_logout_redirect_uri`
+                          // through the FusionAuth SDK, the redirect to the `/logout` route is manual.
+                          // However, manually handling the redirection doesn't allow the logout to be
+                          // broadcasted to other tabs. Therefore, if cross-tab logout is supported,
+                          // a function that implements that logic should be provided here.
+                          logout();
+                      }
+
+                      // Fallback to direct logout if no `logout` function is provided.
+                      const logoutUrl = new URL(`${window.location.origin}/auth/logout`);
+
+                      logoutUrl.searchParams.set('client_id', user.aud ?? '');
+                      logoutUrl.searchParams.set(
+                          'post_logout_redirect_uri',
+                          `${window.location.origin}/logout?p=${encodeURIComponent(
+                              window.location.pathname + window.location.search,
+                          )}`,
+                      );
+
+                      // Clear cache on logout.
+                      sessionStorage.removeItem(CACHE_KEY);
+
+                      window.location.href = logoutUrl.toString();
+                  },
+                  getAccessToken: async () => {
+                      const cachedToken = getTokenFromCache();
+
+                      if (cachedToken) return cachedToken;
+
+                      // If there is no cached token, retrieve a new token.
+                      const tokenResponse = await axios.post(`api/accessManagement/auth/user/token`, undefined, {
+                          params: {
+                              client_id: user?.aud,
+                          },
+                      });
+
+                      const token = tokenResponse.data;
+
+                      // Cache the token with the expiration
+                      if (token.expires_in && token.access_token) {
+                          setTokenInCache(token.access_token, token.expires_in);
+                      }
+
+                      return token.access_token;
+                  },
+              }
+            : undefined;
+    }, [isLoggedIn, userInfo]);
 
     return <Context.Provider value={context}>{children}</Context.Provider>;
 }
