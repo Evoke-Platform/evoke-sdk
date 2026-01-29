@@ -551,6 +551,18 @@ export type ObjectOptions = {
     skipAlphabetize?: boolean;
 };
 
+export type InstanceOptions = {
+    /**
+     * When true, collection properties' instances are returned along with the returned instance.
+     */
+    collection?: boolean;
+    /**
+     * An array of related entities to expand in the returned instance.
+     * Use dot notation for nested expansions.
+     */
+    expand?: string[];
+};
+
 /**
  * Provides methods for working with objects and their instances in Evoke.
  * Supports retrieving object definitions, finding/retrieving instances,
@@ -704,15 +716,44 @@ export class ObjectStore {
     /**
      * Retrieves a specific instance of the object by ID.
      */
-    getInstance<T extends ObjectInstance = ObjectInstance>(id: string): Promise<T>;
+    getInstance<T extends ObjectInstance = ObjectInstance>(id: string, options?: InstanceOptions): Promise<T>;
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string, cb: Callback<T>): void;
+    getInstance<T extends ObjectInstance = ObjectInstance>(
+        id: string,
+        cb?: Callback<T>,
+        options?: InstanceOptions,
+    ): Promise<T> | void;
 
-    getInstance<T extends ObjectInstance>(id: string, cb?: Callback<T>) {
-        if (!cb) {
-            return this.services.get<T, unknown>(`data/objects/${this.objectId}/instances/${id}`);
+    getInstance<T extends ObjectInstance>(
+        id: string,
+        cbOrOptions?: Callback<T> | InstanceOptions,
+        options?: InstanceOptions,
+    ) {
+        const config: AxiosRequestConfig | undefined = options
+            ? {
+                  params: {
+                      ...options,
+                  },
+              }
+            : cbOrOptions && typeof cbOrOptions !== 'function'
+              ? {
+                    params: {
+                        ...cbOrOptions,
+                    },
+                }
+              : undefined;
+
+        if (config && typeof cbOrOptions !== 'function') {
+            return this.services.get<T, unknown>(`data/objects/${this.objectId}/instances/${id}`, config);
         }
 
-        this.services.get(`data/objects/${this.objectId}/instances/${id}`, cb);
+        if (cbOrOptions && typeof cbOrOptions === 'function') {
+            if (config) {
+                this.services.get(`data/objects/${this.objectId}/instances/${id}`, config, cbOrOptions);
+            } else {
+                this.services.get(`data/objects/${this.objectId}/instances/${id}`, cbOrOptions);
+            }
+        }
     }
 
     /**
