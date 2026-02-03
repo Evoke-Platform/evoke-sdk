@@ -1,28 +1,28 @@
 import type { Meta, StoryObj } from '@storybook/react';
-
+import { http, HttpResponse } from 'msw';
 import SampleWidget from '../widgets/SampleWidget';
 
-// More on how to set up stories at: https://storybook.js.org/docs/7.0/react/writing-stories/introduction
-const meta = {
-    title: 'Example/SampleWidget',
+const meta: Meta<typeof SampleWidget> = {
     component: SampleWidget,
-    argTypes: {
-        message: { control: 'text' },
+    parameters: {
+        msw: {
+            handlers: [
+                http.get(`${window.location.origin}/api/test`, () => {
+                    return HttpResponse.json({ message: 'Hello from mock!' });
+                }),
+                http.post(`${window.location.origin}/api/out`, () => {
+                    return HttpResponse.json({ status: 'posted' });
+                }),
+            ],
+        },
     },
-    args: {
-        message: 'Sample Story 1',
-    },
-} satisfies Meta<typeof SampleWidget>;
-
-export default meta;
-type Story = StoryObj<typeof meta>;
-
-// More on writing stories with args: https://storybook.js.org/docs/7.0/react/writing-stories/args
-
-export const SampleStory1: Story = {
-    render: (args) => <SampleWidget {...args} />,
 };
 
-export const SampleStory2: Story = {
-    render: () => <SampleWidget message="Sample Story 2" />,
+export default meta;
+type Story = StoryObj<typeof SampleWidget>;
+
+export const Primary: Story = {
+    args: {
+        message: 'Using MSW Addon!',
+    },
 };
