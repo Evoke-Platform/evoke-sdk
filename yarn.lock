@@ -112,11 +112,12 @@
     resolve-global "1.0.0"
     yargs "^17.0.0"
 
-"@commitlint/config-conventional@^18.4.3":
-  version "18.4.3"
-  resolved "https://registry.npmjs.org/@commitlint/config-conventional/-/config-conventional-18.4.3.tgz#8158e6bd874a86ff46a6424f45acd803bc5fef1b"
-  integrity sha512-729eRRaNta7JZF07qf6SAGSghoDEp9mH7yHU0m7ff0q89W97wDrWCyZ3yoV3mcQJwbhlmVmZPTkPcm7qiAu8WA==
+"@commitlint/config-conventional@^20.0.0":
+  version "20.0.0"
+  resolved "https://registry.npmjs.org/@commitlint/config-conventional/-/config-conventional-20.0.0.tgz#f222dc9ce08e16f9c66eae55e99129d2be517546"
+  integrity sha512-q7JroPIkDBtyOkVe9Bca0p7kAUYxZMxkrBArCfuD3yN4KjRAenP9PmYwnn7rsw8Q+hHq1QB2BRmBh0/Z19ZoJw==
   dependencies:
+    "@commitlint/types" "^20.0.0"
     conventional-changelog-conventionalcommits "^7.0.2"
 
 "@commitlint/config-validator@^17.6.7":
@@ -256,6 +257,14 @@
   integrity sha512-amRN8tRLYOsxRr6mTnGGGvB5EmW/4DDjLMgiwK3CCVEmN6Sr/6xePGEpWaspKkckILuUORCwe6VfDBw6uj4axQ==
   dependencies:
     chalk "^4.1.0"
+
+"@commitlint/types@^20.0.0":
+  version "20.0.0"
+  resolved "https://registry.npmjs.org/@commitlint/types/-/types-20.0.0.tgz#70edef6e1c1d3aaca15e1e87242d8d256beebe67"
+  integrity sha512-bVUNBqG6aznYcYjTjnc3+Cat/iBgbgpflxbIBTnsHTX0YVpnmINPEkSRWymT2Q8aSH3Y7aKnEbunilkYe8TybA==
+  dependencies:
+    "@types/conventional-commits-parser" "^5.0.0"
+    chalk "^5.3.0"
 
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
@@ -1537,6 +1546,13 @@
   dependencies:
     "@types/node" "*"
 
+"@types/conventional-commits-parser@^5.0.0":
+  version "5.0.1"
+  resolved "https://registry.npmjs.org/@types/conventional-commits-parser/-/conventional-commits-parser-5.0.1.tgz#8cb81cf170853496cbc501a3b32dcf5e46ffb61a"
+  integrity sha512-7uz5EHdzz2TqoMfV7ee61Egf5y6NkcO4FB/1iCCQnbeiI1F3xzv3vK5dBCXUCLQgGYS+mUeigK1iKQzvED+QnQ==
+  dependencies:
+    "@types/node" "*"
+
 "@types/cookie@^0.4.1":
   version "0.4.1"
   resolved "https://registry.npmjs.org/@types/cookie/-/cookie-0.4.1.tgz#bfd02c1f2224567676c1545199f87c3a861d878d"
@@ -2718,6 +2734,11 @@ chalk@^4.0.0, chalk@^4.0.2, chalk@^4.1.0, chalk@^4.1.1:
   dependencies:
     ansi-styles "^4.1.0"
     supports-color "^7.1.0"
+
+chalk@^5.3.0:
+  version "5.6.2"
+  resolved "https://registry.npmjs.org/chalk/-/chalk-5.6.2.tgz#b1238b6e23ea337af71c7f8a295db5af0c158aea"
+  integrity sha512-7NzBL0rN6fMUW+f7A6Io4h40qQlG+xGmtMxfbnH/K7TAtt8JQWVQK+6g0UXKMeVJoyV5EkkNsErQ8pVD3bLHbA==
 
 chardet@^0.7.0:
   version "0.7.0"
