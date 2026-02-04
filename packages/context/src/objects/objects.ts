@@ -702,42 +702,47 @@ export class ObjectStore {
      * Retrieves a specific instance of the object by ID.
      */
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string, options?: InstanceOptions): Promise<T>;
+    getInstance<T extends ObjectInstance = ObjectInstance>(id: string, options: InstanceOptions, cb: Callback<T>): void;
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string, cb: Callback<T>): void;
     getInstance<T extends ObjectInstance = ObjectInstance>(
         id: string,
+        optionsOrCallback?: InstanceOptions | Callback<T>,
         cb?: Callback<T>,
-        options?: InstanceOptions,
     ): Promise<T> | void;
 
     getInstance<T extends ObjectInstance>(
         id: string,
-        cbOrOptions?: Callback<T> | InstanceOptions,
-        options?: InstanceOptions,
+        optionsOrCallback?: InstanceOptions | Callback<T>,
+        cb?: Callback<T>,
     ) {
+        let options: InstanceOptions | undefined;
+        let callback: Callback<T> | undefined;
+
+        if (cb) {
+            options = optionsOrCallback as InstanceOptions;
+            callback = cb;
+        } else if (typeof optionsOrCallback === 'function') {
+            callback = optionsOrCallback;
+        } else {
+            options = optionsOrCallback;
+        }
+
         const config: AxiosRequestConfig | undefined = options
             ? {
                   params: {
                       ...options,
                   },
               }
-            : cbOrOptions && typeof cbOrOptions !== 'function'
-              ? {
-                    params: {
-                        ...cbOrOptions,
-                    },
-                }
-              : undefined;
+            : undefined;
 
-        if (config && typeof cbOrOptions !== 'function') {
+        if (!callback) {
             return this.services.get<T, unknown>(`data/objects/${this.objectId}/instances/${id}`, config);
         }
 
-        if (cbOrOptions && typeof cbOrOptions === 'function') {
-            if (config) {
-                this.services.get(`data/objects/${this.objectId}/instances/${id}`, config, cbOrOptions);
-            } else {
-                this.services.get(`data/objects/${this.objectId}/instances/${id}`, cbOrOptions);
-            }
+        if (config) {
+            this.services.get(`data/objects/${this.objectId}/instances/${id}`, config, callback);
+        } else {
+            this.services.get(`data/objects/${this.objectId}/instances/${id}`, callback);
         }
     }
 
