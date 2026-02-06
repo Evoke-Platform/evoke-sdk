@@ -590,6 +590,13 @@
     oidc-client-ts "^3.3.0"
     uuid "^9.0.1"
 
+"@evoke-platform/payment@^1.0.0":
+  version "1.0.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/payment/-/payment-1.0.0.tgz#73cd6a43d061f46ac449ee8d04f8455be72f0444"
+  integrity sha512-SVPU1N+sJ5P+qIY9AwUkPmFwkd6fBXBd9R06YHUSHLYOGMK/9L8AebzQnRvFFeVqo7T29Ars4sg65Wpfx5CI/A==
+  dependencies:
+    express "^4.21.0"
+
 "@evoke-platform/ui-components@^1.3.0":
   version "1.3.0"
   resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-1.3.0.tgz#e5c3ddf34a75402135f518b9d3e851de6d3edbe6"
