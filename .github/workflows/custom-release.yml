@@ -14,6 +14,9 @@ on:
                     - 'plugin-scripts'
                     - 'sdk'
 
+permissions:
+    id-token: write
+
 concurrency:
     group: branch-main
 
@@ -33,7 +36,8 @@ jobs:
                   token: ${{ steps.generate_token.outputs.token }}
             - uses: actions/setup-node@v3
               with:
-                  node-version: 18
+                  registry-url: 'https://registry.npmjs.org'
+                  node-version: 24
             - name: Setup
               run: yarn install
             - name: Build
@@ -42,11 +46,8 @@ jobs:
               run: |
                   git config user.name "GitHub Actions Bot"
                   git config user.email "<>"
-                  mv npmrc-ci .npmrc
                   npx turbo run release --filter=@evoke-platform/${{ github.event.inputs.package_name }} --concurrency 1 --
                   npx turbo run deploy --filter=@evoke-platform/${{ github.event.inputs.package_name }} --
-              env:
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
             - name: Push Changes
               run: |
                   git fetch origin

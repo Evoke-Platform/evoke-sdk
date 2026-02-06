@@ -21,7 +21,7 @@
         "build": "tsc",
         "release": "commit-and-tag-version -t sdk@ --releaseCommitMessageFormat \"chore(release): sdk@{{currentTag}} [skip ci]\"",
         "predeploy": "cp ../../LICENSE .",
-        "deploy": "npm publish --access=public"
+        "deploy": "npm publish --provenance --access=public"
     },
     "author": "System Automation Corp.",
     "license": "MIT",

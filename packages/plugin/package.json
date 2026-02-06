@@ -62,6 +62,6 @@
         "test": "mocha dist/__tests__",
         "release": "commit-and-tag-version -t plugin@ --releaseCommitMessageFormat \"chore(release): plugin@{{currentTag}} [skip ci]\"",
         "predeploy": "cp ../../LICENSE .",
-        "deploy": "npm publish --access=public"
+        "deploy": "npm publish --provenance --access=public"
     }
 }
