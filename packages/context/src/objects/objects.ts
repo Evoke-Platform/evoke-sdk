@@ -551,6 +551,18 @@ export type ObjectOptions = {
     skipAlphabetize?: boolean;
 };
 
+export type InstanceOptions = {
+    /**
+     * When true, collection properties' instances are returned along with the returned instance.
+     */
+    collection?: boolean;
+    /**
+     * An array of related entities to expand in the returned instance.
+     * Use dot notation for nested expansions.
+     */
+    expand?: string[];
+};
+
 /**
  * Provides methods for working with objects and their instances in Evoke.
  * Supports retrieving object definitions, finding/retrieving instances,
@@ -704,15 +716,49 @@ export class ObjectStore {
     /**
      * Retrieves a specific instance of the object by ID.
      */
-    getInstance<T extends ObjectInstance = ObjectInstance>(id: string): Promise<T>;
+    getInstance<T extends ObjectInstance = ObjectInstance>(id: string, options?: InstanceOptions): Promise<T>;
+    getInstance<T extends ObjectInstance = ObjectInstance>(id: string, options: InstanceOptions, cb: Callback<T>): void;
     getInstance<T extends ObjectInstance = ObjectInstance>(id: string, cb: Callback<T>): void;
+    getInstance<T extends ObjectInstance = ObjectInstance>(
+        id: string,
+        optionsOrCallback?: InstanceOptions | Callback<T>,
+        cb?: Callback<T>,
+    ): Promise<T> | void;
 
-    getInstance<T extends ObjectInstance>(id: string, cb?: Callback<T>) {
-        if (!cb) {
-            return this.services.get<T, unknown>(`data/objects/${this.objectId}/instances/${id}`);
+    getInstance<T extends ObjectInstance>(
+        id: string,
+        optionsOrCallback?: InstanceOptions | Callback<T>,
+        cb?: Callback<T>,
+    ) {
+        let options: InstanceOptions | undefined;
+        let callback: Callback<T> | undefined;
+
+        if (cb) {
+            options = optionsOrCallback as InstanceOptions;
+            callback = cb;
+        } else if (typeof optionsOrCallback === 'function') {
+            callback = optionsOrCallback;
+        } else {
+            options = optionsOrCallback;
         }
 
-        this.services.get(`data/objects/${this.objectId}/instances/${id}`, cb);
+        const config: AxiosRequestConfig | undefined = options
+            ? {
+                  params: {
+                      ...options,
+                  },
+              }
+            : undefined;
+
+        if (!callback) {
+            return this.services.get<T, unknown>(`data/objects/${this.objectId}/instances/${id}`, config);
+        }
+
+        if (config) {
+            this.services.get(`data/objects/${this.objectId}/instances/${id}`, config, callback);
+        } else {
+            this.services.get(`data/objects/${this.objectId}/instances/${id}`, callback);
+        }
     }
 
     /**
