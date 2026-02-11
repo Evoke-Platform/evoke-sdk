@@ -1,10 +1,7 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
-
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
-import type { FusionAuthProviderContext } from '@fusionauth/react-sdk';
-import axios from 'axios';
 import { ExtraSigninRequestArgs } from 'oidc-client-ts';
 import { ReactNode, createContext, useCallback, useContext, useEffect, useMemo, useRef } from 'react';
 import { AuthContextProps } from 'react-oidc-context';
@@ -23,10 +20,31 @@ export type UserAccount = {
     activeMfaSession?: boolean;
 };
 
-type FusionUserInfo = NonNullable<FusionAuthProviderContext['userInfo']> & {
-    aud?: string;
-    username?: string;
-    lastLoginTime?: number;
+type FusionAuthUserInfo = {
+    aud: string;
+    lastLoginTime: number;
+    name: string;
+    sub: string;
+    tid: string;
+    username: string;
+};
+
+type FusionAuthRefreshResponse = {
+    at: string;
+    at_exp: string;
+    tenantId: string;
+};
+
+type FusionAuthProviderContext = {
+    isAuthenticated: boolean;
+    loading: boolean;
+    tenantId: string;
+    clientId: string;
+    login: (state?: string) => void;
+    logout: (redirectUrl: string, reason?: string) => void;
+    refreshToken: () => Promise<FusionAuthRefreshResponse>;
+    user: FusionAuthUserInfo | null;
+    error: Error | null;
 };
 
 const Context = createContext<AuthenticationContext | undefined>(undefined);
@@ -39,13 +57,12 @@ export type AuthenticationContextProviderProps = {
     oidcInstance?: AuthContextProps;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
-    logout?: (reason?: string) => void;
 };
 
 export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
 
-export function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
-    const { msal, oidcInstance, fusionInstance, authRequest, children, logout } = props;
+function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
+    const { msal, oidcInstance, fusionInstance, authRequest, children } = props;
 
     // Auto-detect provider type based on presence of msal prop
     if (msal) {
@@ -58,7 +75,7 @@ export function AuthenticationContextProvider(props: AuthenticationContextProvid
         const { fusionInstance, authRequest, children } = props;
 
         return (
-            <FusionAuthProvider fusionInstance={fusionInstance} authRequest={authRequest} logout={logout}>
+            <FusionAuthProvider fusionInstance={fusionInstance} authRequest={authRequest}>
                 {children}
             </FusionAuthProvider>
         );
@@ -71,6 +88,8 @@ export function AuthenticationContextProvider(props: AuthenticationContextProvid
             </OidcProvider>
         );
     }
+
+    return <Context.Provider value={undefined}>{children}</Context.Provider>;
 }
 
 function MsalProvider({ msal, authRequest, children }: AuthenticationContextProviderProps) {
@@ -210,56 +229,15 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
     return <Context.Provider value={context}>{children}</Context.Provider>;
 }
 
-function FusionAuthProvider({ fusionInstance, children, logout }: AuthenticationContextProviderProps) {
+function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextProviderProps) {
     if (!fusionInstance) {
         throw new Error('Fusion instance is required for FusionAuthProvider.');
     }
 
-    const { isLoggedIn, userInfo } = fusionInstance;
-
-    const user = userInfo as FusionUserInfo | null;
-
-    // Use a cache key specific to the tenant to support multi-tenant logins.
-    const CACHE_KEY = `${user?.tid}-fusionauth.at`;
-
-    const getTokenFromCache = useCallback(() => {
-        const cached = sessionStorage.getItem(CACHE_KEY);
-
-        if (!cached) return null;
-
-        const parsed = JSON.parse(cached);
-        const now = Date.now();
-
-        // Return cached token if it hasn't expired.
-        if (parsed.expires_in > now) {
-            return parsed.token;
-        }
-
-        // If the token has expired, remove it from cache.
-        sessionStorage.removeItem(CACHE_KEY);
-
-        return null;
-    }, [CACHE_KEY]);
-
-    const setTokenInCache = useCallback(
-        (token: string, expires_in: number) => {
-            const now = Date.now();
-
-            sessionStorage.setItem(
-                CACHE_KEY,
-                JSON.stringify({
-                    token,
-                    // Set expiration before actual expiration
-                    // to allow buffer time for usage.
-                    expires_in: now + expires_in * 1000 - 30000,
-                }),
-            );
-        },
-        [CACHE_KEY],
-    );
+    const { isAuthenticated, user, tenantId } = fusionInstance;
 
     const context: AuthenticationContext | undefined = useMemo(() => {
-        return isLoggedIn && user?.sub
+        return isAuthenticated && user?.sub
             ? {
                   tenantId: user.tid,
                   account: {
@@ -269,56 +247,16 @@ function FusionAuthProvider({ fusionInstance, children, logout }: Authentication
                       lastLoginTime: user.lastLoginTime,
                   },
                   logout: () => {
-                      if (logout) {
-                          // If a `logout` function is provided, use it to perform a logout.
-                          // Since FusoinAuth does not currently support a dynamic `post_logout_redirect_uri`
-                          // through the FusionAuth SDK, the redirect to the `/logout` route is manual.
-                          // However, manually handling the redirection doesn't allow the logout to be
-                          // broadcasted to other tabs. Therefore, if cross-tab logout is supported,
-                          // a function that implements that logic should be provided here.
-                          logout();
-                      }
-
-                      // Fallback to direct logout if no `logout` function is provided.
-                      const logoutUrl = new URL(`${window.location.origin}/auth/logout`);
-
-                      logoutUrl.searchParams.set('client_id', user.aud ?? '');
-                      logoutUrl.searchParams.set(
-                          'post_logout_redirect_uri',
-                          `${window.location.origin}/logout?p=${encodeURIComponent(
-                              window.location.pathname + window.location.search,
-                          )}`,
+                      fusionInstance.logout(
+                          `${window.location.origin}/logout?p=${window.location.pathname + window.location.search}`,
                       );
-
-                      // Clear cache on logout.
-                      sessionStorage.removeItem(CACHE_KEY);
-
-                      window.location.href = logoutUrl.toString();
                   },
                   getAccessToken: async () => {
-                      const cachedToken = getTokenFromCache();
-
-                      if (cachedToken) return cachedToken;
-
-                      // If there is no cached token, retrieve a new token.
-                      const tokenResponse = await axios.post(`api/accessManagement/auth/user/token`, undefined, {
-                          params: {
-                              client_id: user?.aud,
-                          },
-                      });
-
-                      const token = tokenResponse.data;
-
-                      // Cache the token with the expiration
-                      if (token.expires_in && token.access_token) {
-                          setTokenInCache(token.access_token, token.expires_in);
-                      }
-
-                      return token.access_token;
+                      return sessionStorage.getItem(`${tenantId}-fusionauth.at`) || '';
                   },
               }
             : undefined;
-    }, [isLoggedIn, userInfo]);
+    }, [isAuthenticated, user, tenantId, fusionInstance.logout]);
 
     return <Context.Provider value={context}>{children}</Context.Provider>;
 }

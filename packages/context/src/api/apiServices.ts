@@ -193,30 +193,4 @@ export function useApiServices() {
     return apiServices;
 }
 
-export function getPrefixedUrl(url: string) {
-    const webContentMatchers = [
-        '/apps',
-        '/auth',
-        '/externalApis',
-        '/logo',
-        '/pages',
-        '/paymentGateways',
-        '/plugins',
-        '/widgets',
-    ];
-
-    const dataMatchers = ['/objects', '/correspondenceTemplates', '/documents', '/files', '/payments', '/locations'];
-    const signalrMatchers = ['/hubs'];
-    const accessManagementMatchers = ['/externalClients', '/role', '/users'];
-    const workflowMatchers = ['/workflows'];
-
-    if (webContentMatchers.some((endpoint) => url.startsWith(endpoint))) return `/webContent${url}`;
-    if (dataMatchers.some((endpoint) => url.startsWith(endpoint))) return `/data${url}`;
-    if (signalrMatchers.some((endpoint) => url.startsWith(endpoint))) return `/signalr${url}`;
-    if (accessManagementMatchers.some((endpoint) => url.startsWith(endpoint))) return `/accessManagement${url}`;
-    if (workflowMatchers.some((endpoint) => url.startsWith(endpoint))) return `/workflow${url}`;
-
-    return url;
-}
-
 export type { AxiosError, AxiosRequestConfig };
