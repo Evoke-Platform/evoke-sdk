@@ -248,7 +248,7 @@ function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextP
                   },
                   logout: () => {
                       fusionInstance.logout(
-                          `${window.location.origin}/logout?p=${window.location.pathname + window.location.search}`,
+                          `${window.location.origin}/logout?p=${encodeURIComponent(window.location.pathname + window.location.search)}`,
                       );
                   },
                   getAccessToken: async () => {
