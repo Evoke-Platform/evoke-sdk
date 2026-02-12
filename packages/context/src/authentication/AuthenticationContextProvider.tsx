@@ -1,6 +1,5 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
-
 import { AccountInfo, RedirectRequest } from '@azure/msal-browser';
 import { IMsalContext } from '@azure/msal-react';
 import { ExtraSigninRequestArgs } from 'oidc-client-ts';
@@ -21,12 +20,40 @@ export type UserAccount = {
     activeMfaSession?: boolean;
 };
 
+type FusionAuthUserInfo = {
+    aud: string;
+    lastLoginTime: number;
+    name: string;
+    sub: string;
+    tid: string;
+    username: string;
+};
+
+type FusionAuthRefreshResponse = {
+    at: string;
+    at_exp: string;
+    tenantId: string;
+};
+
+type FusionAuthProviderContext = {
+    isAuthenticated: boolean;
+    loading: boolean;
+    tenantId: string;
+    clientId: string;
+    login: (state?: string) => void;
+    logout: (redirectUrl: string, reason?: string) => void;
+    refreshToken: () => Promise<FusionAuthRefreshResponse>;
+    user: FusionAuthUserInfo | null;
+    error: Error | null;
+};
+
 const Context = createContext<AuthenticationContext | undefined>(undefined);
 
 Context.displayName = 'AuthenticationContext';
 
 export type AuthenticationContextProviderProps = {
     msal?: IMsalContext;
+    fusionInstance?: FusionAuthProviderContext;
     oidcInstance?: AuthContextProps;
     authRequest: AuthenticationRequest;
     children?: ReactNode;
@@ -35,24 +62,30 @@ export type AuthenticationContextProviderProps = {
 export type AuthenticationRequest = Pick<RedirectRequest, 'scopes' | 'extraQueryParameters' | 'state'>;
 
 function AuthenticationContextProvider(props: AuthenticationContextProviderProps) {
-    // Auto-detect provider type based on presence of msal prop
-    if (props.msal) {
-        const { msal, authRequest, children } = props;
+    const { msal, oidcInstance, fusionInstance, authRequest, children } = props;
 
+    // Auto-detect provider type based on presence of msal prop
+    if (msal) {
         return (
             <MsalProvider msal={msal} authRequest={authRequest}>
                 {children}
             </MsalProvider>
         );
-    } else {
-        const { oidcInstance, authRequest, children } = props;
-
+    } else if (fusionInstance) {
+        return (
+            <FusionAuthProvider fusionInstance={fusionInstance} authRequest={authRequest}>
+                {children}
+            </FusionAuthProvider>
+        );
+    } else if (oidcInstance) {
         return (
             <OidcProvider oidcInstance={oidcInstance} authRequest={authRequest}>
                 {children}
             </OidcProvider>
         );
     }
+
+    return <Context.Provider value={undefined}>{children}</Context.Provider>;
 }
 
 function MsalProvider({ msal, authRequest, children }: AuthenticationContextProviderProps) {
@@ -188,6 +221,38 @@ function OidcProvider({ oidcInstance, authRequest, children }: AuthenticationCon
             getAccessToken,
         ],
     );
+
+    return <Context.Provider value={context}>{children}</Context.Provider>;
+}
+
+function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextProviderProps) {
+    if (!fusionInstance) {
+        throw new Error('Fusion instance is required for FusionAuthProvider.');
+    }
+
+    const { isAuthenticated, user, tenantId, logout } = fusionInstance;
+
+    const context: AuthenticationContext | undefined = useMemo(() => {
+        return isAuthenticated && user?.sub
+            ? {
+                  tenantId: user.tid,
+                  account: {
+                      id: user.sub,
+                      name: user.name,
+                      username: user.username,
+                      lastLoginTime: user.lastLoginTime,
+                  },
+                  logout: () => {
+                      logout(
+                          `${window.location.origin}/logout?p=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+                      );
+                  },
+                  getAccessToken: async () => {
+                      return sessionStorage.getItem(`${tenantId}-fusionauth.at`) || '';
+                  },
+              }
+            : undefined;
+    }, [isAuthenticated, user, tenantId, logout]);
 
     return <Context.Provider value={context}>{children}</Context.Provider>;
 }
