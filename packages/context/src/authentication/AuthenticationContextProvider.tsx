@@ -72,16 +72,12 @@ function AuthenticationContextProvider(props: AuthenticationContextProviderProps
             </MsalProvider>
         );
     } else if (fusionInstance) {
-        const { fusionInstance, authRequest, children } = props;
-
         return (
             <FusionAuthProvider fusionInstance={fusionInstance} authRequest={authRequest}>
                 {children}
             </FusionAuthProvider>
         );
     } else if (oidcInstance) {
-        const { oidcInstance, authRequest, children } = props;
-
         return (
             <OidcProvider oidcInstance={oidcInstance} authRequest={authRequest}>
                 {children}
@@ -234,7 +230,7 @@ function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextP
         throw new Error('Fusion instance is required for FusionAuthProvider.');
     }
 
-    const { isAuthenticated, user, tenantId } = fusionInstance;
+    const { isAuthenticated, user, tenantId, logout } = fusionInstance;
 
     const context: AuthenticationContext | undefined = useMemo(() => {
         return isAuthenticated && user?.sub
@@ -247,7 +243,7 @@ function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextP
                       lastLoginTime: user.lastLoginTime,
                   },
                   logout: () => {
-                      fusionInstance.logout(
+                      logout(
                           `${window.location.origin}/logout?p=${encodeURIComponent(window.location.pathname + window.location.search)}`,
                       );
                   },
@@ -256,7 +252,7 @@ function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextP
                   },
               }
             : undefined;
-    }, [isAuthenticated, user, tenantId, fusionInstance.logout]);
+    }, [isAuthenticated, user, tenantId, logout]);
 
     return <Context.Provider value={context}>{children}</Context.Provider>;
 }
