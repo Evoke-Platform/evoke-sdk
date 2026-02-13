@@ -38,8 +38,8 @@ type FusionAuthRefreshResponse = {
 type FusionAuthProviderContext = {
     isAuthenticated: boolean;
     loading: boolean;
-    tenantId: string;
-    clientId: string;
+    authTenantId: string;
+    authClientId: string;
     login: (state?: string) => void;
     logout: (redirectUrl: string, reason?: string) => void;
     refreshToken: () => Promise<FusionAuthRefreshResponse>;
@@ -230,7 +230,7 @@ function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextP
         throw new Error('Fusion instance is required for FusionAuthProvider.');
     }
 
-    const { isAuthenticated, user, tenantId, logout } = fusionInstance;
+    const { isAuthenticated, user, authTenantId, logout } = fusionInstance;
 
     const context: AuthenticationContext | undefined = useMemo(() => {
         return isAuthenticated && user?.sub
@@ -248,12 +248,11 @@ function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextP
                       );
                   },
                   getAccessToken: async () => {
-                      return sessionStorage.getItem(`${tenantId}-fusionauth.at`) || '';
+                      return sessionStorage.getItem(`${authTenantId}-fusionauth.at`) || '';
                   },
               }
             : undefined;
-    }, [isAuthenticated, user, tenantId, logout]);
-
+    }, [isAuthenticated, user, authTenantId, logout]);
     return <Context.Provider value={context}>{children}</Context.Provider>;
 }
 
