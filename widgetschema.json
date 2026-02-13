@@ -21,6 +21,11 @@
             "type": "string",
             "description": "Version of the widget"
         },
+        "allowChildren": {
+            "type": "boolean",
+            "description": "Allows the widget to act as a container for child widgets. If true, the widget will be sent a 'children' property containing an array of nested child widgets.",
+            "default": false
+        },
         "src": {
             "type": "string",
             "description": "URL of the widget source code"
