@@ -32,7 +32,6 @@ type FusionAuthUserInfo = {
 type FusionAuthRefreshResponse = {
     at: string;
     at_exp: string;
-    tenantId: string;
 };
 
 type FusionAuthProviderContext = {
