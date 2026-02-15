@@ -26,7 +26,7 @@ type FusionAuthUserInfo = {
     name: string;
     sub: string;
     tid: string;
-    username: string;
+    email: string;
 };
 
 type FusionAuthRefreshResponse = {
@@ -239,7 +239,7 @@ function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextP
                   account: {
                       id: user.sub,
                       name: user.name,
-                      username: user.username,
+                      username: user.email,
                       lastLoginTime: user.lastLoginTime,
                   },
                   logout: () => {
