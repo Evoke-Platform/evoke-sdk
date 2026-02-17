@@ -24,9 +24,11 @@ type FusionAuthUserInfo = {
     aud: string;
     lastLoginTime: number;
     name: string;
+    given_name: string;
+    family_name: string;
     sub: string;
     tid: string;
-    username: string;
+    email: string;
 };
 
 type FusionAuthRefreshResponse = {
@@ -238,8 +240,8 @@ function FusionAuthProvider({ fusionInstance, children }: AuthenticationContextP
                   tenantId: user.tid,
                   account: {
                       id: user.sub,
-                      name: user.name,
-                      username: user.username,
+                      name: user.name ?? `${user.given_name} ${user.family_name}`,
+                      username: user.email,
                       lastLoginTime: user.lastLoginTime,
                   },
                   logout: () => {
