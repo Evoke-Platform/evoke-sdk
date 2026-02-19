@@ -16,10 +16,25 @@ export type EvokeForm = {
     name: string;
     entries: FormEntry[];
     objectId: string;
-    formObjectId?: string;
+    baseObjectId?: string;
     actionId?: string;
     autosaveActionId?: string;
     display?: EvokeFormDisplayConfiguration;
+};
+
+export type EvokeFormlet = {
+    id: string;
+    name: string;
+    objectId?: string;
+    entries: FormEntry[];
+};
+
+export type Trait = {
+    id: string;
+    name: string;
+    objectId?: string;
+    description?: string;
+    properties: Property[];
 };
 
 export type BaseObjReference = {
@@ -388,7 +403,19 @@ export type InputField = {
     documentMetadata?: Record<string, string>;
 };
 
-export type FormEntry = InputField | InputParameterReference | ReadonlyField | Sections | Columns | Content;
+export type FormletReference = {
+    type: 'formlet';
+    formletId: string;
+};
+
+export type FormEntry =
+    | InputField
+    | InputParameterReference
+    | ReadonlyField
+    | Sections
+    | Columns
+    | Content
+    | FormletReference;
 
 export type Form = {
     entries?: FormEntry[];
