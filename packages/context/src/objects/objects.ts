@@ -26,7 +26,7 @@ export type EvokeFormlet = {
     id: string;
     name: string;
     objectId?: string;
-    entries: FormEntry[];
+    entries: Exclude<FormEntry, FormletReference>[];
 };
 
 export type Trait = {
