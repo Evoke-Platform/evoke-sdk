@@ -418,7 +418,7 @@ export type FormEntry =
     | FormletReference;
 
 export type Form = {
-    entries?: FormEntry[];
+    entries?: Exclude<FormEntry, FormletReference>[];
 };
 
 export type ActionInputType =
