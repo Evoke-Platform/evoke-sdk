@@ -27,6 +27,7 @@ export type EvokeFormlet = {
     name: string;
     objectId?: string;
     entries: Exclude<FormEntry, FormletReference>[];
+    traitId: string;
 };
 
 export type Trait = {
@@ -35,6 +36,7 @@ export type Trait = {
     objectId?: string;
     description?: string;
     properties: Property[];
+    formletId?: string;
 };
 
 export type BaseObjReference = {
@@ -418,7 +420,7 @@ export type FormEntry =
     | FormletReference;
 
 export type Form = {
-    entries?: FormEntry[];
+    entries?: Exclude<FormEntry, FormletReference>[];
 };
 
 export type ActionInputType =
