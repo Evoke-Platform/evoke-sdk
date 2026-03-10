@@ -408,6 +408,7 @@ export type InputField = {
 export type FormletReference = {
     type: 'formlet';
     formletId: string;
+    visibility?: VisibilityConfiguration | JsonLogic;
 };
 
 export type FormEntry =
