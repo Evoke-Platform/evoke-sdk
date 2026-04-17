@@ -138,25 +138,28 @@ export type Obj = {
 
 export type ObjWithRoot = Obj & { rootObjectId: string };
 
-export type PropertyType =
-    | 'address'
-    | 'array'
-    | 'boolean'
-    | 'collection'
-    | 'criteria'
-    | 'date'
-    | 'date-time'
-    | 'document'
-    | 'file'
-    | 'fileContent'
-    | 'image'
-    | 'integer'
-    | 'number'
-    | 'object'
-    | 'richText'
-    | 'string'
-    | 'time'
-    | 'user';
+export const PROPERTY_TYPES = Object.freeze([
+    'address',
+    'array',
+    'boolean',
+    'collection',
+    'criteria',
+    'date',
+    'date-time',
+    'document',
+    'file',
+    'fileContent',
+    'image',
+    'integer',
+    'number',
+    'object',
+    'richText',
+    'string',
+    'time',
+    'user',
+] as const);
+
+export type PropertyType = (typeof PROPERTY_TYPES)[number];
 
 export type NumericValidation = {
     errorMessage?: string;
