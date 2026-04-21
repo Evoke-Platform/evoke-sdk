@@ -269,6 +269,7 @@ export type Action = {
     defaultFormId?: string;
     customCode?: string;
     preconditions?: object;
+    version?: number;
 };
 
 export type ObjectInstance = {
