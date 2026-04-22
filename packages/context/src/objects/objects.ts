@@ -590,7 +590,7 @@ export type InstanceOptions = {
     /**
      * When true, collection properties' instances are returned along with the returned instance.
      */
-    collection?: boolean;
+    collections?: boolean;
     /**
      * An array of related entities to expand in the returned instance.
      * Use dot notation for nested expansions.
