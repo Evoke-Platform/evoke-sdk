@@ -37,6 +37,7 @@ export type Trait = {
     description?: string;
     properties: Property[];
     formletId?: string;
+    inputs?: InputParameter[];
 };
 
 export type BaseObjReference = {
