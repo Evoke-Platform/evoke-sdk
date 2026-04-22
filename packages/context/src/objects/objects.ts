@@ -37,6 +37,7 @@ export type Trait = {
     description?: string;
     properties: Property[];
     formletId?: string;
+    inputs?: InputParameter[];
 };
 
 export type BaseObjReference = {
@@ -270,6 +271,12 @@ export type Action = {
     customCode?: string;
     preconditions?: object;
     version?: number;
+    parameterTraits?: ActionParameterTrait[];
+};
+
+export type ActionParameterTrait = {
+    traitId: string;
+    mode?: 'default' | 'optional' | 'noValidation';
 };
 
 export type ObjectInstance = {
