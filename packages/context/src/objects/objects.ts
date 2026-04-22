@@ -16,10 +16,27 @@ export type EvokeForm = {
     name: string;
     entries: FormEntry[];
     objectId: string;
-    formObjectId?: string;
+    baseObjectId?: string;
     actionId?: string;
     autosaveActionId?: string;
     display?: EvokeFormDisplayConfiguration;
+};
+
+export type EvokeFormlet = {
+    id: string;
+    name: string;
+    objectId?: string;
+    entries: Exclude<FormEntry, FormletReference>[];
+    traitId: string;
+};
+
+export type Trait = {
+    id: string;
+    name: string;
+    objectId?: string;
+    description?: string;
+    properties: Property[];
+    formletId?: string;
 };
 
 export type BaseObjReference = {
@@ -69,19 +86,25 @@ export type TableViewLayout = {
 };
 
 export type PanelViewSection = {
+    label: string;
     entries?: PanelViewEntry[];
 };
 
 export type PanelViewSections = {
+    type: 'sections';
     sections: PanelViewSection[];
+    visibility?: VisibilityConfiguration | JsonLogic;
 };
 
 export type PanelViewColumn = {
     entries?: PanelViewEntry[];
+    width: number;
 };
 
 export type PanelViewColumns = {
+    type: 'columns';
     columns: PanelViewColumn[];
+    visibility?: VisibilityConfiguration | JsonLogic;
 };
 
 export type PanelViewEntry = ReadonlyField | PanelViewSections | PanelViewColumns | Content;
@@ -111,29 +134,33 @@ export type Obj = {
     actions?: Action[];
     formId?: string;
     defaultPanelLayoutId?: string;
+    traitIds?: string[];
 };
 
 export type ObjWithRoot = Obj & { rootObjectId: string };
 
-export type PropertyType =
-    | 'address'
-    | 'array'
-    | 'boolean'
-    | 'collection'
-    | 'criteria'
-    | 'date'
-    | 'date-time'
-    | 'document'
-    | 'file'
-    | 'fileContent'
-    | 'image'
-    | 'integer'
-    | 'number'
-    | 'object'
-    | 'richText'
-    | 'string'
-    | 'time'
-    | 'user';
+export const PROPERTY_TYPES = Object.freeze([
+    'address',
+    'array',
+    'boolean',
+    'collection',
+    'criteria',
+    'date',
+    'date-time',
+    'document',
+    'file',
+    'fileContent',
+    'image',
+    'integer',
+    'number',
+    'object',
+    'richText',
+    'string',
+    'time',
+    'user',
+] as const);
+
+export type PropertyType = (typeof PROPERTY_TYPES)[number];
 
 export type NumericValidation = {
     errorMessage?: string;
@@ -242,6 +269,7 @@ export type Action = {
     defaultFormId?: string;
     customCode?: string;
     preconditions?: object;
+    version?: number;
 };
 
 export type ObjectInstance = {
@@ -298,12 +326,20 @@ export type DisplayConfiguration = {
     charCount?: boolean;
     mode?: 'default' | 'existingOnly';
     relatedObjectDisplay?: 'dropdown' | 'dialogBox';
+
     /**
      * The ID of the related object for parameters of type 'object'.
      * When a parameter is of type 'object' whose objectId is not configured,
      * this specifies which object it relates to when the field entry is rendered.
      */
     relatedObjectId?: string;
+
+    /**
+     * The ID of the file object for parameters of type 'file'.
+     * This can be either the system File object or one of its subtypes.
+     */
+    fileObjectId?: string;
+
     visibility?: VisibilityConfiguration | JsonLogic;
     viewLayout?: ViewLayoutEntityReference;
     choicesDisplay?: {
@@ -317,6 +353,7 @@ export type DisplayConfiguration = {
     createFormId?: string;
     updateFormId?: string;
     deleteFormId?: string;
+
     /**
      * Criteria to filter related object options in case of dynamic related object references.
      */
@@ -373,10 +410,23 @@ export type InputField = {
     documentMetadata?: Record<string, string>;
 };
 
-export type FormEntry = InputField | InputParameterReference | ReadonlyField | Sections | Columns | Content;
+export type FormletReference = {
+    type: 'formlet';
+    formletId: string;
+    visibility?: VisibilityConfiguration | JsonLogic;
+};
+
+export type FormEntry =
+    | InputField
+    | InputParameterReference
+    | ReadonlyField
+    | Sections
+    | Columns
+    | Content
+    | FormletReference;
 
 export type Form = {
-    entries?: FormEntry[];
+    entries?: Exclude<FormEntry, FormletReference>[];
 };
 
 export type ActionInputType =

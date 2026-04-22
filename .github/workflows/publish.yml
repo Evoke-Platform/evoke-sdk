@@ -1,0 +1,110 @@
+name: Publish
+
+on:
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+        inputs:
+            package_name:
+                description: 'Package name'
+                required: true
+                type: choice
+                options:
+                    - 'context'
+                    - 'payment'
+                    - 'plugin'
+                    - 'plugin-scripts'
+                    - 'sdk'
+            release_channel:
+                description: 'Release channel'
+                required: true
+                type: choice
+                options:
+                    - 'ga'
+                    - 'dev'
+
+permissions:
+    id-token: write
+
+concurrency:
+    group: branch-main
+
+jobs:
+    publish_on_push:
+        if: github.event_name == 'push'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Generate Token
+              id: generate_token
+              uses: tibdex/github-app-token@v1
+              with:
+                  app_id: ${{ vars.TOKEN_APP_ID }}
+                  private_key: ${{ secrets.TOKEN_APP_PRIVATE_KEY }}
+            - uses: actions/checkout@v3
+              with:
+                  fetch-depth: 5
+                  token: ${{ steps.generate_token.outputs.token }}
+            - uses: actions/setup-node@v3
+              with:
+                  registry-url: 'https://registry.npmjs.org'
+                  node-version: 24
+            - name: Setup
+              run: |
+                  yarn install
+                  git tag baseline HEAD^
+                  echo Using baseline:
+                  git log -1 --oneline baseline
+            - name: Build
+              run: yarn build --filter=...[baseline]
+            - name: Publish
+              run: |
+                  git config user.name "GitHub Actions Bot"
+                  git config user.email "<>"
+                  npx turbo run release --concurrency 1 --filter=...[baseline] -- --prerelease dev --skip.tag --skip.changelog
+                  npx turbo run deploy --filter=...[baseline] -- --tag dev
+            - name: Push Changes
+              run: |
+                  git fetch origin
+                  git merge -m "Merge branch 'main' [skip ci]" origin/main
+                  git push --follow-tags origin HEAD:main
+
+    manual_publish:
+        if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
+        runs-on: ubuntu-latest
+        steps:
+            - name: Generate Token
+              id: generate_token
+              uses: tibdex/github-app-token@v1
+              with:
+                  app_id: ${{ vars.TOKEN_APP_ID }}
+                  private_key: ${{ secrets.TOKEN_APP_PRIVATE_KEY }}
+            - uses: actions/checkout@v3
+              with:
+                  token: ${{ steps.generate_token.outputs.token }}
+                  fetch-depth: 0
+                  fetch-tags: true
+            - uses: actions/setup-node@v3
+              with:
+                  registry-url: 'https://registry.npmjs.org'
+                  node-version: 24
+            - name: Setup
+              run: yarn install
+            - name: Build
+              run: npx turbo run build --filter=@evoke-platform/${{ github.event.inputs.package_name }}
+            - name: Publish
+              run: |
+                  git config user.name "GitHub Actions Bot"
+                  git config user.email "<>"
+                  if [ "${{ github.event.inputs.release_channel }}" = "dev" ]; then
+                      npx turbo run release --filter=@evoke-platform/${{ github.event.inputs.package_name }} --concurrency 1 -- --prerelease dev --skip.tag --skip.changelog
+                      npx turbo run deploy --filter=@evoke-platform/${{ github.event.inputs.package_name }} -- --tag dev
+                  else
+                      npx turbo run release --filter=@evoke-platform/${{ github.event.inputs.package_name }} --concurrency 1 --
+                      npx turbo run deploy --filter=@evoke-platform/${{ github.event.inputs.package_name }} --
+                  fi
+            - name: Push Changes
+              run: |
+                  git fetch origin
+                  git merge -m "Merge branch 'main' [skip ci]" origin/main
+                  git push --follow-tags origin HEAD:main

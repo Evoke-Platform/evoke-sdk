@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/plugin-scripts",
-    "version": "1.1.0-dev.0",
+    "version": "1.1.0-dev.2",
     "description": "Scripts for managing an Evoke platform plugin project",
     "homepage": "https://github.com/Evoke-Platform/evoke-sdk/blob/main/packages/plugin-scripts/README.md",
     "repository": {
@@ -27,7 +27,7 @@
         "test": "mocha \"dist/__tests__/**/*.unit.js\"",
         "release": "commit-and-tag-version -t plugin-scripts@ --releaseCommitMessageFormat \"chore(release): plugin-scripts@{{currentTag}} [skip ci]\"",
         "predeploy": "cp ../../LICENSE .",
-        "deploy": "npm publish --access=public"
+        "deploy": "npm publish --provenance --access=public"
     },
     "author": "System Automation Corp.",
     "license": "MIT",
@@ -49,6 +49,6 @@
         "chai-as-promised": "^7.1.1",
         "commit-and-tag-version": "^12.1.0",
         "dirty-chai": "^2.0.1",
-        "mocha": "^10.2.0"
+        "mocha": "^10.6.0"
     }
 }

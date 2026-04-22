@@ -2,6 +2,35 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.8.0](https://github.com/Evoke-Platform/evoke-sdk/compare/context@1.7.0...context@1.8.0) (2026-03-06)
+
+### Features
+
+-   add `FusionAuthProvider` ([3fa47e9](https://github.com/Evoke-Platform/evoke-sdk/commit/3fa47e9715770ae9cdfd649973ad37bc576aef68))
+-   adds offline and trusted device controls to AppProvider ([2fd24d7](https://github.com/Evoke-Platform/evoke-sdk/commit/2fd24d7b4752f09ecd2bb042e4325fa2ce78ec5e))
+-   adds warning logs for failures during offline policy operations ([9366587](https://github.com/Evoke-Platform/evoke-sdk/commit/936658705b04e1fde4be1dbd4f802aff41eda7e3))
+-   **business-forms:** add trait and formlet type definitions ([e870a16](https://github.com/Evoke-Platform/evoke-sdk/commit/e870a166686dcf6e6a735ce96c2def46f0142943))
+-   **context:** support fileObjectId in display ([cef5f0c](https://github.com/Evoke-Platform/evoke-sdk/commit/cef5f0c3f78c812bd272b2aa6f673d3c68bac2a9))
+-   expose isOnline and hasOfflineOptIn in SDK AppProvider ([fa2ccfa](https://github.com/Evoke-Platform/evoke-sdk/commit/fa2ccfac5672a9804c4710dc651a51c9641d59af))
+-   include app name in offline policy ([87f2bea](https://github.com/Evoke-Platform/evoke-sdk/commit/87f2bea7fdbae8b5a42558fd37f6bd9d8b173fe4))
+-   refactors offline policy logic and enhances connectivity state ([447200a](https://github.com/Evoke-Platform/evoke-sdk/commit/447200a167cb2730827a88c40e02739713e97ec9))
+-   replaces manual cookie handling with js-cookie for improved reliability and maintainability ([c9291d0](https://github.com/Evoke-Platform/evoke-sdk/commit/c9291d0d2ae488cb8ef577cd314d6b3fc134f0f7))
+-   streamlines cache and session storage handling ([ecb6c39](https://github.com/Evoke-Platform/evoke-sdk/commit/ecb6c39029ba4cd0821c5a773e50854022ecee96))
+-   use the new `FusionAuthProvider` type ([35efb75](https://github.com/Evoke-Platform/evoke-sdk/commit/35efb751902fa901093ed93a22d27a2c34f4a69a))
+-   wait for service worker to control a tab. Renames offline controller for clarity ([3368f53](https://github.com/Evoke-Platform/evoke-sdk/commit/3368f53a3d192b6ada10c79c22cc9a60a286b5d5))
+
+### Bug Fixes
+
+-   adjust formV1 type to not include formlets ([d72f8d6](https://github.com/Evoke-Platform/evoke-sdk/commit/d72f8d623df8266b6aac717487c593a71af5b248))
+-   **business-forms:** exclude FormletReference from EvokeFormlet entry types ([948dd0c](https://github.com/Evoke-Platform/evoke-sdk/commit/948dd0ccf22ee0b937f7db8286defda72e63649d))
+-   **context:** cdr-2604 rename offline opt-in flag ([d9823c7](https://github.com/Evoke-Platform/evoke-sdk/commit/d9823c7b6cbb93ec7648bfb0135e9692ebaa0cc1))
+-   correct columns type ([ea9299b](https://github.com/Evoke-Platform/evoke-sdk/commit/ea9299bcd32f1fd213f1c064dcd71001a5c75591))
+-   correct PanelLayout section and column types ([93eaa4a](https://github.com/Evoke-Platform/evoke-sdk/commit/93eaa4a85ae1947739804e0f0f7e8223461a277a))
+-   correct section type definition ([063e89e](https://github.com/Evoke-Platform/evoke-sdk/commit/063e89e5e195348c5d124d6014af8033d7ea899f))
+-   make offlineTools flags read-only getters ([051c8be](https://github.com/Evoke-Platform/evoke-sdk/commit/051c8be57a63bbbc2c59dabd4d76f50cb8ed3825))
+-   removes unused js-cookie dependencies ([599ff76](https://github.com/Evoke-Platform/evoke-sdk/commit/599ff76d1e383617ad26ca38f6eab37f58ba4237))
+-   traits and formlets reference eachother ([b707879](https://github.com/Evoke-Platform/evoke-sdk/commit/b707879cc950a812584b24aa422a646cee0c9ee0))
+
 ## 1.7.0 (2025-12-26)
 
 ## 1.6.0 (2025-12-10)

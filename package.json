@@ -30,6 +30,9 @@
         "turbo": "^1.12.4",
         "typescript": "^5.3.3"
     },
+    "resolutions": {
+        "@typescript-eslint/parser/@typescript-eslint/typescript-estree/minimatch": "^9.0.7"
+    },
     "packageManager": "yarn@1.22.19",
     "engines": {
         "node": ">=16.0.0"

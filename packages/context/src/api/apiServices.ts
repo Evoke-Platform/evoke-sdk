@@ -26,7 +26,7 @@ export class ApiServices {
                 headers['Authorization'] = `Bearer ${token}`;
             }
 
-            config.headers = Object.assign({}, config.headers, headers);
+            config.headers = Object.assign({}, headers, config.headers);
 
             return config;
         });
