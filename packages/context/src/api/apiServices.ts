@@ -86,7 +86,14 @@ export class ApiServices {
         }
 
         // create unique cache key for the request based on the full URL (including baseURL) and serialized params
-        const paramStr = config?.params ? paramsSerializer(config.params) : '';
+        let paramStr = '';
+        if (config && config.params) {
+            if (config?.paramsSerializer && typeof config.paramsSerializer === 'function') {
+                paramStr = config.paramsSerializer(config.params);
+            } else {
+                paramStr = paramsSerializer(config.params);
+            }
+        }
         const cacheKey = `${this.authId}|${this.api.defaults.baseURL ?? ''}|${url}|${paramStr}`;
         let request = inflightGets.get(cacheKey) as Promise<AxiosResponse<T, D>> | undefined;
 

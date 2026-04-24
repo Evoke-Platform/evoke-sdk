@@ -707,6 +707,63 @@ describe('ApiServices', () => {
             expect(result2).to.eql(testItem);
         });
 
+        it('does not share cache between requests with different custom paramsSerializers', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/custom-serializer', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+
+            await Promise.all([
+                services.get('/custom-serializer', {
+                    params: { page: '1' },
+                    paramsSerializer: () => 'serializer=a',
+                }),
+                services.get('/custom-serializer', {
+                    params: { page: '1' },
+                    paramsSerializer: () => 'serializer=b',
+                }),
+            ]);
+
+            expect(callCount).to.eql(2);
+        });
+
+        it('shares cache between concurrent requests with the same custom paramsSerializer output', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/custom-serializer-shared', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const customSerializer = () => 'page=1';
+
+            const [result1, result2] = await Promise.all([
+                services.get('/custom-serializer-shared', {
+                    params: { page: '1' },
+                    paramsSerializer: customSerializer,
+                }),
+                services.get('/custom-serializer-shared', {
+                    params: { page: '1' },
+                    paramsSerializer: customSerializer,
+                }),
+            ]);
+
+            expect(callCount).to.eql(1);
+            expect(result1).to.eql(testItem);
+            expect(result2).to.eql(testItem);
+        });
+
         it('does not share cache between different baseURLs', async () => {
             let host1Count = 0;
             let host2Count = 0;
