@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.9.0](https://github.com/Evoke-Platform/evoke-sdk/compare/context@1.8.0...context@1.9.0) (2026-04-29)
+
+### Features
+
+-   add traitIds to Obj ([b016c5a](https://github.com/Evoke-Platform/evoke-sdk/commit/b016c5a9c49164e0819ef8236845c1b9c4338a27))
+-   add visibility to formlet references ([6aa0983](https://github.com/Evoke-Platform/evoke-sdk/commit/6aa0983a0993fa87fb64b545129448f15fc88675))
+-   **CDR-2971:** add inputs to the trait type ([37b0413](https://github.com/Evoke-Platform/evoke-sdk/commit/37b0413ada7363689370102d0c2b760ebdd620a6))
+-   **CDR-2971:** add parameterTraits to the action type ([82db33c](https://github.com/Evoke-Platform/evoke-sdk/commit/82db33c4c02f1de1840961544d79c9a2e0065eb3))
+-   **CDR-2999:** add version to action definition ([f7bcee7](https://github.com/Evoke-Platform/evoke-sdk/commit/f7bcee72c3ac17e34dae25c72c18e4c78e5cd1ce))
+
+### Bug Fixes
+
+-   **CDR-2883:** bump minimatch to fix CVE-2026-27904 ([794560a](https://github.com/Evoke-Platform/evoke-sdk/commit/794560a590dd1d1c5ddf238044c8cfe60998871e))
+-   **CDR-2883:** override minimatch@9.0.3 dependency ([54d72cc](https://github.com/Evoke-Platform/evoke-sdk/commit/54d72cc0c50bf4928e931d5e37b33669ce641cd3))
+-   **CDR-2883:** upgrade mocha dependencies directly to fix minimatch vulnerability ([2453dab](https://github.com/Evoke-Platform/evoke-sdk/commit/2453dabf94d59f62f7e98d22880c67827387ce43))
+-   fix versioning discrepancy ([ae12937](https://github.com/Evoke-Platform/evoke-sdk/commit/ae12937d87cf32d9b3fcb33894fa2d04465b94b8))
+-   fix versioning discrepency for @evoke-platform/plugin ([a6173a5](https://github.com/Evoke-Platform/evoke-sdk/commit/a6173a57742aaf299327ae462c99d2c20f5af559))
+
 ## [1.8.0](https://github.com/Evoke-Platform/evoke-sdk/compare/context@1.7.0...context@1.8.0) (2026-03-06)
 
 ### Features
