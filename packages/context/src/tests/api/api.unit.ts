@@ -486,6 +486,326 @@ describe('ApiServices', () => {
         });
     });
 
+    describe('#get request caching', () => {
+        // Each test uses a unique URL path to avoid cross-test cache contamination
+        // since the inflight maps are module-level and persist across tests.
+
+        it('concurrent requests to the same URL only make one network call', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/concurrent', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const [result1, result2] = await Promise.all([services.get('/concurrent'), services.get('/concurrent')]);
+
+            expect(callCount).to.eql(1);
+            expect(result1).to.eql(testItem);
+            expect(result2).to.eql(testItem);
+        });
+
+        it('concurrent requests from different instances with the same baseURL share the in-flight request', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/concurrent-instances', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services1 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services2 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const [result1, result2] = await Promise.all([
+                services1.get('/concurrent-instances'),
+                services2.get('/concurrent-instances'),
+            ]);
+
+            expect(callCount).to.eql(1);
+            expect(result1).to.eql(testItem);
+            expect(result2).to.eql(testItem);
+        });
+
+        it('reuses the resolved response within the TTL window', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/ttl-hit', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+
+            await services.get('/ttl-hit');
+            const result = await services.get('/ttl-hit');
+
+            expect(callCount).to.eql(1);
+            expect(result).to.eql(testItem);
+        });
+
+        it('makes a new request after the TTL expires', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/ttl-miss', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+
+            await services.get('/ttl-miss');
+            expect(callCount).to.eql(1);
+
+            await new Promise((resolve) => setTimeout(resolve, 250));
+
+            await services.get('/ttl-miss');
+            expect(callCount).to.eql(2);
+        });
+
+        it('extends the TTL on each cache hit within the window (sliding window)', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/ttl-extend', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+
+            await services.get('/ttl-extend');
+            expect(callCount).to.eql(1);
+
+            // Hit cache every 100ms — each hit resets the 200ms window
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            await services.get('/ttl-extend');
+            expect(callCount).to.eql(1);
+
+            await new Promise((resolve) => setTimeout(resolve, 100));
+            await services.get('/ttl-extend');
+            expect(callCount).to.eql(1);
+
+            // Now wait long enough for the TTL to expire (200ms after last hit)
+            await new Promise((resolve) => setTimeout(resolve, 250));
+
+            await services.get('/ttl-extend');
+            expect(callCount).to.eql(2);
+        });
+
+        it('does not cache failed requests', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/fail', (req, res, ctx) => {
+                    callCount++;
+
+                    return callCount === 1 ? res(ctx.status(500)) : res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+
+            try {
+                await services.get('/fail');
+            } catch {
+                // expected
+            }
+
+            expect(callCount).to.eql(1);
+
+            const result = await services.get('/fail');
+
+            expect(callCount).to.eql(2);
+            expect(result).to.eql(testItem);
+        });
+
+        it('does not share cache between different URLs', async () => {
+            let url1Count = 0;
+            let url2Count = 0;
+
+            server.use(
+                rest.get('http://localhost/cache-url1', (req, res, ctx) => {
+                    url1Count++;
+
+                    return res(ctx.json({ url: 1 }));
+                }),
+                rest.get('http://localhost/cache-url2', (req, res, ctx) => {
+                    url2Count++;
+
+                    return res(ctx.json({ url: 2 }));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+
+            await Promise.all([services.get('/cache-url1'), services.get('/cache-url2')]);
+
+            expect(url1Count).to.eql(1);
+            expect(url2Count).to.eql(1);
+        });
+
+        it('does not share cache between requests with different params', async () => {
+            let page1Count = 0;
+            let page2Count = 0;
+
+            server.use(
+                rest.get('http://localhost/paged', (req, res, ctx) => {
+                    const page = req.url.searchParams.get('page');
+
+                    if (page === '1') page1Count++;
+                    if (page === '2') page2Count++;
+
+                    return res(ctx.json({ page }));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/', paramsSerializer }));
+
+            await Promise.all([
+                services.get('/paged', { params: { page: '1' } }),
+                services.get('/paged', { params: { page: '2' } }),
+            ]);
+
+            expect(page1Count).to.eql(1);
+            expect(page2Count).to.eql(1);
+        });
+
+        it('shares cache between concurrent requests with the same params', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/paged-shared', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/', paramsSerializer }));
+
+            const [result1, result2] = await Promise.all([
+                services.get('/paged-shared', { params: { page: '1' } }),
+                services.get('/paged-shared', { params: { page: '1' } }),
+            ]);
+
+            expect(callCount).to.eql(1);
+            expect(result1).to.eql(testItem);
+            expect(result2).to.eql(testItem);
+        });
+
+        it('bypasses cache when a function paramsSerializer is provided', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/custom-serializer', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const customSerializer = () => 'page=1';
+
+            await Promise.all([
+                services.get('/custom-serializer', { params: { page: '1' }, paramsSerializer: customSerializer }),
+                services.get('/custom-serializer', { params: { page: '1' }, paramsSerializer: customSerializer }),
+            ]);
+
+            expect(callCount).to.eql(2);
+        });
+
+        it('bypasses cache when a ParamsSerializerOptions object with serialize is provided', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/serializer-options', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const customSerializer = { serialize: () => 'page=1' };
+
+            await Promise.all([
+                services.get('/serializer-options', { params: { page: '1' }, paramsSerializer: customSerializer }),
+                services.get('/serializer-options', { params: { page: '1' }, paramsSerializer: customSerializer }),
+            ]);
+
+            expect(callCount).to.eql(2);
+        });
+
+        it('bypasses cache when a ParamsSerializerOptions object with encode is provided', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/serializer-options-encode', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const customSerializer = { encode: (param: string) => encodeURIComponent(param).toUpperCase() };
+
+            await Promise.all([
+                services.get('/serializer-options-encode', {
+                    params: { page: '1' },
+                    paramsSerializer: customSerializer,
+                }),
+                services.get('/serializer-options-encode', {
+                    params: { page: '1' },
+                    paramsSerializer: customSerializer,
+                }),
+            ]);
+
+            expect(callCount).to.eql(2);
+        });
+
+        it('does not share cache between different baseURLs', async () => {
+            let host1Count = 0;
+            let host2Count = 0;
+
+            server.use(
+                rest.get('http://localhost/same-path', (req, res, ctx) => {
+                    host1Count++;
+
+                    return res(ctx.json(testItem));
+                }),
+                rest.get('http://otherhost/same-path', (req, res, ctx) => {
+                    host2Count++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services1 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services2 = new ApiServices(axios.create({ baseURL: 'http://otherhost/' }));
+
+            await Promise.all([services1.get('/same-path'), services2.get('/same-path')]);
+
+            expect(host1Count).to.eql(1);
+            expect(host2Count).to.eql(1);
+        });
+    });
+
     describe('#delete', () => {
         const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
         const testConfig = { headers: { 'Echo-Header': 'delete header' } };
