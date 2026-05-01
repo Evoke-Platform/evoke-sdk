@@ -85,15 +85,13 @@ export class ApiServices {
             config = configOrCallback;
         }
 
-        // create unique cache key for the request based on the full URL (including baseURL) and serialized params
-        let paramStr = '';
-        if (config && config.params) {
-            if (config?.paramsSerializer && typeof config.paramsSerializer === 'function') {
-                paramStr = config.paramsSerializer(config.params);
-            } else {
-                paramStr = paramsSerializer(config.params);
-            }
+        // Bypass cache when a custom paramsSerializer is provided since we can't guarantee that it will produce the same result
+        if (config?.paramsSerializer) {
+            return this.promiseOrCallback(this.api.get<T, AxiosResponse<T, D>>(url, config), cb);
         }
+
+        // create unique cache key for the request based on the full URL (including baseURL) and serialized params
+        const paramStr = config?.params ? paramsSerializer(config.params) : '';
         const cacheKey = `${this.authId}|${this.api.defaults.baseURL ?? ''}|${url}|${paramStr}`;
         let request = inflightGets.get(cacheKey) as Promise<AxiosResponse<T, D>> | undefined;
 

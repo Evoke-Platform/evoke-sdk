@@ -707,7 +707,7 @@ describe('ApiServices', () => {
             expect(result2).to.eql(testItem);
         });
 
-        it('does not share cache between requests with different custom paramsSerializers', async () => {
+        it('bypasses cache when a function paramsSerializer is provided', async () => {
             let callCount = 0;
 
             server.use(
@@ -719,26 +719,21 @@ describe('ApiServices', () => {
             );
 
             const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const customSerializer = () => 'page=1';
 
             await Promise.all([
-                services.get('/custom-serializer', {
-                    params: { page: '1' },
-                    paramsSerializer: () => 'serializer=a',
-                }),
-                services.get('/custom-serializer', {
-                    params: { page: '1' },
-                    paramsSerializer: () => 'serializer=b',
-                }),
+                services.get('/custom-serializer', { params: { page: '1' }, paramsSerializer: customSerializer }),
+                services.get('/custom-serializer', { params: { page: '1' }, paramsSerializer: customSerializer }),
             ]);
 
             expect(callCount).to.eql(2);
         });
 
-        it('shares cache between concurrent requests with the same custom paramsSerializer output', async () => {
+        it('bypasses cache when a ParamsSerializerOptions object with serialize is provided', async () => {
             let callCount = 0;
 
             server.use(
-                rest.get('http://localhost/custom-serializer-shared', (req, res, ctx) => {
+                rest.get('http://localhost/serializer-options', (req, res, ctx) => {
                     callCount++;
 
                     return res(ctx.json(testItem));
@@ -746,22 +741,42 @@ describe('ApiServices', () => {
             );
 
             const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
-            const customSerializer = () => 'page=1';
+            const customSerializer = { serialize: () => 'page=1' };
 
-            const [result1, result2] = await Promise.all([
-                services.get('/custom-serializer-shared', {
+            await Promise.all([
+                services.get('/serializer-options', { params: { page: '1' }, paramsSerializer: customSerializer }),
+                services.get('/serializer-options', { params: { page: '1' }, paramsSerializer: customSerializer }),
+            ]);
+
+            expect(callCount).to.eql(2);
+        });
+
+        it('bypasses cache when a ParamsSerializerOptions object with encode is provided', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/serializer-options-encode', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const customSerializer = { encode: (param: string) => encodeURIComponent(param).toUpperCase() };
+
+            await Promise.all([
+                services.get('/serializer-options-encode', {
                     params: { page: '1' },
                     paramsSerializer: customSerializer,
                 }),
-                services.get('/custom-serializer-shared', {
+                services.get('/serializer-options-encode', {
                     params: { page: '1' },
                     paramsSerializer: customSerializer,
                 }),
             ]);
 
-            expect(callCount).to.eql(1);
-            expect(result1).to.eql(testItem);
-            expect(result2).to.eql(testItem);
+            expect(callCount).to.eql(2);
         });
 
         it('does not share cache between different baseURLs', async () => {
