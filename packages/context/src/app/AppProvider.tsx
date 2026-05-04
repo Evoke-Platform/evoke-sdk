@@ -189,4 +189,10 @@ export function useApp() {
     return useContext(AppContext);
 }
 
+export function usePage(id: string): Page | undefined {
+    const app = useApp();
+
+    return app.pages?.find((page) => page.id === id);
+}
+
 export default AppProvider;
