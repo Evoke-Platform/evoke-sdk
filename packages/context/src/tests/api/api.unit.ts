@@ -1,12 +1,15 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
+import { cleanup, renderHook } from '@testing-library/react';
 import axios from 'axios';
 import chai, { expect } from 'chai';
 import dirtyChai from 'dirty-chai';
 import { rest } from 'msw';
 import { setupServer } from 'msw/node';
-import { ApiServices } from '../../api/index.js';
+import React from 'react';
+import { ApiCache, ApiCacheProvider, ApiServices, useApiServices } from '../../api/index.js';
+import ApiBaseUrlProvider from '../../api/ApiBaseUrlProvider.js';
 import { paramsSerializer } from '../../api/paramsSerializer.js';
 import { assertionCallback } from '../helpers.js';
 
@@ -487,8 +490,33 @@ describe('ApiServices', () => {
     });
 
     describe('#get request caching', () => {
-        // Each test uses a unique URL path to avoid cross-test cache contamination
-        // since the inflight maps are module-level and persist across tests.
+        // Each test gets a fresh cache object via beforeEach so there is no
+        // cross-test contamination. The cache must be passed explicitly to
+        // ApiServices; without it (cache = null) no deduplication happens.
+        let cache: ApiCache;
+
+        beforeEach(() => {
+            cache = { inflightGets: new Map(), inflightTimers: new Map(), ttlMs: 200 };
+        });
+
+        it('does not deduplicate requests when no cache is provided', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/no-cache', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            // Instantiated without a cache — every call goes straight to the network
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+
+            await Promise.all([services.get('/no-cache'), services.get('/no-cache')]);
+
+            expect(callCount).to.eql(2);
+        });
 
         it('concurrent requests to the same URL only make one network call', async () => {
             let callCount = 0;
@@ -501,7 +529,7 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
             const [result1, result2] = await Promise.all([services.get('/concurrent'), services.get('/concurrent')]);
 
             expect(callCount).to.eql(1);
@@ -509,7 +537,7 @@ describe('ApiServices', () => {
             expect(result2).to.eql(testItem);
         });
 
-        it('concurrent requests from different instances with the same baseURL share the in-flight request', async () => {
+        it('concurrent requests from different instances sharing the same cache only make one network call', async () => {
             let callCount = 0;
 
             server.use(
@@ -520,8 +548,8 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services1 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
-            const services2 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services1 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
+            const services2 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
             const [result1, result2] = await Promise.all([
                 services1.get('/concurrent-instances'),
                 services2.get('/concurrent-instances'),
@@ -543,7 +571,7 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
 
             await services.get('/ttl-hit');
             const result = await services.get('/ttl-hit');
@@ -563,7 +591,7 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
 
             await services.get('/ttl-miss');
             expect(callCount).to.eql(1);
@@ -585,7 +613,7 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
 
             await services.get('/ttl-extend');
             expect(callCount).to.eql(1);
@@ -617,7 +645,7 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
 
             try {
                 await services.get('/fail');
@@ -650,7 +678,7 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
 
             await Promise.all([services.get('/cache-url1'), services.get('/cache-url2')]);
 
@@ -673,7 +701,11 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/', paramsSerializer }));
+            const services = new ApiServices(
+                axios.create({ baseURL: 'http://localhost/', paramsSerializer }),
+                undefined,
+                cache,
+            );
 
             await Promise.all([
                 services.get('/paged', { params: { page: '1' } }),
@@ -695,7 +727,11 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/', paramsSerializer }));
+            const services = new ApiServices(
+                axios.create({ baseURL: 'http://localhost/', paramsSerializer }),
+                undefined,
+                cache,
+            );
 
             const [result1, result2] = await Promise.all([
                 services.get('/paged-shared', { params: { page: '1' } }),
@@ -718,7 +754,7 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
             const customSerializer = () => 'page=1';
 
             await Promise.all([
@@ -740,7 +776,7 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
             const customSerializer = { serialize: () => 'page=1' };
 
             await Promise.all([
@@ -762,7 +798,7 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
             const customSerializer = { encode: (param: string) => encodeURIComponent(param).toUpperCase() };
 
             await Promise.all([
@@ -796,13 +832,92 @@ describe('ApiServices', () => {
                 }),
             );
 
-            const services1 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
-            const services2 = new ApiServices(axios.create({ baseURL: 'http://otherhost/' }));
+            const services1 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
+            const services2 = new ApiServices(axios.create({ baseURL: 'http://otherhost/' }), undefined, cache);
 
             await Promise.all([services1.get('/same-path'), services2.get('/same-path')]);
 
             expect(host1Count).to.eql(1);
             expect(host2Count).to.eql(1);
+        });
+    });
+
+    describe('ApiCacheProvider', () => {
+        afterEach(() => {
+            cleanup();
+        });
+
+        it('provides a stable cache reference so useApiServices is not recreated on re-renders', () => {
+            // ApiCacheProvider uses useRef internally, so value={cache.current} is always
+            // the same object reference across renders. This means useApiServices' useMemo
+            // (which depends on [authContext, baseURL, cache]) won't recompute when the
+            // provider's parent re-renders, keeping the ApiServices instance stable.
+            const wrapper = ({ children }: { children: React.ReactNode }) =>
+                React.createElement(
+                    ApiBaseUrlProvider,
+                    { url: 'http://localhost/' },
+                    React.createElement(ApiCacheProvider, null, children),
+                );
+
+            const { result, rerender } = renderHook(() => useApiServices(), { wrapper });
+            const firstInstance = result.current;
+
+            rerender();
+
+            expect(result.current).to.equal(firstInstance);
+        });
+
+        it('respects a custom ttlMs prop', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/custom-ttl', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            // Use a very short TTL so we can confirm it expires quickly
+            const shortCache: ApiCache = { inflightGets: new Map(), inflightTimers: new Map(), ttlMs: 50 };
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, shortCache);
+
+            await services.get('/custom-ttl');
+            expect(callCount).to.eql(1);
+
+            // Within the 50ms window — should reuse cached response
+            const result = await services.get('/custom-ttl');
+            expect(callCount).to.eql(1);
+            expect(result).to.eql(testItem);
+
+            // Wait past the 50ms TTL
+            await new Promise((resolve) => setTimeout(resolve, 100));
+
+            await services.get('/custom-ttl');
+            expect(callCount).to.eql(2);
+        });
+
+        it('each ApiCacheProvider instance has its own isolated cache', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/isolated', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const cache1: ApiCache = { inflightGets: new Map(), inflightTimers: new Map(), ttlMs: 200 };
+            const cache2: ApiCache = { inflightGets: new Map(), inflightTimers: new Map(), ttlMs: 200 };
+
+            const services1 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache1);
+            const services2 = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache2);
+
+            // Two instances with separate caches — each makes its own network call
+            await Promise.all([services1.get('/isolated'), services2.get('/isolated')]);
+
+            expect(callCount).to.eql(2);
         });
     });
 
