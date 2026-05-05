@@ -6,6 +6,7 @@ import { useMemo } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { AuthenticationContext, useAuthenticationContext } from '../authentication/AuthenticationContextProvider.js';
 import { useApiBaseUrl } from './ApiBaseUrlProvider.js';
+import { ApiCache, useApiCache } from './ApiCacheProvider.js';
 import { Callback } from './callback.js';
 import { paramsSerializer } from './paramsSerializer.js';
 
@@ -13,18 +14,13 @@ export type Data = Record<string, unknown> | FormData | File;
 
 const sessionId = uuidv4();
 
-const GET_CACHE_TTL_MS = 200;
-
-// Map of inflight GET requests to their promises, keyed by URL (including baseURL)
-const inflightGets = new Map<string, Promise<AxiosResponse<unknown>>>();
-const inflightTimers = new Map<string, ReturnType<typeof setTimeout>>();
-
 export class ApiServices {
     private readonly authId: string;
 
     constructor(
         private api: AxiosInstance,
         authContext?: AuthenticationContext,
+        private cache: ApiCache | null = null,
     ) {
         this.authId = authContext?.account.id ?? 'anon';
 
@@ -44,6 +40,9 @@ export class ApiServices {
 
     // Reset the timer for deleting the cached GET request. If the timer expires, the cached request is removed from the inflightGets map.
     private resetDeleteTimer(cacheKey: string, request: Promise<AxiosResponse<unknown>>) {
+        if (!this.cache) return;
+
+        const { inflightGets, inflightTimers } = this.cache;
         const existing = inflightTimers.get(cacheKey);
         if (existing) clearTimeout(existing);
 
@@ -52,7 +51,7 @@ export class ApiServices {
                 inflightGets.delete(cacheKey);
             }
             inflightTimers.delete(cacheKey);
-        }, GET_CACHE_TTL_MS);
+        }, this.cache.ttlMs);
 
         inflightTimers.set(cacheKey, timer);
     }
@@ -86,16 +85,17 @@ export class ApiServices {
         }
 
         // Bypass cache when a custom paramsSerializer is provided since we can't guarantee that it will produce the same result
-        if (config?.paramsSerializer) {
+        if (!this.cache || config?.paramsSerializer) {
             return this.promiseOrCallback(this.api.get<T, AxiosResponse<T, D>>(url, config), cb);
         }
+
+        const { inflightGets, inflightTimers } = this.cache;
 
         // create unique cache key for the request based on the full URL (including baseURL) and serialized params
         const paramStr = config?.params ? paramsSerializer(config.params) : '';
         const cacheKey = `${this.authId}|${this.api.defaults.baseURL ?? ''}|${url}|${paramStr}`;
         let request = inflightGets.get(cacheKey) as Promise<AxiosResponse<T, D>> | undefined;
 
-        // If there's no inflight request for the same URL and params, create one and add it to the cache. Otherwise, reuse the existing request.
         if (!request) {
             request = this.api.get<T, AxiosResponse<T, D>>(url, config);
             inflightGets.set(cacheKey, request);
@@ -234,10 +234,11 @@ export class ApiServices {
 export function useApiServices() {
     const authContext = useAuthenticationContext();
     const baseURL = useApiBaseUrl();
+    const cache = useApiCache();
 
     const apiServices = useMemo(
-        () => new ApiServices(axios.create({ baseURL, paramsSerializer }), authContext),
-        [authContext, baseURL],
+        () => new ApiServices(axios.create({ baseURL, paramsSerializer }), authContext, cache),
+        [authContext, baseURL, cache],
     );
 
     return apiServices;
