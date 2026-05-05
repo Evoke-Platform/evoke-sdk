@@ -16,6 +16,12 @@ export type ApiCacheProviderProps = {
     ttlMs?: number;
 };
 
+/**
+ * Enables in-flight GET request deduplication for all `useApiServices` consumers wrapped
+ * by this provider. Concurrent requests to the same URL share a single network call, and
+ * the response is reused for `ttlMs` milliseconds (default 200ms) after it resolves.
+ * Without this provider, no deduplication occurs.
+ */
 export function ApiCacheProvider({ children, ttlMs = 200 }: ApiCacheProviderProps) {
     const cache = useRef<ApiCache>({
         inflightGets: new Map(),
