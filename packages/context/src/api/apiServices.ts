@@ -38,6 +38,7 @@ export class ApiServices {
         });
     }
 
+    // Reset the timer for deleting the cached GET request. If the timer expires, the cached request is removed from the inflightGets map.
     private resetDeleteTimer(cacheKey: string, request: Promise<AxiosResponse<unknown>>) {
         if (!this.cache) return;
 
