@@ -146,6 +146,7 @@ Static method that invalidates the entire object cache across all ObjectStore in
 -   [usePageParams](#usepageparams)
 -   [useNavigate](#usenavigate)
 -   [useApp](#useapp)
+-   [usePage](#usepageid)
 
 #### `usePageParam(param)`
 
@@ -187,6 +188,14 @@ Example usage:
 const { id: appId, findDefaultPageSlugFor } = useApp();
 const defaultPageSlug = await findDefaultPageSlugFor(objectId);
 ```
+
+#### `usePage(id)`
+
+Returns the `Page` with the given `id` from the currently loaded app, or `undefined` if no matching page is found.
+
+-   `id` _[string]_
+    -   The ID of the page to look up.
+-   Returns the matching `Page` object, or `undefined` if not found.
 
 ### REST API calls
 
