@@ -12,6 +12,12 @@ import { paramsSerializer } from './paramsSerializer.js';
 
 export type Data = Record<string, unknown> | FormData | File;
 
+/** GET-specific request config. Extends AxiosRequestConfig with caching options. */
+export type GetRequestConfig<D = Data> = AxiosRequestConfig<D> & {
+    /** Set to `false` to skip the in-flight cache for this request. */
+    cache?: false;
+};
+
 const sessionId = uuidv4();
 
 export class ApiServices {
@@ -22,6 +28,10 @@ export class ApiServices {
         authContext?: AuthenticationContext,
         private cache: ApiCache | null = null,
     ) {
+        // Hidden from enumeration so that internal cache mutations are not visible
+        // to libraries that compare or clone objects by their enumerable properties.
+        // TypeScript has already assigned this.cache above; we just change its descriptor.
+        Object.defineProperty(this, 'cache', { value: cache, enumerable: false, writable: true, configurable: true });
         this.authId = authContext?.account.id ?? 'anon';
 
         this.api.interceptors.request.use(async (config) => {
@@ -69,35 +79,39 @@ export class ApiServices {
         );
     }
 
-    get<T, D = Data>(url: string, config?: AxiosRequestConfig<D>): Promise<T>;
+    get<T, D = Data>(url: string, config?: GetRequestConfig<D>): Promise<T>;
     get<T>(url: string, cb: Callback<T>): void;
-    get<T, D = Data>(url: string, config: AxiosRequestConfig<D>, cb: Callback<T>): void;
+    get<T, D = Data>(url: string, config: GetRequestConfig<D>, cb: Callback<T>): void;
 
-    async get<T, D>(url: string, configOrCallback?: AxiosRequestConfig<D> | Callback<T>, cb?: Callback<T>) {
-        let config: AxiosRequestConfig<D> | undefined;
+    async get<T, D>(url: string, configOrCallback?: GetRequestConfig<D> | Callback<T>, cb?: Callback<T>) {
+        let config: GetRequestConfig<D> | undefined;
 
         if (cb) {
-            config = configOrCallback as AxiosRequestConfig<D>;
+            config = configOrCallback as GetRequestConfig<D>;
         } else if (typeof configOrCallback === 'function') {
             cb = configOrCallback;
         } else {
             config = configOrCallback;
         }
 
-        // Bypass cache when a custom paramsSerializer is provided since we can't guarantee that it will produce the same result
-        if (!this.cache || config?.paramsSerializer) {
-            return this.promiseOrCallback(this.api.get<T, AxiosResponse<T, D>>(url, config), cb);
+        // Strip `cache` before forwarding to axios — it is an Evoke-only option.
+        const { cache: cacheFlag, ...axiosConfig } = config ?? {};
+
+        // Bypass cache when explicitly disabled or when a custom paramsSerializer is
+        // provided (can't guarantee it produces a stable cache key).
+        if (!this.cache || cacheFlag === false || axiosConfig.paramsSerializer) {
+            return this.promiseOrCallback(this.api.get<T, AxiosResponse<T, D>>(url, axiosConfig), cb);
         }
 
         const { inflightGets, inflightTimers } = this.cache;
 
         // create unique cache key for the request based on the full URL (including baseURL) and serialized params
-        const paramStr = config?.params ? paramsSerializer(config.params) : '';
+        const paramStr = axiosConfig.params ? paramsSerializer(axiosConfig.params) : '';
         const cacheKey = `${this.authId}|${this.api.defaults.baseURL ?? ''}|${url}|${paramStr}`;
         let request = inflightGets.get(cacheKey) as Promise<AxiosResponse<T, D>> | undefined;
 
         if (!request) {
-            request = this.api.get<T, AxiosResponse<T, D>>(url, config);
+            request = this.api.get<T, AxiosResponse<T, D>>(url, axiosConfig);
             inflightGets.set(cacheKey, request);
             request.then(
                 () => this.resetDeleteTimer(cacheKey, request as Promise<AxiosResponse<unknown>>),
