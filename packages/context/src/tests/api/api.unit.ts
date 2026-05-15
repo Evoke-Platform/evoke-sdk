@@ -787,6 +787,53 @@ describe('ApiServices', () => {
             expect(callCount).to.eql(2);
         });
 
+        it('bypasses cache when cache: false is set on the request config', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/no-cache-flag', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
+
+            await Promise.all([
+                services.get('/no-cache-flag', { cache: false }),
+                services.get('/no-cache-flag', { cache: false }),
+            ]);
+
+            expect(callCount).to.eql(2);
+        });
+
+        it('cache: false only affects the flagged request, not other requests to the same URL', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/selective-cache', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
+
+            // First request — cached
+            await services.get('/selective-cache');
+            expect(callCount).to.eql(1);
+
+            // Second request — cache bypassed, goes to network
+            await services.get('/selective-cache', { cache: false });
+            expect(callCount).to.eql(2);
+
+            // Third request — normal, still within TTL, should reuse cached response
+            await services.get('/selective-cache');
+            expect(callCount).to.eql(2);
+        });
+
         it('bypasses cache when a ParamsSerializerOptions object with encode is provided', async () => {
             let callCount = 0;
 
@@ -918,6 +965,64 @@ describe('ApiServices', () => {
             await Promise.all([services1.get('/isolated'), services2.get('/isolated')]);
 
             expect(callCount).to.eql(2);
+        });
+    });
+
+    describe('cache property descriptor', () => {
+        it('cache is non-enumerable when constructed without a cache', () => {
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }));
+            const descriptor = Object.getOwnPropertyDescriptor(services, 'cache');
+
+            expect(descriptor).to.exist();
+            expect(descriptor!.enumerable).to.be.false();
+        });
+
+        it('cache is non-enumerable when constructed with a cache', () => {
+            const cache: ApiCache = { inflightGets: new Map(), inflightTimers: new Map(), ttlMs: 200 };
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
+            const descriptor = Object.getOwnPropertyDescriptor(services, 'cache');
+
+            expect(descriptor).to.exist();
+            expect(descriptor!.enumerable).to.be.false();
+        });
+
+        it('cache does not appear in enumerable keys', () => {
+            const cache: ApiCache = { inflightGets: new Map(), inflightTimers: new Map(), ttlMs: 200 };
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
+
+            expect(Object.keys(services)).to.not.include('cache');
+        });
+
+        it('cache is not included when the instance is spread', () => {
+            const cache: ApiCache = { inflightGets: new Map(), inflightTimers: new Map(), ttlMs: 200 };
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
+            const spread = { ...services };
+
+            expect(Object.prototype.hasOwnProperty.call(spread, 'cache')).to.be.false();
+        });
+
+        it('cache still functions correctly after being made non-enumerable', async () => {
+            let callCount = 0;
+
+            server.use(
+                rest.get('http://localhost/non-enumerable-cache', (req, res, ctx) => {
+                    callCount++;
+
+                    return res(ctx.json(testItem));
+                }),
+            );
+
+            const cache: ApiCache = { inflightGets: new Map(), inflightTimers: new Map(), ttlMs: 200 };
+            const services = new ApiServices(axios.create({ baseURL: 'http://localhost/' }), undefined, cache);
+
+            const [result1, result2] = await Promise.all([
+                services.get('/non-enumerable-cache'),
+                services.get('/non-enumerable-cache'),
+            ]);
+
+            expect(callCount).to.eql(1);
+            expect(result1).to.eql(testItem);
+            expect(result2).to.eql(testItem);
         });
     });
 
