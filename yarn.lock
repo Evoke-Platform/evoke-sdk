@@ -579,6 +579,17 @@
   resolved "https://registry.npmjs.org/@eslint/js/-/js-8.56.0.tgz#ef20350fec605a7f7035a01764731b2de0f3782b"
   integrity sha512-gMsVel9D7f2HLkBma9VbtzZRehRogVRfbr++f06nL2vnCGCNlzOD+/MUov/F4p8myyAHspEhVobgjpX64q5m6A==
 
+"@evoke-platform/context@^1.0.0", "@evoke-platform/context@^1.1.0-testing.0":
+  version "1.9.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/context/-/context-1.9.0.tgz#1baadd82f23397a48c8948b6b7174446e87be521"
+  integrity sha512-VaCevsrKpIwVtyOfacumwzGQSa7BOrz8DmRckGZ5s7ZOI0iEJHUJ5yT9WMZ5dnRs2k2Z5Yxr6aJWemADnwstQQ==
+  dependencies:
+    "@isaacs/ttlcache" "^1.4.1"
+    "@microsoft/signalr" "^7.0.12"
+    axios "^1.11.0"
+    oidc-client-ts "^3.3.0"
+    uuid "^9.0.1"
+
 "@evoke-platform/payment@^1.0.0":
   version "1.0.0"
   resolved "https://registry.npmjs.org/@evoke-platform/payment/-/payment-1.0.0.tgz#73cd6a43d061f46ac449ee8d04f8455be72f0444"
@@ -6336,6 +6347,11 @@ lodash@^4.17.10, lodash@^4.17.11, lodash@^4.17.15, lodash@^4.17.21:
   version "4.17.21"
   resolved "https://registry.yarnpkg.com/lodash/-/lodash-4.17.21.tgz#679591c564c3bffaae8454cf0b3df370c3d6911c"
   integrity sha512-v2kDEe57lecTulaDIuNTPy3Ry4gLGJ6Z1O3vE1krgXZNrsQ+LFTGHVxVjcXPs17LhbZVGedAJv8XZ1tvj5FvSg==
+
+lodash@^4.18.1:
+  version "4.18.1"
+  resolved "https://registry.npmjs.org/lodash/-/lodash-4.18.1.tgz#ff2b66c1f6326d59513de2407bf881439812771c"
+  integrity sha512-dMInicTPVE8d1e5otfwmmjlxkZoUpiVLwyeTdUsi/Caj/gfzzblBcCE5sRHV/AsjuCmxWrte2TNGSYuCeCq+0Q==
 
 log-symbols@^4.0.0, log-symbols@^4.1.0:
   version "4.1.0"
