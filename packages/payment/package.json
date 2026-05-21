@@ -23,7 +23,7 @@
         "build": "tsc",
         "release": "commit-and-tag-version -t payment@ --releaseCommitMessageFormat \"chore(release): payment@{{currentTag}} [skip ci]\"",
         "predeploy": "cp ../../LICENSE .",
-        "deploy": "npm publish --provenance"
+        "deploy": "node ../../scripts/publish-if-needed.mjs --provenance"
     },
     "author": "System Automation Corp.",
     "license": "MIT",
