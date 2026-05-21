@@ -1,7 +1,6 @@
 // Copyright (c) 2025 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import { AxiosError } from 'axios';
 import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useApiServices } from '../api/index.js';
 import { Obj } from '../objects/index.js';
@@ -154,16 +153,7 @@ function AppProvider(props: AppProviderProps) {
                 const pageId = defaultPageId.includes('/')
                     ? defaultPageId.split('/').slice(2).join('/')
                     : defaultPageId;
-                try {
-                    defaultPage = await apiServices.get<Page>(
-                        `/webContent/apps/${app.id}/pages/${encodeURIComponent(encodeURIComponent(pageId))}`,
-                    );
-                } catch (error) {
-                    const err = error as AxiosError;
-                    if (err.response?.status === 404) {
-                        defaultPage = undefined;
-                    }
-                }
+                defaultPage = app.pages?.find((page) => page.id === pageId);
             }
             if (defaultPage?.slug) {
                 return `/${app.id}/${defaultPage.slug}`;
