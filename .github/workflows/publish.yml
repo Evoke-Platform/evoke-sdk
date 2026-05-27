@@ -57,17 +57,19 @@ jobs:
                   git log -1 --oneline baseline
             - name: Build
               run: yarn build --filter=...[baseline]
-            - name: Publish
+            - name: Release
               run: |
                   git config user.name "GitHub Actions Bot"
                   git config user.email "<>"
-                  npx turbo run release --concurrency 1 --filter=...[baseline] -- --prerelease dev --skip.tag --skip.changelog
-                  npx turbo run deploy --filter=...[baseline] -- --tag dev
+                  npx turbo run release --concurrency 1 --filter=...[baseline] --ignore=yarn.lock -- --prerelease dev --skip.tag --skip.changelog
             - name: Push Changes
               run: |
                   git fetch origin
                   git merge -m "Merge branch 'main' [skip ci]" origin/main
                   git push --follow-tags origin HEAD:main
+            - name: Deploy
+              run: |
+                  npx turbo run deploy --filter=...[baseline] -- --tag dev
 
     manual_publish:
         if: github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main'
