@@ -2,6 +2,23 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.10.0](https://github.com/Evoke-Platform/evoke-sdk/compare/context@1.9.0...context@1.10.0) (2026-05-29)
+
+### Features
+
+-   add `usePage` hook ([d720b5c](https://github.com/Evoke-Platform/evoke-sdk/commit/d720b5cd665fd9583ae74ab76f07841c509cd91e))
+-   **CDR-3023:** add per-request cache bypass and make cache non-enumerable ([78f4d8b](https://github.com/Evoke-Platform/evoke-sdk/commit/78f4d8b7387a5f60c269cd22ca81139035e978ef))
+-   **CDR-3023:** dedupe concurrent get requests ([0e62e00](https://github.com/Evoke-Platform/evoke-sdk/commit/0e62e0075efa797572ee9c6e708187c00bc3e77c))
+
+### Bug Fixes
+
+-   **CDR-2881:** bump lodash to 4.18.1 ([d9845be](https://github.com/Evoke-Platform/evoke-sdk/commit/d9845be77e4d350d91381119ede3ebc0f6b8a789))
+-   **CDR-2881:** fix yarn.lock ([25a46de](https://github.com/Evoke-Platform/evoke-sdk/commit/25a46dedbd53a21904f564d5dded46f78dfe11df))
+-   **CDR-3023:** add JSDOC comment explaining the provider ([d36f6e3](https://github.com/Evoke-Platform/evoke-sdk/commit/d36f6e33b5a73c1b30f526867c32c0949d0c704e))
+-   **CDR-3023:** don't dedupe requests with custom serializers ([b2e0bbb](https://github.com/Evoke-Platform/evoke-sdk/commit/b2e0bbb5dca8f6f3bb1b829beaa18e23a93cdf7c))
+-   **CDR-3023:** support custom serializers ([10aa8b9](https://github.com/Evoke-Platform/evoke-sdk/commit/10aa8b91eed834b82b579a2bde678e2795d69124))
+-   **CDR-3023:** use context processor for cache provider ([d271b9f](https://github.com/Evoke-Platform/evoke-sdk/commit/d271b9f043754beacc375226dcf08abe1e52dbde))
+
 ## [1.9.0](https://github.com/Evoke-Platform/evoke-sdk/compare/context@1.8.0...context@1.9.0) (2026-04-29)
 
 ### Features
