@@ -1,6 +1,6 @@
 {
     "name": "@evoke-platform/context",
-    "version": "1.10.0-dev.5",
+    "version": "1.10.1-dev.0",
     "description": "Utilities that provide context to Evoke platform widgets",
     "main": "dist/index.js",
     "types": "dist/index.d.ts",
@@ -71,7 +71,7 @@
     "dependencies": {
         "@isaacs/ttlcache": "^1.4.1",
         "@microsoft/signalr": "^7.0.12",
-        "axios": "^1.11.0",
+        "axios": "^1.16.1",
         "oidc-client-ts": "^3.3.0",
         "uuid": "^9.0.1"
     }
