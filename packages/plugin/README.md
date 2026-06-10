@@ -25,6 +25,19 @@ npm run package
 A deployable zip will be created in the `target/` directory under the project root, which can be uploaded to
 an Evoke environment.
 
+### Agent Guidance
+
+The generator can optionally scaffold AI coding instructions.
+
+When prompted, choose:
+
+-   **Claude Code (recommended):** adds `CLAUDE.md` and five skills under `.claude/skills/`.
+-   **Codex:** adds `AGENTS.md` and five skills under `.agents/skills/`.
+-   **Generic instructions only:** adds `INSTRUCTIONS.md`.
+-   **No AI instructions:** adds no agent files.
+
+The generated guidance covers project structure, commands, widget configuration, payment gateway safety, packaging, and guardrails.
+
 ## License
 
 [MIT](https://github.com/Evoke-Platform/evoke-sdk/blob/main/LICENSE)
