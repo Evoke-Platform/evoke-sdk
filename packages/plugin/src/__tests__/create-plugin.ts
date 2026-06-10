@@ -22,4 +22,17 @@ describe('create-plugin', () => {
             name: 'test',
         });
     }).timeout(5000);
+
+    it('does not copy internal agent instruction templates', async () => {
+        runResult = await helpers.run(appGenerator).withPrompts({ projectName: 'test', dirName: 'testdir' });
+
+        runResult.assertNoFile([
+            'testdir/_agent-instructions/INSTRUCTIONS.md',
+            'testdir/_agent-instructions/skills/plan-widget/SKILL.md',
+            'testdir/_agent-instructions/skills/add-widget/SKILL.md',
+            'testdir/_agent-instructions/skills/plan-payment-gateway/SKILL.md',
+            'testdir/_agent-instructions/skills/add-payment-gateway/SKILL.md',
+            'testdir/_agent-instructions/skills/package-and-upload/SKILL.md',
+        ]);
+    }).timeout(5000);
 });

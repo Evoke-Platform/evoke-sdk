@@ -49,7 +49,7 @@ export default class AppGenerator extends Generator {
         this.env.cwd = this.answers.dirName;
 
         this.fs.copyTpl(this.templatePath('**'), this.destinationPath(), this.answers, undefined, {
-            globOptions: { dot: true },
+            globOptions: { dot: true, ignore: ['**/_agent-instructions/**'] },
         });
     }
 
