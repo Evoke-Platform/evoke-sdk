@@ -5,9 +5,23 @@ import chalk from 'chalk';
 import validatePackageName from 'validate-npm-package-name';
 import Generator from 'yeoman-generator';
 
+type AgentInstructions = 'claude' | 'codex' | 'generic' | 'none';
+
 type Answers = {
     projectName: string;
     dirName: string;
+    agentInstructions: AgentInstructions;
+};
+
+const instructionFileNames: Record<Exclude<AgentInstructions, 'none'>, string> = {
+    claude: 'CLAUDE.md',
+    codex: 'AGENTS.md',
+    generic: 'INSTRUCTIONS.md',
+};
+
+const skillDirectories: Partial<Record<AgentInstructions, string>> = {
+    claude: '.claude/skills',
+    codex: '.agents/skills',
 };
 
 export default class AppGenerator extends Generator {
@@ -35,6 +49,18 @@ export default class AppGenerator extends Generator {
                 message: 'Enter project directory:',
                 default: (responses: Partial<Answers>) => responses.projectName?.split('/').pop() ?? '',
             },
+            {
+                type: 'list',
+                name: 'agentInstructions',
+                message: 'Add AI coding instructions?',
+                default: 'claude',
+                choices: [
+                    { name: 'Claude Code (recommended)', value: 'claude' },
+                    { name: 'Codex', value: 'codex' },
+                    { name: 'Generic instructions only', value: 'generic' },
+                    { name: 'No AI instructions', value: 'none' },
+                ],
+            },
         ];
 
         this.answers = await this.prompt<Answers>(prompts);
@@ -51,6 +77,28 @@ export default class AppGenerator extends Generator {
         this.fs.copyTpl(this.templatePath('**'), this.destinationPath(), this.answers, undefined, {
             globOptions: { dot: true, ignore: ['**/_agent-instructions/**'] },
         });
+
+        this._copyAgentInstructions(this.answers);
+    }
+
+    _copyAgentInstructions(answers: Answers) {
+        const choice = answers.agentInstructions;
+
+        if (choice === 'none') {
+            return;
+        }
+
+        this.fs.copyTpl(
+            this.templatePath('_agent-instructions/INSTRUCTIONS.md'),
+            this.destinationPath(instructionFileNames[choice]),
+            answers,
+        );
+
+        const skillDirectory = skillDirectories[choice];
+
+        if (skillDirectory) {
+            this.fs.copy(this.templatePath('_agent-instructions/skills/**'), this.destinationPath(skillDirectory));
+        }
     }
 
     end() {
