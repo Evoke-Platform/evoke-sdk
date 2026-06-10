@@ -117,5 +117,18 @@ export default class AppGenerator extends Generator {
         this.log.write(prompt).writeln(`cd ${this.answers.dirName}`);
         this.log.write(prompt).writeln('npm run package');
         this.log.writeln();
+
+        const choice = this.answers.agentInstructions;
+
+        if (choice !== 'none') {
+            const skillDirectory = skillDirectories[choice];
+
+            this.log.writeln(
+                skillDirectory
+                    ? `AI coding instructions added: ${instructionFileNames[choice]} and skills under ${skillDirectory}/.`
+                    : `AI coding instructions added: ${instructionFileNames[choice]}.`,
+            );
+            this.log.writeln();
+        }
     }
 }
