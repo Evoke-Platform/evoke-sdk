@@ -46,6 +46,49 @@ Common top-level flags:
 
 Icon: `"icon": { "src": "Extension" }` — an MUI icon name without the trailing `Icon`.
 
+## Dynamic Settings: mappedValues and visibility
+
+Two `WidgetProperties.json` features whose syntax is hard to guess. This is the (trimmed)
+`formId` property of the platform's own Form widget — a dropdown whose API call depends on
+two other settings, shown only when a checkbox is off:
+
+```json
+{
+    "name": "formId",
+    "type": "choices",
+    "displayName": "Form",
+    "api": {
+        "url": "/forms?filter[where][objectId]=$_objectId&filter[where][actionId]=$_actionId",
+        "resultMapping": { "value": "id", "label": "name" },
+        "mappedValues": {
+            "$_objectId": "objectId",
+            "$_actionId": "formSettings.actionId"
+        }
+    },
+    "visibility": {
+        "operator": "and",
+        "conditions": [{ "field": "useAutoGenForm", "operator": "notEquals", "value": true }]
+    },
+    "isOptional": true
+}
+```
+
+-   **`mappedValues`** maps each `$_token` in `api.url` to the name of another property.
+    Dotted paths reach into `inputGroup` values (`formSettings.actionId`); inside a
+    repeatable `inputGroup`, use `[$Index]` to reference the current row (e.g.
+    `filters[$Index].sourceObject`). When a source setting changes, the Builder clears
+    dependent saved values automatically.
+-   **`visibility`** takes an `operator` (`and`/`or`) and `conditions` comparing another
+    property's value with `equals`/`notEquals`. Values may be strings, booleans, or
+    numbers. In repeatable `inputGroup`s, conditions evaluate against the current row.
+-   **`hidden: { "dataType": [...] }`** hides a property for specific data source types
+    (e.g. `["documents"]`) — useful when a widget supports several `typesSupported`.
+
+The full schema is not shipped locally — it lives at the `$schema` URL
+(<https://raw.githubusercontent.com/Evoke-Platform/evoke-sdk/main/widgetschema.json>).
+Fetch it when a property shape is in doubt; it is small and the definitive validator
+input.
+
 ## TypeScript Prop Mapping
 
 | JSON type    | TypeScript prop                           |
