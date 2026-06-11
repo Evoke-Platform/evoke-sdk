@@ -87,6 +87,19 @@ Icons are exported from the UI package's icon subpaths (for example
 `@evoke-platform/ui-components/icons/Add`). Deep icon imports are okay for stateless icon
 modules; see the packaging skill before deep-importing anything that carries React context.
 
+**Never import from `@mui/material`, `@mui/icons-material`, or `@mui/x-data-grid`
+directly.** The core MUI-wrapped components (`Button`, `Dialog`, `Select`, `MenuItem`,
+`CircularProgress`, `LinearProgress`, `Typography`, and the rest) ARE re-exported from the
+SDK root — the ui-components root `index.d.ts` contains `export * from './components/core'`.
+Importing `@mui/*` directly bundles a second copy of Material UI into the plugin, which
+escapes the host App Viewer's theme (visual inconsistency) and bloats the bundle. Use
+`DataGrid` from the SDK (it wraps `x-data-grid`; check the installed version's prop
+signatures — e.g. `valueFormatter` params changed between x-data-grid v6 and v7). Use
+`@evoke-platform/ui-components/icons/<Name>` for icons.
+
+When checking what a package exports, read the relevant `index.d.ts` in full — the files
+are small. Do not conclude an export is missing from a truncated or partial read.
+
 Evoke widgets run inside App Viewer, which already wraps remote widgets with the platform
 providers. Use SDK hooks instead of creating your own Axios clients, auth plumbing, or
 context providers:
