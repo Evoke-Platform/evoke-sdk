@@ -16,7 +16,9 @@ platform's own widgets:
     plus each ancestor `baseObject.objectId` — so templates registered on a base object
     are offered for its subtypes. Fetch an object's parent via
     `GET /data/objects/{id}/effective` and read `baseObject.objectId`, repeating until
-    there is no parent.
+    there is no parent. Shortcut: `ObjectStore.get()` already returns `rootObjectId` and
+    one level of `baseObject` — for shallow hierarchies use those fields instead of
+    extra API calls.
 -   Send a template by email for one instance:
     `POST /data/correspondenceTemplates/{templateId}/send` with body
     `{ "instanceId": "<id>" }`. Sending through this endpoint creates normal
