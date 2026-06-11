@@ -15,9 +15,12 @@ bundles custom **widgets** (React components rendered on Evoke app pages) and/or
     <https://raw.githubusercontent.com/Evoke-Platform/evoke-sdk/main/widgetschema.json> —
     treat that schema as the source of truth.
 
-If this project was scaffolded with agent skills (`.claude/skills/` or `.agents/skills/`),
-prefer them for task-specific guidance — planning a widget or payment gateway, adding a
-widget, packaging and uploading. Each skill's frontmatter describes when it applies.
+This project ships agent skills (under `.claude/skills/` or `.agents/skills/`). Prefer
+them for task-specific guidance — planning and adding widgets or payment gateways,
+rendering forms, building criteria filters, sending correspondence, packaging and
+uploading. Each skill's frontmatter describes when it applies. If your tool has no skill
+mechanism, read the relevant `SKILL.md` directly as documentation when its description
+matches your task.
 
 ## Imports
 
