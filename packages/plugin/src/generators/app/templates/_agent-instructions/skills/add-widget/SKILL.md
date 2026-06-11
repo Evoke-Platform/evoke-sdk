@@ -46,6 +46,17 @@ Common top-level flags:
 
 Icon: `"icon": { "src": "Extension" }` — an MUI icon name without the trailing `Icon`.
 
+## How Flag Values Reach the Widget at Runtime
+
+-   `needsDataSource` — the Builder's data-source selection is delivered as the
+    `objectId` prop (the platform's own widgets rely on this), and `$_objectId` resolves
+    to it inside `api.url` configurations.
+-   Route parameters — a property whose saved value is the sentinel `'$_param'` is
+    replaced at render time with the page route parameter of the same name. This is how
+    instance pages deliver `instanceId` to widgets that declare an `instanceId` property.
+-   App Viewer also injects a `navigateTo` function prop for in-app navigation, alongside
+    the other runtime props listed in the project instructions.
+
 ## Dynamic Settings: mappedValues and visibility
 
 Two `WidgetProperties.json` features whose syntax is hard to guess. This is the (trimmed)

@@ -170,10 +170,13 @@ example, `{ "name": "message", "type": "text" }` means the widget receives
 `isMultiple: true`. `choices` values are the selected `value` strings, or arrays for
 multi-select choices.
 
-App Viewer also injects a few runtime props (`colSpan`, `baseUrl`, `saveWidgetState`,
-`getWidgetState`, `authInstance`, `children`, and internal `evoke_pageItem_*` flags).
-Prefer SDK hooks for new code; treat injected props as compatibility/runtime utilities
-unless the existing widget pattern specifically needs them.
+App Viewer also injects a few runtime props (`colSpan`, `baseUrl`, `navigateTo`,
+`saveWidgetState`, `getWidgetState`, `authInstance`, `children`, and internal
+`evoke_pageItem_*` flags). A property whose saved value is the sentinel `'$_param'` is
+replaced at render time with the page route parameter of the same name — this is how
+instance pages deliver `instanceId`. Prefer SDK hooks for new code; treat injected props
+as compatibility/runtime utilities unless the existing widget pattern specifically needs
+them.
 
 ## CriteriaBuilder
 
