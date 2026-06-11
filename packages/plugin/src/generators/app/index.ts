@@ -22,6 +22,7 @@ const instructionFileNames: Record<Exclude<AgentInstructions, 'none'>, string> =
 const skillDirectories: Partial<Record<AgentInstructions, string>> = {
     claude: '.claude/skills',
     codex: '.agents/skills',
+    generic: '.agents/skills',
 };
 
 export default class AppGenerator extends Generator {

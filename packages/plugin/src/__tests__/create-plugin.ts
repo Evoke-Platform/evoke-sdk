@@ -14,6 +14,9 @@ describe('create-plugin', () => {
         'plan-payment-gateway',
         'add-payment-gateway',
         'package-and-upload',
+        'render-evoke-forms',
+        'build-criteria-filters',
+        'send-correspondence',
     ];
     let runResult: RunResult;
 
@@ -79,18 +82,20 @@ describe('create-plugin', () => {
         ]);
     }).timeout(5000);
 
-    it('scaffolds INSTRUCTIONS.md without skills for the generic choice', async () => {
+    it('scaffolds INSTRUCTIONS.md and skills for the generic choice', async () => {
         runResult = await helpers
             .run(appGenerator)
             .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'generic' });
 
-        runResult.assertFile(['testdir/INSTRUCTIONS.md']);
+        runResult.assertFile([
+            'testdir/INSTRUCTIONS.md',
+            ...skillNames.map((skill) => `testdir/.agents/skills/${skill}/SKILL.md`),
+        ]);
         runResult.assertFileContent('testdir/INSTRUCTIONS.md', '# test');
         runResult.assertNoFile([
             'testdir/CLAUDE.md',
             'testdir/AGENTS.md',
             'testdir/.claude/skills/plan-widget/SKILL.md',
-            'testdir/.agents/skills/plan-widget/SKILL.md',
             'testdir/_agent-instructions/INSTRUCTIONS.md',
         ]);
     }).timeout(5000);
