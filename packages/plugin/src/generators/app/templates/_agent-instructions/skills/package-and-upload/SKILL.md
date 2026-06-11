@@ -39,6 +39,16 @@ right id, version, and properties.
 -   `react`, `react-dom`, `@evoke-platform/context`, and `@evoke-platform/ui-components`
     are shared singletons provided by the host app — version conflicts surface as
     shared-module errors in the console.
+-   Sharing matches the exact module specifier. Deep imports (e.g.
+    `@evoke-platform/ui-components/icons/Add`) are **not** covered by the root shared key
+    and get bundled into the plugin instead. That is fine for stateless modules like
+    icons, but a deep-imported module that carries React context will break (two copies,
+    two contexts). To share a deep path, add a trailing-slash key to `shared` in
+    `webpack.config.js`, pinning the version rather than `'*'`:
+    `'@evoke-platform/ui-components/': { singleton: true, requiredVersion: '1.4.0' }`
+-   If a re-uploaded plugin still shows old behavior, the browser is likely serving a
+    cached `remoteEntry.js`. Hard-refresh, and bump the widget `version` in
+    `WidgetProperties.json` so the change is visible in the Builder's widget metadata.
 -   If a widget renders blank, verify the props configured in the Builder settings match
     the names in `WidgetProperties.json`.
 
