@@ -31,12 +31,14 @@ The generator can optionally scaffold AI coding instructions.
 
 When prompted, choose:
 
--   **Claude Code (recommended):** adds `CLAUDE.md` and five skills under `.claude/skills/`.
--   **Codex:** adds `AGENTS.md` and five skills under `.agents/skills/`.
--   **Generic instructions only:** adds `INSTRUCTIONS.md`.
+-   **Claude Code (recommended):** adds `CLAUDE.md` and eight skills under `.claude/skills/`.
+-   **Codex:** adds `AGENTS.md` and eight skills under `.agents/skills/`.
+-   **Generic instructions only:** adds `INSTRUCTIONS.md` and eight skills under `.agents/skills/`
+    (readable as plain documentation by tools without a skill mechanism).
 -   **No AI instructions:** adds no agent files.
 
-The generated guidance covers project structure, commands, widget configuration, payment gateway safety, packaging, and guardrails.
+The generated guidance covers project structure, commands, widget configuration, forms,
+criteria filters, correspondence sending, payment gateway safety, packaging, and guardrails.
 
 ## License
 
