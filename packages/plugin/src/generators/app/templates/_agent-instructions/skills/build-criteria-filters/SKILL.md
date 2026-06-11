@@ -48,3 +48,8 @@ uses this mapping (recursively replace each `$`-prefixed key):
 Note the non-obvious ones: `$in` → `inq`, `$regex` → `regexp`, `$ne` → `neq`. Passing
 unconverted Mongo criteria to `findInstances` will not match the `Where` type and will
 not filter correctly.
+
+There is **no platform utility** for this Mongo→Where conversion — write it from the
+table above. Do not reach for `parseMongoDB` (exported from the SDK): despite the name,
+it converts stored Mongo criteria into CriteriaBuilder's internal UI state for
+re-populating the editor — its output is not a data API query.
