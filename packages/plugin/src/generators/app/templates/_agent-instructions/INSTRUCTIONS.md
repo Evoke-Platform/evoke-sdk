@@ -15,6 +15,10 @@ bundles custom **widgets** (React components rendered on Evoke app pages) and/or
     <https://raw.githubusercontent.com/Evoke-Platform/evoke-sdk/main/widgetschema.json> —
     treat that schema as the source of truth.
 
+If this project was scaffolded with agent skills (`.claude/skills/` or `.agents/skills/`),
+prefer them for task-specific guidance — planning a widget or payment gateway, adding a
+widget, packaging and uploading. Each skill's frontmatter describes when it applies.
+
 ## Imports
 
 Prefer importing platform APIs from `@evoke-platform/sdk` rather than directly from
@@ -56,6 +60,126 @@ V2, customize the footer through `renderFooter` (e.g. render `FormRenderer.Foote
 `position: 'sticky'` for a sticky footer, or return `null` to hide buttons), and handle
 modal close in the surrounding dialog, not on the form component. The prop types exported
 from the installed package are the source of truth.
+
+## Evoke APIs and Runtime Context
+
+Prefer Evoke's component library for widget UI. Import root UI components from
+`@evoke-platform/sdk`; it re-exports the `@evoke-platform/ui-components` root alongside
+context hooks and payment types. The core components (`Box`, `Grid`, `Stack`, `Button`,
+`TextField`, `Dialog`, `Snackbar`, etc.) are Evoke-wrapped Material UI components and keep
+custom widgets visually consistent with App Viewer. Reach for custom components such as
+`FormRendererContainer`, `FormRenderer`, `CriteriaBuilder`, `getReadableQuery`,
+`RichTextViewer`, `DataGrid`, `ResponsiveOverflow`, and `ErrorComponent` before building
+local substitutes.
+
+For current component APIs, inspect the installed package instead of relying on memory:
+
+-   Enumerate the custom components:
+    `ls node_modules/@evoke-platform/ui-components/dist/published/components/custom/`
+-   Root exports: `node_modules/@evoke-platform/ui-components/dist/published/index.d.ts`
+-   Component props: `node_modules/@evoke-platform/ui-components/dist/published/components/custom/**`
+-   Optional examples: `node_modules/@evoke-platform/ui-components/dist/published/stories/*.stories.js`
+
+The package `exports` map only supports root/color/icon imports. Treat deep files under
+`dist/published/` as read-only reference material, not supported import paths.
+
+Icons are exported from the UI package's icon subpaths (for example
+`@evoke-platform/ui-components/icons/Add`). Deep icon imports are okay for stateless icon
+modules; see the packaging skill before deep-importing anything that carries React context.
+
+Evoke widgets run inside App Viewer, which already wraps remote widgets with the platform
+providers. Use SDK hooks instead of creating your own Axios clients, auth plumbing, or
+context providers:
+
+-   `useApiServices()` returns authenticated API helpers (`get`, `post`, `patch`, `put`,
+    `delete`) whose base URL is the Evoke API root and whose requests include the current
+    user's bearer token. Pass paths relative to the API root with a leading slash, e.g.
+    `/data/objects/{objectId}/effective` or `/webContent/plugins/{pluginId}` — the same
+    form the platform's own widgets use.
+-   `useObject(objectId)` returns an `ObjectStore` for object metadata and instance/action
+    operations.
+-   `useAuthenticationContext()` exposes the current account and access-token helper.
+-   `useApp()`, `usePageParam()`/`usePageParams()`, `useNavigate()`, and
+    `useNotification()` expose app metadata, route params, navigation, and live update
+    subscriptions provided by App Viewer.
+
+The hook and store types (e.g. `ObjectStore`'s full method list, `ApiServices`
+signatures) live in the installed context package — inspect them instead of guessing:
+
+-   `node_modules/@evoke-platform/context/dist/objects/` — `ObjectStore`, instance and
+    action types
+-   `node_modules/@evoke-platform/context/dist/api/` — `ApiServices` signatures
+-   `node_modules/@evoke-platform/context/dist/index.d.ts` — everything the package
+    exports
+
+OpenAPI specs are the source of truth for endpoint shapes and parameters. Every Evoke
+environment serves its own specs — use the environment you deploy to:
+
+```text
+https://<your-evoke-environment>/api/<service>/openapi.json
+```
+
+where `<service>` is one of: `accessManagement`, `admin`, `data`, `mailMerge`,
+`webContent`, `workflow`.
+
+Specs are large — download once, then query the cached copy. Never load an entire spec
+into an agent context:
+
+```bash
+# Cache once per session
+curl -s https://<your-evoke-environment>/api/data/openapi.json -o /tmp/data-api.json
+
+# Discover endpoints first...
+jq '.paths | keys' /tmp/data-api.json
+
+# ...then drill into the one you need
+jq '.paths["/objects/{id}/effective"]' /tmp/data-api.json
+```
+
+If the spec endpoint returns 401/403, your environment requires authentication for it —
+fetch it through an authenticated session (e.g. logged-in browser) and save it locally.
+For object and instance shapes specifically, the context package's installed types
+(above) are often closer at hand than the OpenAPI spec.
+
+## Widget Settings Become Runtime Props
+
+`WidgetProperties.json` is both the Builder configuration schema and the runtime prop
+contract for the widget. In App Viewer, the saved page item's `properties` object is
+passed directly to the federated widget component:
+
+```tsx
+<FederatedComponent {...pageItem.properties} />
+```
+
+That means every property `name` becomes a React prop with the saved Builder value. For
+example, `{ "name": "message", "type": "text" }` means the widget receives
+`props.message`. `inputGroup` settings become nested objects, or arrays when
+`isMultiple: true`. `choices` values are the selected `value` strings, or arrays for
+multi-select choices.
+
+App Viewer also injects a few runtime props (`colSpan`, `baseUrl`, `saveWidgetState`,
+`getWidgetState`, `authInstance`, `children`, and internal `evoke_pageItem_*` flags).
+Prefer SDK hooks for new code; treat injected props as compatibility/runtime utilities
+unless the existing widget pattern specifically needs them.
+
+## CriteriaBuilder
+
+Use `CriteriaBuilder` when the widget needs a Builder-style filter editor. It edits Evoke's
+Mongo-style criteria objects, the same shape used in `filter` widget properties and data API
+`filter.where` clauses.
+
+Before implementing, inspect the installed package for the current props and examples:
+
+-   `node_modules/@evoke-platform/ui-components/dist/published/components/custom/CriteriaBuilder/CriteriaBuilder.d.ts`
+-   `node_modules/@evoke-platform/ui-components/dist/published/components/custom/CriteriaBuilder/utils.d.ts`
+-   `node_modules/@evoke-platform/ui-components/dist/published/components/custom/CriteriaBuilder/types.d.ts`
+-   `node_modules/@evoke-platform/ui-components/dist/published/stories/CriteriaBuilder.stories.js`
+
+Pass the target object's `properties` array, keep the criteria in component state, and
+persist or send the resulting object directly as the filter criteria. Common operators map
+to Mongo-style output: equality (`{ status: 'Active' }`), `$in`, `$lt`/`$lte`, `$gt`/`$gte`,
+`$regex`, `$and`, and `$or`. Use `presetValues`/`enablePresetValues` only when the widget
+should insert platform template values such as `{{{user.id}}}`.
 
 ## Commands
 
