@@ -139,7 +139,9 @@ environment serves its own specs at:
 ```
 
 where `<service>` is one of: `accessManagement`, `admin`, `data`, `mailMerge`,
-`webContent`, `workflow`.
+`webContent`, `workflow`. The exact spec path varies by service (some serve
+`/openapi.json`, others `/v3/api-docs`), and some require authentication — try both
+paths before concluding a spec is unavailable.
 
 If you need an endpoint's shape and the base URL above is "_not set_", **ask the
 developer for their Evoke environment URL** — do not guess or invent one, and do not
@@ -175,6 +177,28 @@ If the spec endpoint returns 401/403, your environment requires authentication f
 fetch it through an authenticated session (e.g. logged-in browser) and save it locally.
 For object and instance shapes specifically, the context package's installed types
 (above) are often closer at hand than the OpenAPI spec.
+
+## Sending Correspondence (Email)
+
+Correspondence templates and sending belong to the **data** service — not the
+`mailMerge` service. (`mailMerge` is a low-level document-merge engine the platform uses
+internally; widgets do not call it directly.) Verified endpoints, as used by the
+platform's own widgets:
+
+-   List templates available for an object:
+    `GET /data/correspondenceTemplates?filter={"where":{"or":[{"objectId":"<id>"}, ...]}}`
+    The platform builds the `or` list from the object's full hierarchy — the object's id
+    plus each ancestor `baseObject.objectId` — so templates registered on a base object
+    are offered for its subtypes. Fetch an object's parent via
+    `GET /data/objects/{id}/effective` and read `baseObject.objectId`, repeating until
+    there is no parent.
+-   Send a template by email for one instance:
+    `POST /data/correspondenceTemplates/{templateId}/send` with body
+    `{ "instanceId": "<id>" }`. Sending through this endpoint creates normal
+    correspondence history.
+-   Download the merged document instead of sending:
+    `POST /data/correspondenceTemplates/{templateId}/download` with body
+    `{ "instanceId": "<id>" }` (plus optional `"format"`), response type blob.
 
 ## Widget Settings Become Runtime Props
 
