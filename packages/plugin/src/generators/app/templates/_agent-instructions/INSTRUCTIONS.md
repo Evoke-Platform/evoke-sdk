@@ -125,15 +125,37 @@ signatures) live in the installed context package — inspect them instead of gu
 -   `node_modules/@evoke-platform/context/dist/index.d.ts` — everything the package
     exports
 
+## Environment
+
+Evoke environment base URL for this project (used for OpenAPI spec lookups):
+
+-   Base URL: _not set_
+
 OpenAPI specs are the source of truth for endpoint shapes and parameters. Every Evoke
-environment serves its own specs — use the environment you deploy to:
+environment serves its own specs at:
 
 ```text
-https://<your-evoke-environment>/api/<service>/openapi.json
+<base-url>/api/<service>/openapi.json
 ```
 
 where `<service>` is one of: `accessManagement`, `admin`, `data`, `mailMerge`,
 `webContent`, `workflow`.
+
+If you need an endpoint's shape and the base URL above is "_not set_", **ask the
+developer for their Evoke environment URL** — do not guess or invent one, and do not
+fabricate endpoint paths from memory. When the developer provides it:
+
+1. Verify access:
+   `curl -s -o /dev/null -w '%{http_code}' <base-url>/api/data/openapi.json`
+    - `200` — update the "Base URL" line above so future sessions skip this step.
+    - `401`/`403` — the environment gates its specs. Ask the developer to download the
+      spec through an authenticated browser session and save it into the project, then
+      query that file.
+2. Never record credentials or tokens in this file — the base URL only.
+
+In a non-interactive run where asking is impossible, write the code against your best
+reading of the available types, and clearly mark every endpoint you could not verify as
+**UNVERIFIED** in your final summary so a human checks it before deployment.
 
 Specs are large — download once, then query the cached copy. Never load an entire spec
 into an agent context:
