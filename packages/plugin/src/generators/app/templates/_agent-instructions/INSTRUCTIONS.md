@@ -83,7 +83,11 @@ context providers:
     `/data/objects/{objectId}/effective` or `/webContent/plugins/{pluginId}` — the same
     form the platform's own widgets use.
 -   `useObject(objectId)` returns an `ObjectStore` for object metadata and instance/action
-    operations.
+    operations. The store is memoized per object id — safe to use in hook dependency
+    arrays. `findInstances` results are capped by the environment's max-records limit;
+    bulk operations that must see every match need an explicit `limit` or pagination.
+    For totals, do not fetch-and-count — use the count endpoint (verified):
+    `GET /data/objects/{objectId}/instances/count?where=<Where JSON>`.
 -   `useAuthenticationContext()` exposes the current account and access-token helper.
 -   `useApp()`, `usePageParam()`/`usePageParams()`, `useNavigate()`, and
     `useNotification()` expose app metadata, route params, navigation, and live update
@@ -175,9 +179,10 @@ multi-select choices.
 
 App Viewer also injects a few runtime props (`colSpan`, `baseUrl`, `navigateTo`,
 `saveWidgetState`, `getWidgetState`, `authInstance`, `children`, and internal
-`evoke_pageItem_*` flags). A property whose saved value is the sentinel `'$_param'` is
-replaced at render time with the page route parameter of the same name — this is how
-instance pages deliver `instanceId`. Prefer SDK hooks for new code; treat injected props
+`evoke_pageItem_*` flags). When `needsDataSource` is enabled, the Builder's data-source
+selection arrives as the `objectId` prop. A property whose saved value is the sentinel
+`'$_param'` is replaced at render time with the page route parameter of the same name —
+this is how instance pages deliver `instanceId`. Prefer SDK hooks for new code; treat injected props
 as compatibility/runtime utilities unless the existing widget pattern specifically needs
 them.
 
