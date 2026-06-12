@@ -17,8 +17,9 @@ bundles custom **widgets** (React components rendered on Evoke app pages) and/or
 
 This project ships agent skills (under `.claude/skills/` or `.agents/skills/`). Prefer
 them for task-specific guidance — planning and adding widgets or payment gateways,
-rendering forms, building criteria filters, sending correspondence, packaging and
-uploading. Each skill's frontmatter describes when it applies. If your tool has no skill
+rendering forms, building criteria filters, sending correspondence, test-first widget
+development (storybook-tdd), packaging and uploading. Each skill's frontmatter describes
+when it applies. If your tool has no skill
 mechanism, read the relevant `SKILL.md` directly as documentation when its description
 matches your task.
 
@@ -69,6 +70,12 @@ escapes the host App Viewer's theme (visual inconsistency) and bloats the bundle
 `DataGrid` from the SDK (it wraps `x-data-grid`; check the installed version's prop
 signatures — e.g. `valueFormatter` params changed between x-data-grid v6 and v7). Use
 `@evoke-platform/ui-components/icons/<Name>` for icons.
+
+The re-exports include the types and sub-components you would otherwise reach into MUI
+for: grid types (`GridColDef`, `GridCellParams`, `GridRowParams`, `GridSortModel`,
+`GridValueFormatterParams`) and Dialog sub-components (`DialogTitle`, `DialogContent`,
+`DialogActions`, `DialogContentText`) are all importable from `@evoke-platform/sdk` —
+e.g. `import type { GridColDef } from '@evoke-platform/sdk'`.
 
 When checking what a package exports, read the relevant `index.d.ts` in full — the files
 are small. Do not conclude an export is missing from a truncated or partial read.
@@ -208,14 +215,16 @@ uploaded to an Evoke environment.
 
 ## Storybook
 
-The scaffold already includes Storybook. Stories are useful for feeding props into widgets
-during development. When a widget depends on runtime Evoke context (SDK hooks, network
-calls), prefer splitting the rendering logic into a presentational component and writing
-stories against that.
+The scaffold includes Storybook with interaction testing (`addon-interactions`,
+`@storybook/jest`, `@storybook/testing-library`). Stories are both the preview and the
+test suite: play functions assert behavior and render red/green in the Interactions
+panel. For test-first development, invoke the `storybook-tdd` skill — write the failing
+play function before the implementation.
 
-Do not add authentication/provider mocks, MSW, or new Storybook tooling unless the
-developer explicitly asks. If a mock layer already exists in this project, simple
-story-local mock data may be added; otherwise defer.
+Widgets that depend on runtime Evoke context (SDK hooks, network calls) keep that in a
+thin container; presentational components take plain props and are the Storybook/test
+surface. Do not add authentication/provider mocks, MSW, or new Storybook tooling unless
+the developer explicitly asks.
 
 ## Guardrails
 

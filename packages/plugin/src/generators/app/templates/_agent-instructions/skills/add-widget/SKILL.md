@@ -11,13 +11,20 @@ Create:
 
 ```text
 src/widgets/<WidgetName>/
-├── index.tsx
-└── WidgetProperties.json
+├── index.tsx              # thin container: SDK hooks, state, handlers — no layout JSX
+├── WidgetProperties.json
+└── components/            # presentational components: props in, JSX out
+    ├── <Name>View.tsx
+    └── <Name>View.stories.tsx
 ```
 
 `index.tsx` default-exports a React function component whose props match the
 `properties` declared in `WidgetProperties.json` — each property's `name` becomes a
 React prop with the value the app builder configured.
+
+Widgets are discovered by `manifestgen` (from `WidgetProperties.json` and JSDoc tags)
+and exposed through Module Federation from `dist/manifest.json`. Do **not** add the
+widget to `src/index.ts` — that file only registers payment gateways.
 
 ## WidgetProperties.json Shape
 
@@ -111,7 +118,9 @@ input.
 | `choices`    | `string`, or `string[]` with `isMultiple` |
 | `inputGroup` | `object`, or `object[]` with `isMultiple` |
 
-Mark properties with `isOptional: true` as optional (`?`) in the props type.
+Mark properties with `isOptional: true` as optional (`?`) in the props type. A property
+is optional **only** when `isOptional: true` — omitting the key (or setting `false`)
+means required in the Builder.
 
 ## Verify
 
@@ -121,6 +130,10 @@ the prebuild step — do not bypass it.
 
 ## Storybook
 
-If the widget is mostly prop-driven, add or update a story with `args`. If it depends
-on SDK hooks or network calls, prefer a presentational split or defer mocking to a
-separate task — do not add provider mocks or MSW.
+Keep SDK hooks (`useObject`, `useApiServices`, …) in `index.tsx` only. Components under
+`components/` take plain props, import no `@evoke-platform/*` hooks, and must render in
+Storybook without platform context. Write a story for **every** presentational
+component, covering its main states (loaded, empty, error) via `args`, and give each
+behavioral expectation a play function — invoke the `storybook-tdd` skill for the
+fail-first workflow and assertion pattern. Verify stories
+compile with `npm run build-storybook`. Do not add provider mocks or MSW.

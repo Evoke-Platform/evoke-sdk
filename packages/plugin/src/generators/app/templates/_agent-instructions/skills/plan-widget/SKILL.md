@@ -21,8 +21,10 @@ Ask only what is not already known:
 4. **SDK hooks** — which platform context does it need? Common hooks:
    `useAuthenticationContext`, `useApiServices`, `useObject`, `useNotification`,
    `usePageParam`, `useNavigate`, `useApp`.
-5. **Storybook split** — can the rendering logic be a presentational component
-   (props in, JSX out) so it can be previewed in Storybook without platform context?
+5. **Presentational split** — the default structure is a thin container (`index.tsx`,
+   holding all SDK hooks and state) over presentational components (props in, JSX out)
+   in `components/`, each with a Storybook story. Only a trivial widget with no SDK
+   hooks or network calls may skip the split — record the reason in the blueprint.
 
 ## Blueprint Contents
 
@@ -30,7 +32,9 @@ Ask only what is not already known:
 -   Target page/context, and data source / instance needs
 -   Table of Builder-configurable props (name, type, required?)
 -   SDK hooks used and why
--   Presentational/container split, if any
--   Acceptance criteria (testable bullet list)
+-   Container/presentational component list (or the recorded reason the split is skipped)
+-   Acceptance criteria (testable bullet list — write each one so it can become a
+    Storybook play function; the storybook-tdd skill turns these into the red-green
+    test sequence during implementation)
 
 Confirm the blueprint with the developer before writing code.
