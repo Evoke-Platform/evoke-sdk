@@ -49,7 +49,7 @@ Common top-level flags:
     in `api.url` configurations
 -   `needsInstance` — the widget needs a specific object instance
 -   `allowChildren` — the widget is a container; the component receives `children`
--   `allowSticky`, `typesSupported`, `deprecated`, `betaRelease`
+-   `allowSticky`, `needsDocument`, `typesSupported`, `deprecated`, `betaRelease`
 
 Icon: `"icon": { "src": "Extension" }` — an MUI icon name without the trailing `Icon`.
 
