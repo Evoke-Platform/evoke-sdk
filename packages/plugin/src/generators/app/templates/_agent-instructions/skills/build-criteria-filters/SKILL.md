@@ -15,6 +15,10 @@ Before implementing, inspect the installed package for the current props and exa
 -   `node_modules/@evoke-platform/ui-components/dist/published/components/custom/CriteriaBuilder/types.d.ts`
 -   `node_modules/@evoke-platform/ui-components/dist/published/stories/CriteriaBuilder.stories.js`
 
+**Import path:** `import { CriteriaBuilder } from '@evoke-platform/sdk'` — the deep
+`dist/published/` paths above are read-only reference, not valid runtime imports; the
+package exports map rejects them in production builds.
+
 Pass the target object's `properties` array and keep the criteria in component state.
 Use `presetValues`/`enablePresetValues` only when the widget should insert platform
 template values such as `{{{user.id}}}`.
