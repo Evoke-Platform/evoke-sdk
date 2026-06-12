@@ -17,8 +17,8 @@ bundles custom **widgets** (React components rendered on Evoke app pages) and/or
 
 This project ships agent skills (under `.claude/skills/` or `.agents/skills/`). Prefer
 them for task-specific guidance — planning and adding widgets or payment gateways,
-rendering forms, building criteria filters, sending correspondence, test-first widget
-development (storybook-tdd), packaging and uploading. Each skill's frontmatter describes
+rendering forms, building criteria filters, sending correspondence, and test-first
+widget development (storybook-tdd). Each skill's frontmatter describes
 when it applies. If your tool has no skill
 mechanism, read the relevant `SKILL.md` directly as documentation when its description
 matches your task.
@@ -59,7 +59,10 @@ The package `exports` map only supports root/color/icon imports. Treat deep file
 
 Icons are exported from the UI package's icon subpaths (for example
 `@evoke-platform/ui-components/icons/Add`). Deep icon imports are okay for stateless icon
-modules; see the packaging skill before deep-importing anything that carries React context.
+modules. Do not deep-import anything that carries React context: deep paths are bundled
+into the plugin rather than shared with the host App Viewer, so the module would exist
+twice (two copies, two contexts). Import context-carrying components from the package
+root via `@evoke-platform/sdk`.
 
 **Never import from `@mui/material`, `@mui/icons-material`, or `@mui/x-data-grid`
 directly.** The core MUI-wrapped components (`Button`, `Dialog`, `Select`, `MenuItem`,
@@ -213,7 +216,10 @@ correctly. The skill carries the conversion map.
 | `npm run test-storybook`  | executes Storybook `play` functions against Storybook on port 6006          |
 
 `npm run package` produces the deployable artifact: `target/plugin.zip` is what gets
-uploaded to an Evoke environment.
+uploaded to an Evoke environment. Uploading is a manual step the developer performs in
+the Evoke Builder (widgets: a page's layout editor → **Add** tab → **New Widget**;
+payment gateways: **Settings > Payment Gateway**). The agent has no upload credentials —
+produce the zip and stop.
 
 ## Storybook
 

@@ -31,14 +31,14 @@ The generator can optionally scaffold AI coding instructions.
 
 When prompted, choose:
 
--   **Claude Code (recommended):** adds `CLAUDE.md` and nine skills under `.claude/skills/`.
--   **Codex:** adds `AGENTS.md` and nine skills under `.agents/skills/`.
--   **Generic instructions only:** adds `INSTRUCTIONS.md` and nine skills under `.agents/skills/`
+-   **Claude Code (recommended):** adds `CLAUDE.md` and eight skills under `.claude/skills/`.
+-   **Codex:** adds `AGENTS.md` and eight skills under `.agents/skills/`.
+-   **Generic instructions only:** adds `INSTRUCTIONS.md` and eight skills under `.agents/skills/`
     (readable as plain documentation by tools without a skill mechanism).
 -   **No AI instructions:** adds no agent files.
 
 The generated guidance covers project structure, commands, widget configuration, forms,
-test-first Storybook development, criteria filters, correspondence sending, payment gateway safety, packaging, and guardrails.
+test-first Storybook development, criteria filters, correspondence sending, payment gateway safety, and guardrails.
 Generated projects include Storybook interaction testing with `npm run test-storybook` for a CLI pass/fail signal.
 
 ## License

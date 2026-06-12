@@ -13,7 +13,6 @@ describe('create-plugin', () => {
         'add-widget',
         'plan-payment-gateway',
         'add-payment-gateway',
-        'package-and-upload',
         'render-evoke-forms',
         'build-criteria-filters',
         'send-correspondence',
