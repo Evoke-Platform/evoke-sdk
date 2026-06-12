@@ -24,7 +24,9 @@ platform's own widgets:
 { params: { filter } })` — ApiServices' serializer JSON-stringifies and URL-encodes
     object params. (The platform's own widgets also inline `'filter=' +
 JSON.stringify(filter)` directly in the URL; both forms work, but the `params` option
-    avoids hand-encoding mistakes.)
+    avoids hand-encoding mistakes.) Response items are `{ id, name, objectId, ... }` —
+    no SDK type exists for correspondence templates; define a minimal local type with
+    the fields you use.
 -   Send a template by email for one instance:
     `POST /data/correspondenceTemplates/{templateId}/send` with body
     `{ "instanceId": "<id>" }`. Sending through this endpoint creates normal
