@@ -102,6 +102,10 @@ Expected signals:
 
 -   Before implementation, the new story's play test fails and the terminal names the
     failing story and assertion. Keep that failure; it proves the assertion is meaningful.
+-   A browser-launch error from `test-storybook` ("Executable doesn't exist",
+    `browserType.launch`) is an environment failure, not a red test — the scaffold's
+    `postinstall` normally downloads Chromium; run `npx playwright install chromium`
+    and retry. Do not change the component.
 -   After implementation, `npm run test-storybook` passes.
 -   If an existing story fails, treat the failure as feedback about either the component
     or the story. Fix the real issue before moving on.
