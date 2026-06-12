@@ -39,6 +39,7 @@ When prompted, choose:
 
 The generated guidance covers project structure, commands, widget configuration, forms,
 test-first Storybook development, criteria filters, correspondence sending, payment gateway safety, packaging, and guardrails.
+Generated projects include Storybook interaction testing with `npm run test-storybook` for a CLI pass/fail signal.
 
 ## License
 

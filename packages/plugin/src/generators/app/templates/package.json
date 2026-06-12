@@ -21,6 +21,7 @@
         "@storybook/jest": "^0.2.3",
         "@storybook/react": "7.6.17",
         "@storybook/react-webpack5": "^7.0.2",
+        "@storybook/test-runner": "^0.18.0",
         "@storybook/testing-library": "^0.2.0",
         "@testing-library/jest-dom": "^6.0.0",
         "@testing-library/react": "^14.0.0",
@@ -47,6 +48,7 @@
         "prepackage": "npm run build",
         "package": "pkgplugin",
         "storybook": "storybook dev -p 6006",
-        "build-storybook": "storybook build"
+        "build-storybook": "storybook build",
+        "test-storybook": "test-storybook --url http://127.0.0.1:6006"
     }
 }

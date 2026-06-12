@@ -210,6 +210,7 @@ correctly. The skill carries the conversion map.
 | `npm run build`           | generates `dist/manifest.json` (manifestgen), then production webpack build |
 | `npm run package`         | builds, then zips `dist/` into `target/plugin.zip`                          |
 | `npm run build-storybook` | static Storybook build                                                      |
+| `npm run test-storybook`  | executes Storybook `play` functions against Storybook on port 6006          |
 
 `npm run package` produces the deployable artifact: `target/plugin.zip` is what gets
 uploaded to an Evoke environment.
@@ -217,10 +218,11 @@ uploaded to an Evoke environment.
 ## Storybook
 
 The scaffold includes Storybook with interaction testing (`addon-interactions`,
-`@storybook/jest`, `@storybook/testing-library`). Stories are both the preview and the
-test suite: play functions assert behavior and render red/green in the Interactions
-panel. For test-first development, invoke the `storybook-tdd` skill — write the failing
-play function before the implementation.
+`@storybook/jest`, `@storybook/testing-library`, `@storybook/test-runner`). Stories are
+both the preview and the test suite: play functions assert behavior and render red/green
+in the Interactions panel. For test-first development, invoke the `storybook-tdd` skill —
+write the failing play function before the implementation, then use
+`npm run test-storybook` against a running Storybook server to get a CLI pass/fail signal.
 
 Widgets that depend on runtime Evoke context (SDK hooks, network calls) keep that in a
 thin container; presentational components take plain props and are the Storybook/test

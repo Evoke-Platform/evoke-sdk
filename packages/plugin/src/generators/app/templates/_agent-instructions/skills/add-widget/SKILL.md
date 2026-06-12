@@ -128,6 +128,13 @@ Run `npm run build` and confirm the widget appears in `dist/manifest.json` with 
 expected id and properties. Manifest generation (`manifestgen`) runs automatically as
 the prebuild step — do not bypass it.
 
+For presentational components, also run Storybook verification:
+
+1. `npm run build-storybook` — proves stories compile.
+2. `npm run storybook -- --host 127.0.0.1` in one terminal, then
+   `npm run test-storybook` in another — executes play functions and reports red/green
+   status in the terminal.
+
 ## Storybook
 
 Keep SDK hooks (`useObject`, `useApiServices`, …) in `index.tsx` only. Components under
@@ -135,5 +142,6 @@ Keep SDK hooks (`useObject`, `useApiServices`, …) in `index.tsx` only. Compone
 Storybook without platform context. Write a story for **every** presentational
 component, covering its main states (loaded, empty, error) via `args`, and give each
 behavioral expectation a play function — invoke the `storybook-tdd` skill for the
-fail-first workflow and assertion pattern. Verify stories
-compile with `npm run build-storybook`. Do not add provider mocks or MSW.
+fail-first workflow and assertion pattern. Verify stories compile with
+`npm run build-storybook`, then execute play functions with `npm run test-storybook`
+against a running Storybook server. Do not add provider mocks or MSW.

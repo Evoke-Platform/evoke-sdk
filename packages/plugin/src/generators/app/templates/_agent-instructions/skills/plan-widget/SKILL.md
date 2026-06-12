@@ -33,9 +33,10 @@ Ask only what is not already known:
 -   Table of Builder-configurable props (name, type, required?)
 -   SDK hooks used and why
 -   Container/presentational component list (or the recorded reason the split is skipped)
--   Acceptance criteria (testable bullet list — write each one so it can become a
-    Storybook play function; the storybook-tdd skill turns these into the red-green
-    test sequence during implementation)
+-   Acceptance criteria (testable bullet list). For each criterion that belongs to a
+    presentational component, name the story/play-function assertion that will drive it
+    red-green with the storybook-tdd skill during implementation. For criteria that need
+    platform providers or real APIs, record why they are not covered by Storybook.
 
 Confirm the blueprint with the developer before writing code. In a non-interactive run,
 treat the provided spec or feature file as the completed interview: record your
