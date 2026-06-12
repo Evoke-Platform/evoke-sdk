@@ -15,6 +15,10 @@ To render an Evoke form inside a widget, use the V2 components re-exported by th
 -   **`FormRenderer`** — granular; you supply an already-loaded `form` and manage state
     via `value`/`onChange`. When loading the form yourself, fetch
     `GET /api/data/forms/{id}/effective` so formlets are expanded.
+-   `FormRendererContainer` exposes **no form-change event** — `onChange` is not a prop
+    (only `onValidationChange`). If the widget needs dirty-state tracking (e.g. a
+    discard confirmation), either use `FormRenderer` and own `value`/`onChange`, or
+    treat any interaction with the open form as potentially dirty.
 
 Before implementing, inspect the installed package for the current props and examples:
 
