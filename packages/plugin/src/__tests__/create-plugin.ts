@@ -114,4 +114,15 @@ describe('create-plugin', () => {
             'testdir/_agent-instructions/INSTRUCTIONS.md',
         ]);
     }).timeout(5000);
+
+    it('copies skill bodies verbatim', async () => {
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        runResult.assertFileContent(
+            'testdir/.claude/skills/build-criteria-filters/SKILL.md',
+            '| `$in`        | `inq`      |',
+        );
+    }).timeout(5000);
 });
