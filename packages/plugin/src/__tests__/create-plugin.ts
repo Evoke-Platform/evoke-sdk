@@ -17,6 +17,7 @@ describe('create-plugin', () => {
         'render-evoke-forms',
         'build-criteria-filters',
         'send-correspondence',
+        'storybook-tdd',
     ];
     let runResult: RunResult;
 
