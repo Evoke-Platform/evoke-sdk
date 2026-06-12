@@ -105,6 +105,27 @@ two other settings, shown only when a checkbox is off:
 -   **`hidden: { "dataType": [...] }`** hides a property for specific data source types
     (e.g. `["documents"]`) — useful when a widget supports several `typesSupported`.
 
+To let the app builder pick one of the data source object's properties (e.g. which
+property holds an email address), use a `choices` property whose API call returns the
+object's property list — the platform's own Form widget uses this exact pattern:
+
+```json
+{
+    "name": "emailPropertyId",
+    "type": "choices",
+    "displayName": "Email Property",
+    "api": {
+        "url": "/objects/$_objectId/effective/properties",
+        "resultMapping": { "value": "id", "label": "name" }
+    }
+}
+```
+
+`resultMapping` maps over the array the endpoint returns — use sub-resource endpoints
+that return arrays directly (`/objects/$_objectId/effective/properties`,
+`/objects/$_objectId/effective/actions`) rather than trying to extract nested arrays
+from a parent object response.
+
 The full schema is not shipped locally — it lives at the `$schema` URL
 (<https://raw.githubusercontent.com/Evoke-Platform/evoke-sdk/main/widgetschema.json>).
 Fetch it when a property shape is in doubt; it is small and the definitive validator
