@@ -95,7 +95,10 @@ two other settings, shown only when a checkbox is off:
     Dotted paths reach into `inputGroup` values (`formSettings.actionId`); inside a
     repeatable `inputGroup`, use `[$Index]` to reference the current row (e.g.
     `filters[$Index].sourceObject`). When a source setting changes, the Builder clears
-    dependent saved values automatically.
+    dependent saved values automatically. `$_objectId`, `$_actionId`, and `$_appId` also
+    resolve automatically from the widget's saved settings even **without** a
+    `mappedValues` entry — the `needsDataSource` selection is stored as `objectId`, so
+    `$_objectId` in an `api.url` always reaches the bound data source object.
 -   **`visibility`** takes an `operator` (`and`/`or`) and `conditions` comparing another
     property's value with `equals`/`notEquals`. Values may be strings, booleans, or
     numbers. In repeatable `inputGroup`s, conditions evaluate against the current row.
