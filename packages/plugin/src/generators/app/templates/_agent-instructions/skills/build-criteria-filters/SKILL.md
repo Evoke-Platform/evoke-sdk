@@ -53,3 +53,13 @@ There is **no platform utility** for this Mongo→Where conversion — write it 
 table above. Do not reach for `parseMongoDB` (exported from the SDK): despite the name,
 it converts stored Mongo criteria into CriteriaBuilder's internal UI state for
 re-populating the editor — its output is not a data API query.
+
+Type the converted output as `Where` — exported from `@evoke-platform/sdk` (declared in
+`@evoke-platform/context`'s `objects/filters.d.ts` as `Condition | AndClause | OrClause`)
+— before passing it to `findInstances({ where })` or a `filter.where` query parameter.
+
+Type caveat: the platform emits `regexp` and `not` at runtime (its own conversion maps
+`$regex`/`$not` to them, and production widgets send `regexp` clauses), but the installed
+`PredicateComparison` type may not declare them. If TypeScript rejects a converted
+clause, cast that clause narrowly (e.g. `as unknown as Where`) rather than dropping the
+operator.

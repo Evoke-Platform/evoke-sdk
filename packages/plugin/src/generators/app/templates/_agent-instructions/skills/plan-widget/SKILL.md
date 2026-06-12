@@ -37,4 +37,6 @@ Ask only what is not already known:
     Storybook play function; the storybook-tdd skill turns these into the red-green
     test sequence during implementation)
 
-Confirm the blueprint with the developer before writing code.
+Confirm the blueprint with the developer before writing code. In a non-interactive run,
+treat the provided spec or feature file as the completed interview: record your
+decisions in the blueprint and proceed.

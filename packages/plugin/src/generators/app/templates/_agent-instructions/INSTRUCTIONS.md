@@ -94,7 +94,8 @@ context providers:
     arrays. `findInstances` results are capped by the environment's max-records limit;
     bulk operations that must see every match need an explicit `limit` or pagination.
     For totals, do not fetch-and-count — use the count endpoint (verified):
-    `GET /data/objects/{objectId}/instances/count?where=<Where JSON>`.
+    `GET /data/objects/{objectId}/instances/count?where=<Where JSON>` — response:
+    `{ count: number }`.
 -   `useAuthenticationContext()` exposes the current account and access-token helper.
 -   `useApp()`, `usePageParam()`/`usePageParams()`, `useNavigate()`, and
     `useNotification()` expose app metadata, route params, navigation, and live update

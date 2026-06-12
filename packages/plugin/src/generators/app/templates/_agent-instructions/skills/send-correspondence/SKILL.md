@@ -16,9 +16,15 @@ platform's own widgets:
     plus each ancestor `baseObject.objectId` — so templates registered on a base object
     are offered for its subtypes. Fetch an object's parent via
     `GET /data/objects/{id}/effective` and read `baseObject.objectId`, repeating until
-    there is no parent. Shortcut: `ObjectStore.get()` already returns `rootObjectId` and
-    one level of `baseObject` — for shallow hierarchies use those fields instead of
-    extra API calls.
+    there is no parent. Shortcut: `ObjectStore.get()` returns `ObjWithRoot` — the
+    hierarchy fields are `obj.id` (current), `obj.baseObject?.objectId` (direct
+    parent), and `obj.rootObjectId` (root ancestor). For shallow hierarchies,
+    deduplicate those three ids instead of making extra API calls.
+    Pass the filter through the `params` option — `api.get('/data/correspondenceTemplates',
+{ params: { filter } })` — ApiServices' serializer JSON-stringifies and URL-encodes
+    object params. (The platform's own widgets also inline `'filter=' +
+JSON.stringify(filter)` directly in the URL; both forms work, but the `params` option
+    avoids hand-encoding mistakes.)
 -   Send a template by email for one instance:
     `POST /data/correspondenceTemplates/{templateId}/send` with body
     `{ "instanceId": "<id>" }`. Sending through this endpoint creates normal
