@@ -31,6 +31,9 @@
         "@types/react": "^18.0.12",
         "@types/react-dom": "^18.0.5",
         "babel-loader": "^9.1.2",
+        "msw": "^2.10.4",
+        "msw-storybook-addon": "^2.0.5",
+        "react-router-dom": "^6.16.0",
         "serve": "^14.2.0",
         "storybook": "^7.0.2",
         "ts-loader": "^9.3.0",
@@ -50,6 +53,11 @@
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "test-storybook": "test-storybook --url http://127.0.0.1:6006",
-        "postinstall": "playwright install chromium"
+        "postinstall": "playwright install chromium && msw init"
+    },
+    "msw": {
+        "workerDirectory": [
+            ".storybook/public"
+        ]
     }
 }

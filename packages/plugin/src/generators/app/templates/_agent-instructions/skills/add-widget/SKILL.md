@@ -11,9 +11,10 @@ Create:
 
 ```text
 src/widgets/<WidgetName>/
-├── index.tsx              # thin container: SDK hooks, state, handlers — no layout JSX
+├── index.tsx                  # thin container: SDK hooks, state, handlers — no layout JSX
+├── <WidgetName>.stories.tsx   # container story: real widget over the MSW mock layer
 ├── WidgetProperties.json
-└── components/            # presentational components: props in, JSX out
+└── components/                # presentational components: props in, JSX out
     ├── <Name>View.tsx
     └── <Name>View.stories.tsx
 ```
@@ -168,4 +169,12 @@ component, covering its main states (loaded, empty, error) via `args`, and give 
 behavioral expectation a play function — invoke the `storybook-tdd` skill for the
 fail-first workflow and assertion pattern. Verify stories compile with
 `npm run build-storybook`, then execute play functions with `npm run test-storybook`
-against a running Storybook server. Do not add provider mocks or MSW.
+against a running Storybook server.
+
+Also write **one container story** (`<WidgetName>.stories.tsx` beside `index.tsx`)
+that renders the real widget over the scaffold's MSW mock layer: set
+`parameters: { msw: { handlers } }` with handlers from `src/mocks/` covering each
+endpoint the container hits — an unhandled-request warning in the preview console
+means one is missing. Shape fixtures from the installed `.d.ts` types; they are dev
+fixtures, not contract tests. Do not add provider mocks beyond the shipped MSW layer
+and the preview's router decorator.
