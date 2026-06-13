@@ -125,4 +125,25 @@ describe('create-plugin', () => {
             '| `$in`        | `inq`      |',
         );
     }).timeout(5000);
+
+    it('scaffolds the fetch-openapi-specs script and gitignore', async () => {
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        runResult.assertFile(['testdir/scripts/fetch-openapi-specs.sh', 'testdir/.gitignore']);
+        runResult.assertFileContent('testdir/scripts/fetch-openapi-specs.sh', 'mailMerge/v3/api-docs');
+        runResult.assertFileContent('testdir/.gitignore', '.claude/openapi/');
+    }).timeout(5000);
+
+    it('scaffolds the msw mock layer', async () => {
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        runResult.assertFile(['testdir/src/mocks/evokeHandlers.ts', 'testdir/.storybook/preview.tsx']);
+        runResult.assertNoFile(['testdir/.storybook/preview.ts']);
+        runResult.assertFileContent('testdir/.storybook/main.ts', "staticDirs: ['./public']");
+        runResult.assertFileContent('testdir/package.json', 'msw init');
+    }).timeout(5000);
 });
