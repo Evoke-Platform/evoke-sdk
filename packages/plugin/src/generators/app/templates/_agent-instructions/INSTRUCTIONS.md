@@ -29,6 +29,11 @@ Prefer importing platform APIs from `@evoke-platform/sdk` rather than directly f
 `@evoke-platform/context` or other sub-packages. The SDK re-exports everything a plugin
 needs: context hooks, payment gateway types, and UI components.
 
+The TypeScript target is `es5`. Avoid patterns that require es2015+ iteration:
+
+-   Do not use `for...of` on `Set` or `Map` — use `.forEach()` instead
+-   Do not spread a `Set` or `Map` with `[...mySet]` — use `Array.from(mySet)`
+
 ## Forms in Widgets
 
 To render an Evoke form inside a widget, invoke the `render-evoke-forms` skill before
@@ -119,52 +124,37 @@ Evoke environment base URL for this project (used for OpenAPI spec lookups):
 
 -   Base URL: _not set_
 
-OpenAPI specs are the source of truth for endpoint shapes and parameters. Every Evoke
-environment serves its own specs at:
+OpenAPI specs are the single source of truth for endpoint shapes and parameters. Pipe
+through `jq` when looking something up — do not load the full spec into context.
 
-```text
-<base-url>/api/<service>/openapi.json
-```
+Exact URLs (replace `<base-url>` with the environment base URL above):
 
-where `<service>` is one of: `accessManagement`, `admin`, `data`, `mailMerge`,
-`webContent`, `workflow`. The exact spec path varies by service (some serve
-`/openapi.json`, others `/v3/api-docs`), and some require authentication — try both
-paths before concluding a spec is unavailable.
+| Service           | URL                                            |
+| ----------------- | ---------------------------------------------- |
+| Access Management | `<base-url>/api/accessManagement/openapi.json` |
+| Admin             | `<base-url>/api/admin/openapi.json`            |
+| Data              | `<base-url>/api/data/openapi.json`             |
+| Mail Merge        | `<base-url>/api/mailMerge/v3/api-docs`         |
+| Web Content       | `<base-url>/api/webContent/openapi.json`       |
+| Workflow          | `<base-url>/api/workflow/openapi.json`         |
 
-If you need an endpoint's shape and the base URL above is "_not set_", **ask the
-developer for their Evoke environment URL** — do not guess or invent one, and do not
-fabricate endpoint paths from memory. When the developer provides it:
+All specs are publicly accessible — no authentication required.
 
-1. Verify access:
-   `curl -s -o /dev/null -w '%{http_code}' <base-url>/api/data/openapi.json`
-    - `200` — update the "Base URL" line above so future sessions skip this step.
-    - `401`/`403` — the environment gates its specs. Ask the developer to download the
-      spec through an authenticated browser session and save it into the project, then
-      query that file.
-2. Never record credentials or tokens in this file — the base URL only.
-
-In a non-interactive run where asking is impossible, write the code against your best
-reading of the available types, and clearly mark every endpoint you could not verify as
-**UNVERIFIED** in your final summary so a human checks it before deployment.
-
-Specs are large — download once, then query the cached copy. Never load an entire spec
-into an agent context:
+Run `bash scripts/fetch-openapi-specs.sh` once after scaffolding to download all six
+specs into `.claude/openapi/`. Then query with `jq` — never `cat` a spec file:
 
 ```bash
-# Cache once per session
-curl -s https://<your-evoke-environment>/api/data/openapi.json -o /tmp/data-api.json
+# Discover endpoints
+jq '.paths | keys' .claude/openapi/data-api.json
 
-# Discover endpoints first...
-jq '.paths | keys' /tmp/data-api.json
+# Drill into a specific path
+jq '.paths["/objects/{id}/effective"]' .claude/openapi/data-api.json
 
-# ...then drill into the one you need
-jq '.paths["/objects/{id}/effective"]' /tmp/data-api.json
+# Search by keyword
+jq '.paths | to_entries[] | select(.key | test("correspondenceTemplates"))' .claude/openapi/data-api.json
 ```
 
-If the spec endpoint returns 401/403, your environment requires authentication for it —
-fetch it through an authenticated session (e.g. logged-in browser) and save it locally.
-For object and instance shapes specifically, the context package's installed types
-(above) are often closer at hand than the OpenAPI spec.
+If `.claude/openapi/` is missing, run the fetch script before proceeding.
 
 ## Sending Correspondence (Email)
 
@@ -231,9 +221,16 @@ write the failing play function before the implementation, then use
 `npm run test-storybook` against a running Storybook server to get a CLI pass/fail signal.
 
 Widgets that depend on runtime Evoke context (SDK hooks, network calls) keep that in a
-thin container; presentational components take plain props and are the Storybook/test
-surface. Do not add authentication/provider mocks, MSW, or new Storybook tooling unless
-the developer explicitly asks.
+thin container; presentational components take plain props. The scaffold also ships an
+MSW mock layer so the **container** is testable: `.storybook/preview.tsx` starts a
+service worker and wraps stories in a `MemoryRouter` (SDK components call router
+hooks), and `src/mocks/evokeHandlers.ts` holds sample handlers for the Evoke data API.
+Give the container a story with `parameters: { msw: { handlers } }` — the real SDK
+client runs tokenless and MSW intercepts at the network boundary. An unhandled-request
+warning in the preview console means a handler is missing; add it rather than ignoring
+it. Handler fixtures are dev fixtures, not contract tests — shape them from the
+installed types and the OpenAPI specs. Do not add other auth/provider mocks or new
+Storybook tooling unless the developer explicitly asks.
 
 ## Guardrails
 
