@@ -82,6 +82,13 @@ Rules of the pattern:
     a readable spec.
 -   If the component renders through a portal (`Dialog`, `Menu`, popovers), query
     `within(document.body)` instead of `within(canvasElement)` for portal content.
+-   Container stories run the real widget over the scaffold's MSW mock layer
+    (`src/mocks/`): pass `parameters: { msw: { handlers } }`, assert on what the
+    handlers received (e.g. the exported `requestLog`), and treat a
+    `[MSW] Warning: captured a request without a matching request handler` in the
+    preview console as a failing signal — add the missing handler. If
+    `.storybook/public` is missing (install ran with `--ignore-scripts`), run
+    `npx msw init` once.
 -   Avoid broad text matchers that accidentally match several nodes (for example `/4/`
     matching both `42` and `4`). Prefer role/name queries or labeled text.
 
@@ -128,3 +135,10 @@ plainly; the harness result is the final automated signal.
 -   Cover the main states of every presentational component via `args`: loaded, empty,
     error, in-progress — each as its own story, each with a play function when there is
     behavior to assert.
+-   **Testing callbacks:** Mutating `args.onCallback` inside a `play` function after
+    render has no effect — the component already bound to the original function. Instead,
+    put a module-level counter or flag in the story's `args` at definition time and
+    assert it changed, or assert a visible state change triggered by the callback.
+-   **HMR cache errors:** If `npm run test-storybook` fails with
+    `MissingStoryAfterHmrError`, clear the webpack cache and re-run:
+    `rm -rf node_modules/.cache/storybook && npm run test-storybook`
