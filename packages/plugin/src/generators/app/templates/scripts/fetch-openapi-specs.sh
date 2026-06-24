@@ -37,18 +37,16 @@ fi
 
 mkdir -p "$OUT"
 
-declare -A SERVICES=(
-    [accessManagement]="$BASE_URL/api/accessManagement/openapi.json"
-    [admin]="$BASE_URL/api/admin/openapi.json"
-    [data]="$BASE_URL/api/data/openapi.json"
-    [mailMerge]="$BASE_URL/api/mailMerge/v3/api-docs"
-    [webContent]="$BASE_URL/api/webContent/openapi.json"
-    [workflow]="$BASE_URL/api/workflow/openapi.json"
-)
-
 echo "Downloading OpenAPI specs from $BASE_URL into .claude/openapi/ ..."
-for svc in "${!SERVICES[@]}"; do
-    url="${SERVICES[$svc]}"
+for svc in accessManagement admin data mailMerge webContent workflow; do
+    case "$svc" in
+        accessManagement) url="$BASE_URL/api/accessManagement/openapi.json" ;;
+        admin) url="$BASE_URL/api/admin/openapi.json" ;;
+        data) url="$BASE_URL/api/data/openapi.json" ;;
+        mailMerge) url="$BASE_URL/api/mailMerge/v3/api-docs" ;;
+        webContent) url="$BASE_URL/api/webContent/openapi.json" ;;
+        workflow) url="$BASE_URL/api/workflow/openapi.json" ;;
+    esac
     dest="$OUT/$svc-api.json"
     if curl -sf "$url" -o "$dest"; then
         version=$(jq -r '.info.version // "unknown"' "$dest" 2>/dev/null || echo "unknown")

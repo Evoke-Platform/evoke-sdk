@@ -10,15 +10,19 @@ To render an Evoke form inside a widget, use the V2 components re-exported by th
 -   **`FormRendererContainer`** — high-level; pass `objectId` (required) plus `formId`,
     `actionId`, and/or `instanceId`. It loads the form, handles submission and errors.
     `onSubmit(submission, defaultSubmitHandler)` lets you intercept and still call the
-    default flow. `formId: '_auto_'` renders an auto-generated form for the selected
-    action. Use this for ordinary Evoke forms.
+    default flow. The installed implementation prunes the submission back down to the
+    declared action parameters before posting, so widget-added fields only reach the
+    server if the Evoke action declares them. `formId: '_auto_'` is a real sentinel that
+    skips the normal form fetch; the installed tests clearly use it for auto-generated
+    delete confirmation flows. For the usual "use the action's default form" case,
+    installed Storybook examples pass `formId: undefined`.
 -   **`FormRenderer`** — granular; you supply an already-loaded `form` and manage state
     via `value`/`onChange`. When loading the form yourself, fetch
     `GET /api/data/forms/{id}/effective` so formlets are expanded.
 -   `FormRendererContainer` exposes **no form-change event** — `onChange` is not a prop
     (only `onValidationChange`). If the widget needs dirty-state tracking (e.g. a
-    discard confirmation), either use `FormRenderer` and own `value`/`onChange`, or
-    treat any interaction with the open form as potentially dirty.
+    discard confirmation), either use `FormRenderer` and own `value`/`onChange`, or use
+    `onValidationChange` as a simple dirty proxy when that tradeoff is acceptable.
 
 Before implementing, inspect the installed package for the current props and examples:
 
@@ -42,3 +46,19 @@ V2, customize the footer through `renderFooter` (e.g. render `FormRenderer.Foote
 `position: 'sticky'` for a sticky footer, or return `null` to hide buttons), and handle
 modal close in the surrounding dialog, not on the form component. The prop types exported
 from the installed package are the source of truth.
+
+Use this sticky footer pattern when you need one:
+
+```tsx
+renderFooter={(footerProps) => (
+    <FormRenderer.Footer
+        {...footerProps}
+        sx={{ background: 'white', position: 'sticky', bottom: 0 }}
+    />
+)}
+```
+
+For `onSubmit`, treat `defaultSubmitHandler` as the safest path unless you truly need to
+intercept the payload. The installed container implementation formats uploads and then
+`pick(...)`s the submission down to allowed parameter ids before POSTing, so this will
+drop ad-hoc keys such as `intakeChannel` unless the action declares that parameter.

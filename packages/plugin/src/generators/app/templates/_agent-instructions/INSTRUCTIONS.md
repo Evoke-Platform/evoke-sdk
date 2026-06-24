@@ -16,10 +16,10 @@ bundles custom **widgets** (React components rendered on Evoke app pages) and/or
     treat that schema as the source of truth.
 
 This project ships agent skills (under `.claude/skills/` or `.agents/skills/`). Prefer
-them for task-specific guidance — planning and adding widgets or payment gateways,
-rendering forms, building criteria filters, sending correspondence, and test-first
-widget development (storybook-tdd). Each skill's frontmatter describes
-when it applies. If your tool has no skill
+them for task-specific guidance — building widgets (build-widget), planning widgets
+(plan-widget), planning and adding payment gateways, rendering forms, building criteria
+filters, sending correspondence, and test-first widget development (storybook-tdd).
+Each skill's frontmatter describes when it applies. If your tool has no skill
 mechanism, read the relevant `SKILL.md` directly as documentation when its description
 matches your task.
 
@@ -33,6 +33,42 @@ The TypeScript target is `es5`. Avoid patterns that require es2015+ iteration:
 
 -   Do not use `for...of` on `Set` or `Map` — use `.forEach()` instead
 -   Do not spread a `Set` or `Map` with `[...mySet]` — use `Array.from(mySet)`
+-   `for...of` on plain arrays is fine; the warning is specifically about `Set`/`Map`
+
+## Platform Source Of Truth
+
+Route to the lightest trustworthy source before guessing:
+
+> **Hard rule: never write an API path without verifying it first.** A path inferred from
+> naming conventions (`/admin/imports/...`, `/data/objects/...`) will compile and build
+> cleanly — and silently 404 in production. Before writing any `useApiServices` path or
+> MSW handler path, confirm the endpoint exists:
+>
+> ```bash
+> # Live spec (preferred)
+> curl -fsS <base-url>/api/data/openapi.json | jq '.paths | keys[] | select(test("import"))'
+>
+> # Cached snapshot (fallback)
+> jq '.paths | keys[] | select(test("import"))' .claude/openapi/data-api.json
+> ```
+>
+> A path is verified when you can point to its entry in the spec. If it does not appear,
+> try broader search terms before concluding the endpoint doesn't exist. Only mark
+> `UNVERIFIED` if the path is genuinely absent from both live spec and cache.
+
+-   Context/runtime concepts:
+    <https://raw.githubusercontent.com/Evoke-Platform/evoke-sdk/main/packages/context/README.md>
+-   UI component catalog and live Controls tables:
+    <https://cedardevdocs.z2.web.core.usgovcloudapi.net/components/?path=/story/introduction--introduction>
+-   Storybook story index:
+    <https://cedardevdocs.z2.web.core.usgovcloudapi.net/components/index.json>
+-   Installed compile-time truth:
+    `node_modules/@evoke-platform/**/**/*.d.ts`
+-   Runtime/API truth:
+    the environment OpenAPI URLs in the Environment section below
+
+If the GitHub raw README is unavailable, fall back to the installed package README under
+`node_modules/@evoke-platform/context/` when present.
 
 ## Forms in Widgets
 
@@ -51,6 +87,11 @@ custom widgets visually consistent with App Viewer. Reach for custom components 
 `RichTextViewer`, `DataGrid`, `ResponsiveOverflow`, and `ErrorComponent` before building
 local substitutes.
 
+Do not assume an Evoke-wrapped component is API-compatible with the MUI component of the
+same name. Check Storybook Controls and the installed `.d.ts` before using wrapper
+components. `Snackbar` is the common sharp edge here: the installed type requires
+`handleClose`, and Storybook examples show `message` plus `error` as the normal alert API.
+
 For current component APIs, inspect the installed package instead of relying on memory:
 
 -   Enumerate the custom components:
@@ -63,27 +104,35 @@ The package `exports` map only supports root/color/icon imports. Treat deep file
 `dist/published/` as read-only reference material, not supported import paths.
 
 Icons are exported from the UI package's icon subpaths (for example
-`@evoke-platform/ui-components/icons/Add`). Deep icon imports are okay for stateless icon
-modules. Do not deep-import anything that carries React context: deep paths are bundled
-into the plugin rather than shared with the host App Viewer, so the module would exist
-twice (two copies, two contexts). Import context-carrying components from the package
-root via `@evoke-platform/sdk`.
+`@evoke-platform/ui-components/icons/Add`). Those subpaths are supported by the package
+`exports` map; verify the exact path in
+`node_modules/@evoke-platform/ui-components/package.json` if TypeScript cannot resolve a
+guessed icon name. Deep icon imports are okay for stateless icon modules. Do not
+deep-import anything that carries React context: deep paths are bundled into the plugin
+rather than shared with the host App Viewer, so the module would exist twice (two
+copies, two contexts). Import context-carrying components from the package root via
+`@evoke-platform/sdk`.
 
-**Never import from `@mui/material`, `@mui/icons-material`, or `@mui/x-data-grid`
-directly.** The core MUI-wrapped components (`Button`, `Dialog`, `Select`, `MenuItem`,
-`CircularProgress`, `LinearProgress`, `Typography`, and the rest) ARE re-exported from the
-SDK root — the ui-components root `index.d.ts` contains `export * from './components/core'`.
-Importing `@mui/*` directly bundles a second copy of Material UI into the plugin, which
-escapes the host App Viewer's theme (visual inconsistency) and bloats the bundle. Use
-`DataGrid` from the SDK (it wraps `x-data-grid`; check the installed version's prop
-signatures — e.g. `valueFormatter` params changed between x-data-grid v6 and v7). Use
-`@evoke-platform/ui-components/icons/<Name>` for icons.
+**Never import runtime components from `@mui/material`, `@mui/icons-material`, or
+`@mui/x-data-grid` directly.** The core MUI-wrapped components (`Button`, `Dialog`,
+`Select`, `MenuItem`, `CircularProgress`, `LinearProgress`, `Typography`, and the rest)
+ARE re-exported from the SDK root — the ui-components root `index.d.ts` contains
+`export * from './components/core'`. Importing runtime `@mui/*` components directly
+bundles a second copy of Material UI into the plugin, which escapes the host App Viewer's
+theme and bloats the bundle. Use `DataGrid` from the SDK (it wraps `x-data-grid`; check
+the installed version's prop signatures — e.g. `valueFormatter` params changed between
+x-data-grid v6 and v7). Use `@evoke-platform/ui-components/icons/<Name>` for icons.
 
-The re-exports include the types and sub-components you would otherwise reach into MUI
-for: grid types (`GridColDef`, `GridCellParams`, `GridRowParams`, `GridSortModel`,
-`GridValueFormatterParams`) and Dialog sub-components (`DialogTitle`, `DialogContent`,
-`DialogActions`, `DialogContentText`) are all importable from `@evoke-platform/sdk` —
-e.g. `import type { GridColDef } from '@evoke-platform/sdk'`.
+Type-only imports are different: if a specific x-data-grid type is not exported by the
+installed SDK surface, a type-only import from `@mui/x-data-grid` is acceptable. Verify
+the installed `index.d.ts` before assuming either way.
+
+The re-exports include many of the types and sub-components you would otherwise reach
+into MUI for: common grid and Dialog sub-components (`GridSortModel`, `GridCellParams`,
+`GridRowParams`, `GridValueFormatterParams`, `DialogTitle`, `DialogContent`,
+`DialogActions`, `DialogContentText`) are typically importable from
+`@evoke-platform/sdk` in the installed version. Verify the installed declarations before
+using them — do not rely on memory or older dogfood runs.
 
 When checking what a package exports, read the relevant `index.d.ts` in full — the files
 are small. Do not conclude an export is missing from a truncated or partial read.
@@ -112,8 +161,8 @@ context providers:
 The hook and store types (e.g. `ObjectStore`'s full method list, `ApiServices`
 signatures) live in the installed context package — inspect them instead of guessing:
 
--   `node_modules/@evoke-platform/context/dist/objects/` — `ObjectStore`, instance and
-    action types
+-   `node_modules/@evoke-platform/context/dist/objects/objects.d.ts` — `ObjectStore`,
+    instance and action types (the file is `objects.d.ts`, not `ObjectStore.d.ts`)
 -   `node_modules/@evoke-platform/context/dist/api/` — `ApiServices` signatures
 -   `node_modules/@evoke-platform/context/dist/index.d.ts` — everything the package
     exports
@@ -125,7 +174,8 @@ Evoke environment base URL for this project (used for OpenAPI spec lookups):
 -   Base URL: _not set_
 
 OpenAPI specs are the single source of truth for endpoint shapes and parameters. Pipe
-through `jq` when looking something up — do not load the full spec into context.
+through `jq` when looking something up — do not load the full spec into context. Query
+the live environment first; use checked-in snapshots as a fallback/cache.
 
 Exact URLs (replace `<base-url>` with the environment base URL above):
 
@@ -140,8 +190,18 @@ Exact URLs (replace `<base-url>` with the environment base URL above):
 
 All specs are publicly accessible — no authentication required.
 
-Run `bash scripts/fetch-openapi-specs.sh` once after scaffolding to download all six
-specs into `.claude/openapi/`. Then query with `jq` — never `cat` a spec file:
+Preferred lookup order:
+
+1. Live environment URL with `curl | jq`
+2. `.claude/openapi/*.json` snapshots
+3. Log friction if the snapshot appears stale or the two disagree
+
+When live OpenAPI and installed types disagree, compile to the installed types but shape
+MSW handlers to the runtime request/response contract. Record the mismatch in the
+friction log instead of silently guessing.
+
+Run `bash scripts/fetch-openapi-specs.sh` once after scaffolding, or when the environment
+changes, to refresh `.claude/openapi/`. Then query with `jq` — never `cat` a spec file:
 
 ```bash
 # Discover endpoints
@@ -183,9 +243,89 @@ App Viewer also injects a few runtime props (`colSpan`, `baseUrl`, `navigateTo`,
 `evoke_pageItem_*` flags). When `needsDataSource` is enabled, the Builder's data-source
 selection arrives as the `objectId` prop. A property whose saved value is the sentinel
 `'$_param'` is replaced at render time with the page route parameter of the same name —
-this is how instance pages deliver `instanceId`. Prefer SDK hooks for new code; treat injected props
-as compatibility/runtime utilities unless the existing widget pattern specifically needs
-them.
+this is how instance pages deliver `instanceId`. Prefer SDK hooks for new code; treat
+injected props as compatibility/runtime utilities unless the existing widget pattern
+specifically needs them. In widget code, prefer `usePageParam('instanceId')` /
+`usePageParams()` when the runtime supplies route params. In Storybook, if you need a
+fake `instanceId`, make the sentinel explicit in story args and MSW handlers instead of
+burying it in component logic.
+
+## Compact Widget Layout Guidance
+
+Evoke App Viewer renders widgets inside a fixed-width column grid. For compact
+action-oriented widgets, avoid layouts that grow and shrink dramatically between states
+(form → loading → result), because that reflows the page below and feels jarring.
+
+When a widget fits the pattern "identity/status + optional summary + one row of actions",
+prefer a stable horizontal skeleton inspired by platform widgets such as `PageHeader`:
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  [Left: title/status]      [Middle: counts/info]   [→ Actions] │
+└─────────────────────────────────────────────────────────┘
+```
+
+```tsx
+<Box
+    sx={{
+        display: 'flex',
+        flexDirection: { xs: 'column', md: 'row' },
+        alignItems: 'center',
+        px: { xs: '8px', md: '32px' },
+        py: '12px',
+    }}
+>
+    {/* Left — identity, current status; takes only what it needs */}
+    <Box sx={{ flex: '0 0 auto' }}>
+        <Typography variant="h6">{title}</Typography>
+        <Typography variant="body2" color="text.secondary">
+            {status}
+        </Typography>
+    </Box>
+    {/* Middle — counts, summary, secondary info; fills remaining space */}
+    <Box sx={{ flex: '1 1 auto', px: 2 }}>{/* secondary content */}</Box>
+    {/* Right — action buttons; pinned to the right edge */}
+    <Box sx={{ ml: 'auto', flex: '0 0 auto', display: 'flex', gap: 1 }}>{/* action controls */}</Box>
+</Box>
+```
+
+Guidance:
+
+1. Prefer one horizontal action row on desktop for compact widgets; avoid needless
+   vertical button stacks when the actions naturally belong together.
+2. Try to keep major widget states visually stable in height when practical, especially
+   for compact widgets embedded in longer pages.
+3. `px: { xs: '8px', md: '32px' }` is a good platform-aligned default for this layout
+   pattern, but use judgment rather than treating it as a universal constant.
+4. `flexDirection: { xs: 'column', md: 'row' }` remains the normal responsive fallback.
+
+This is a strong default for compact action widgets, not a universal contract for every
+widget. Dense forms, tables, viewers, and other specialized widgets may need a different
+structure.
+
+## Known Runtime API Conventions
+
+These runtime behaviors are not visible in the OpenAPI spec:
+
+**Multipart file upload — field name must equal slot name.**
+
+For `POST` endpoints that accept `multipart/form-data` file uploads (e.g.
+`/data/importRuns/{runId}/upload`), the `FormData` field name is used by the platform as
+the slot identifier for the uploaded file. It must equal the slot name defined in the
+resource's configuration — not a generic name like `"file"`.
+
+```ts
+// Wrong — stores the file under slot "file"; import run fails with "missing file at slot X"
+formData.append('file', selectedFile);
+
+// Correct — field name equals the slot name from the resource configuration
+const slotName = importConfig.fileConfigurations[0].slotName;
+formData.append(slotName, selectedFile);
+```
+
+The OpenAPI schema for these endpoints typically shows `{ type: object }` with no
+property names — the field name constraint is invisible in the spec. Fetch the resource
+configuration first and extract the slot name before constructing the `FormData`.
 
 ## CriteriaBuilder
 
@@ -229,8 +369,41 @@ Give the container a story with `parameters: { msw: { handlers } }` — the real
 client runs tokenless and MSW intercepts at the network boundary. An unhandled-request
 warning in the preview console means a handler is missing; add it rather than ignoring
 it. Handler fixtures are dev fixtures, not contract tests — shape them from the
-installed types and the OpenAPI specs. Do not add other auth/provider mocks or new
-Storybook tooling unless the developer explicitly asks.
+installed types and the OpenAPI specs. MSW only covers HTTP; it does not provide missing
+React context. If a hook-driven container needs platform providers beyond the scaffold's
+router decorator, keep the container thin and cover the presentational path plus any
+provider-backed integration story the current scaffold can honestly support. Do not add
+other auth/provider mocks or new Storybook tooling unless the developer explicitly asks.
+
+## Widget TDD Contract
+
+When creating or materially changing a widget, any Gherkin scenarios, acceptance criteria,
+or behavior bullets supplied by the developer are executable requirements. Automatically
+use the `storybook-tdd` skill even if the developer does not explicitly say "TDD" or
+"test-first." Write each new behavior as a failing Storybook play function first, run
+Storybook in an attended/headful browser, see the Interactions panel go red, implement the
+minimum, see it go green, then continue.
+
+Every widget gets one MSW-backed container/Playground story for the primary workflow and
+presentational stories for each component/state. In attended sessions, keep the Storybook
+manager open to the Interactions panel and do not use `--ci`.
+
+## Widget Implementation Contract
+
+For any new widget or non-trivial widget change, use the `build-widget` skill. If the
+tool has no skill mechanism, follow the core contract below:
+
+-   `index.tsx` is the thin SDK/container layer — SDK hooks, state, handlers, no layout
+    JSX.
+-   Presentational components live under `components/` and import no `@evoke-platform/*`
+    hooks.
+-   `WidgetProperties.json` defines Builder settings and runtime props. Any property that
+    selects from a platform resource list uses `"type": "choices"` with an `"api"` block.
+-   Every presentational component has a Storybook story covering meaningful states, with
+    play functions using named `step()` calls.
+-   One container story renders the real widget over MSW.
+-   Verify with: `npm run build`, `npm run build-storybook`, and
+    `npm run test-storybook`.
 
 ## Guardrails
 

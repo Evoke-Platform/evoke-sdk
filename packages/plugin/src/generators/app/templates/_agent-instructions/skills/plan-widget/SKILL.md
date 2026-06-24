@@ -41,3 +41,7 @@ Ask only what is not already known:
 Confirm the blueprint with the developer before writing code. In a non-interactive run,
 treat the provided spec or feature file as the completed interview: record your
 decisions in the blueprint and proceed.
+
+In a lean/non-interactive run, fewer components and stories are acceptable if behavior
+is still covered. Record what you intentionally collapsed and why, instead of
+accidentally drifting into a one-off structure.
