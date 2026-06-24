@@ -10,7 +10,7 @@ describe('create-plugin', () => {
     const appGenerator = path.join(__dirname, '../generators/app');
     const skillNames = [
         'plan-widget',
-        'add-widget',
+        'build-widget',
         'plan-payment-gateway',
         'add-payment-gateway',
         'render-evoke-forms',
@@ -145,5 +145,21 @@ describe('create-plugin', () => {
         runResult.assertNoFile(['testdir/.storybook/preview.ts']);
         runResult.assertFileContent('testdir/.storybook/main.ts', "staticDirs: ['./public']");
         runResult.assertFileContent('testdir/package.json', 'msw init');
+        runResult.assertFileContent('testdir/src/mocks/evokeHandlers.ts', '/checkAccess$/');
+        runResult.assertFileContent('testdir/src/mocks/evokeHandlers.ts', 'objectStore.findInstances()');
+        runResult.assertFileContent('testdir/src/mocks/evokeHandlers.ts', '/instances/:instanceId/actions');
+    }).timeout(5000);
+
+    it('routes generated instructions to live OpenAPI first', async () => {
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        runResult.assertFileContent(
+            'testdir/CLAUDE.md',
+            'https://cedardevdocs.z2.web.core.usgovcloudapi.net/components/index.json',
+        );
+        runResult.assertFileContent('testdir/CLAUDE.md', 'Preferred lookup order:');
+        runResult.assertFileContent('testdir/CLAUDE.md', 'Live environment URL with `curl | jq`');
     }).timeout(5000);
 });

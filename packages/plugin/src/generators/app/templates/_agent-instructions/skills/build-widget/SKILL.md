@@ -1,11 +1,28 @@
 ---
-name: add-widget
-description: Scaffold a new widget in this Evoke plugin — directory layout, WidgetProperties.json shape, TypeScript prop mapping, and build verification.
+name: build-widget
+description: Required workflow for creating or materially changing Evoke widgets — architecture, WidgetProperties.json, container/presentational split, Storybook TDD, MSW stories, and verification. Use for every new widget and every non-trivial change to an existing widget, not only for initial scaffolding.
 ---
 
-# Add a Widget
+# Build a Widget
 
-## Scaffold
+## Prerequisites
+
+This skill assumes the plugin scaffold already exists: `package.json`, `src/`,
+`webpack.config.js`, and `.storybook/` are all present. If any of these are absent, the
+plugin has not been generated yet — run the generator first:
+
+```bash
+# Local (unreleased) build:
+node /path/to/evoke-sdk/packages/plugin/bin/create-plugin.js
+
+# Published release:
+npx @evoke-platform/plugin
+```
+
+Do **not** re-run the generator if the scaffold is already present — it will overwrite
+configuration files.
+
+## Widget File Structure
 
 Create:
 
@@ -62,6 +79,8 @@ Icon: `"icon": { "src": "Extension" }` — an MUI icon name without the trailing
 -   Route parameters — a property whose saved value is the sentinel `'$_param'` is
     replaced at render time with the page route parameter of the same name. This is how
     instance pages deliver `instanceId` to widgets that declare an `instanceId` property.
+    Prefer `usePageParam('instanceId')` / `usePageParams()` in runtime code when page
+    params are already available.
 -   App Viewer also injects a `navigateTo` function prop for in-app navigation, alongside
     the other runtime props listed in the project instructions.
 
@@ -147,6 +166,34 @@ Mark properties with `isOptional: true` as optional (`?`) in the props type. A p
 is optional **only** when `isOptional: true` — omitting the key (or setting `false`)
 means required in the Builder.
 
+## Platform Entity Selector Properties
+
+Any widget property whose value is selected from a list of existing platform resources
+(imports, forms, objects, actions, instances, users, reports, etc.) **must** use
+`"type": "choices"` with an `"api"` block — never `"type": "text"`. A text input
+requires the app builder to know and manually type an internal ID (e.g.
+`"hG2zsIlMj044WyiDtFIC3"`), which is not a supported Builder UX pattern.
+
+```json
+{
+    "name": "importId",
+    "type": "choices",
+    "displayName": "Import Configuration",
+    "api": {
+        "url": "/data/imports",
+        "resultMapping": { "value": "id", "label": "name" }
+    }
+}
+```
+
+The `url` uses the same service-relative path as `useApiServices` (leading `/data/`,
+`/forms/`, etc.). Verify with `jq` that the endpoint returns a flat array before writing
+`resultMapping`. If it returns a paginated wrapper, find the sub-resource endpoint that
+returns the array directly (e.g. `/objects/$_objectId/effective/properties`).
+
+When the choices list depends on another setting (e.g. the selected object), use
+`mappedValues` to thread the dependency — see the dynamic settings section above.
+
 ## Verify
 
 Run `npm run build` and confirm the widget appears in `dist/manifest.json` with the
@@ -164,10 +211,16 @@ For presentational components, also run Storybook verification:
 
 Keep SDK hooks (`useObject`, `useApiServices`, …) in `index.tsx` only. Components under
 `components/` take plain props, import no `@evoke-platform/*` hooks, and must render in
-Storybook without platform context. Write a story for **every** presentational
-component, covering its main states (loaded, empty, error) via `args`, and give each
-behavioral expectation a play function — invoke the `storybook-tdd` skill for the
-fail-first workflow and assertion pattern. Verify stories compile with
+Storybook without platform context.
+
+For each new presentational component under `components/`, invoke the `storybook-tdd`
+skill **before writing the component body**. Do this per component, not just once at the
+start of the session: write the failing story/play function first, see it fail, then
+implement the minimum to go green before moving to the next presentational component.
+
+Write a story for **every** presentational component, covering its main states (loaded,
+empty, error) via `args`, and give each behavioral expectation a play function — invoke
+the `storybook-tdd` skill for the fail-first workflow and assertion pattern. Verify stories compile with
 `npm run build-storybook`, then execute play functions with `npm run test-storybook`
 against a running Storybook server.
 
@@ -176,5 +229,9 @@ that renders the real widget over the scaffold's MSW mock layer: set
 `parameters: { msw: { handlers } }` with handlers from `src/mocks/` covering each
 endpoint the container hits — an unhandled-request warning in the preview console
 means one is missing. Shape fixtures from the installed `.d.ts` types; they are dev
-fixtures, not contract tests. Do not add provider mocks beyond the shipped MSW layer
-and the preview's router decorator.
+fixtures, not contract tests. Use explicit fake ids in story args and MSW handlers
+instead of burying sentinels in component logic. MSW only mocks HTTP: if the real
+container needs additional platform providers beyond the shipped router decorator, say so
+plainly in the blueprint/story comments and keep the container thin rather than pretending
+MSW alone solves it. Do not add provider mocks beyond the shipped MSW layer and the
+preview's router decorator unless the developer explicitly asks.
