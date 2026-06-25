@@ -49,7 +49,7 @@ Route to the lightest trustworthy source before guessing:
 > curl -fsS <base-url>/api/data/openapi.json | jq '.paths | keys[] | select(test("import"))'
 >
 > # Cached snapshot (fallback)
-> jq '.paths | keys[] | select(test("import"))' .claude/openapi/data-api.json
+> jq '.paths | keys[] | select(test("import"))' .openapi/data-api.json
 > ```
 >
 > A path is verified when you can point to its entry in the spec. If it does not appear,
@@ -193,7 +193,7 @@ All specs are publicly accessible — no authentication required.
 Preferred lookup order:
 
 1. Live environment URL with `curl | jq`
-2. `.claude/openapi/*.json` snapshots
+2. `.openapi/*.json` snapshots
 3. Log friction if the snapshot appears stale or the two disagree
 
 When live OpenAPI and installed types disagree, compile to the installed types but shape
@@ -201,20 +201,20 @@ MSW handlers to the runtime request/response contract. Record the mismatch in th
 friction log instead of silently guessing.
 
 Run `bash scripts/fetch-openapi-specs.sh` once after scaffolding, or when the environment
-changes, to refresh `.claude/openapi/`. Then query with `jq` — never `cat` a spec file:
+changes, to refresh `.openapi/`. Then query with `jq` — never `cat` a spec file:
 
 ```bash
 # Discover endpoints
-jq '.paths | keys' .claude/openapi/data-api.json
+jq '.paths | keys' .openapi/data-api.json
 
 # Drill into a specific path
-jq '.paths["/objects/{id}/effective"]' .claude/openapi/data-api.json
+jq '.paths["/objects/{id}/effective"]' .openapi/data-api.json
 
 # Search by keyword
-jq '.paths | to_entries[] | select(.key | test("correspondenceTemplates"))' .claude/openapi/data-api.json
+jq '.paths | to_entries[] | select(.key | test("correspondenceTemplates"))' .openapi/data-api.json
 ```
 
-If `.claude/openapi/` is missing, run the fetch script before proceeding.
+If `.openapi/` is missing, run the fetch script before proceeding.
 
 ## Sending Correspondence (Email)
 

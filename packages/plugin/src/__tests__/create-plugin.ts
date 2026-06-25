@@ -133,7 +133,7 @@ describe('create-plugin', () => {
 
         runResult.assertFile(['testdir/scripts/fetch-openapi-specs.sh', 'testdir/.gitignore']);
         runResult.assertFileContent('testdir/scripts/fetch-openapi-specs.sh', 'mailMerge/v3/api-docs');
-        runResult.assertFileContent('testdir/.gitignore', '.claude/openapi/');
+        runResult.assertFileContent('testdir/.gitignore', '.openapi/');
     }).timeout(5000);
 
     it('scaffolds the msw mock layer', async () => {

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Download OpenAPI spec snapshots for all Evoke services into .claude/openapi/.
+# Download OpenAPI spec snapshots for all Evoke services into .openapi/.
 # Run once after scaffolding, and again when the environment changes.
 # Agents use `jq` to query these files — never load them into context directly.
 #
@@ -10,7 +10,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
-OUT="$PROJECT_DIR/.claude/openapi"
+OUT="$PROJECT_DIR/.openapi"
 
 # Read base URL from instruction file, or accept as argument
 if [ "${1:-}" != "" ]; then
@@ -37,7 +37,7 @@ fi
 
 mkdir -p "$OUT"
 
-echo "Downloading OpenAPI specs from $BASE_URL into .claude/openapi/ ..."
+echo "Downloading OpenAPI specs from $BASE_URL into .openapi/ ..."
 for svc in accessManagement admin data mailMerge webContent workflow; do
     case "$svc" in
         accessManagement) url="$BASE_URL/api/accessManagement/openapi.json" ;;
