@@ -35,6 +35,10 @@ The TypeScript target is `es5`. Avoid patterns that require es2015+ iteration:
 -   Do not spread a `Set` or `Map` with `[...mySet]` — use `Array.from(mySet)`
 -   `for...of` on plain arrays is fine; the warning is specifically about `Set`/`Map`
 
+Use `const` for all bindings that are not reassigned and `let` for those that are.
+**Never use `var`** — it is function-scoped, not block-scoped, and is flagged by the
+project's linter. This applies to all files: components, stories, handlers, and utilities.
+
 ## Platform Source Of Truth
 
 Route to the lightest trustworthy source before guessing:
@@ -157,6 +161,44 @@ context providers:
 -   `useApp()`, `usePageParam()`/`usePageParams()`, `useNavigate()`, and
     `useNotification()` expose app metadata, route params, navigation, and live update
     subscriptions provided by App Viewer.
+
+### Polling Async Operations
+
+When polling an asynchronous operation (import run status, bulk-send progress, report
+generation), use `setTimeout` with a **3-second interval**. Never poll faster than
+1 second — sub-second polling can overwhelm the API and will be flagged in code review.
+
+```tsx
+// Correct — 3-second poll with cleanup
+useEffect(() => {
+    if (status !== 'in-progress') return;
+
+    let cancelled = false;
+    const poll = async () => {
+        const result = await api.get(`/data/importRuns/${runId}`);
+        if (cancelled) return;
+        if (result.status === 'complete' || result.status === 'failed') {
+            setResult(result);
+        } else {
+            setTimeout(poll, 3000);
+        }
+    };
+    poll();
+
+    return () => {
+        cancelled = true;
+    };
+}, [status, runId]);
+```
+
+Key rules:
+
+-   Default interval: **3000ms**. Use longer intervals (5–10s) for operations that
+    typically take minutes.
+-   Clean up on unmount — set a `cancelled` flag in the effect cleanup to prevent
+    state updates after the component unmounts.
+-   Stop polling when the operation reaches a terminal state (`complete`, `failed`,
+    `error`). Do not poll indefinitely.
 
 The hook and store types (e.g. `ObjectStore`'s full method list, `ApiServices`
 signatures) live in the installed context package — inspect them instead of guessing:

@@ -22,6 +22,81 @@ npx @evoke-platform/plugin
 Do **not** re-run the generator if the scaffold is already present — it will overwrite
 configuration files.
 
+## Execution Mode
+
+Before writing any widget code, determine how the developer wants to pace and version
+the implementation. This decision happens once — after the blueprint is confirmed and the
+implementation plan is ready, at the moment the agent is about to write the first file.
+
+### Step 1: Detect git
+
+```bash
+git rev-parse --is-inside-work-tree 2>/dev/null
+```
+
+### Step 2: Ask the developer
+
+**If git is available**, present these options:
+
+> The implementation plan has N steps, each producing an atomic commit. How would you
+> like to proceed?
+>
+> 1. **Review-then-commit (recommended)** — I implement each step, run the validation
+>    gate (build-storybook + test-storybook), stage the changes, and show you the diff.
+>    You review in Storybook, then tell me to commit and continue.
+> 2. **Autonomous** — I implement each step, run the validation gate, and commit
+>    automatically after each green gate. You review the full history at the end.
+
+**If git is not available**, present these options:
+
+> No git repo detected. How would you like to proceed?
+>
+> 1. **Step-by-step (recommended)** — I implement each step, run the validation gate,
+>    and pause for your review before continuing to the next step.
+> 2. **One-shot** — I implement the full plan without stopping. You review the result
+>    at the end.
+
+### Step 3: Carry the mode
+
+Record the developer's choice and follow it through the entire build:
+
+-   **Review-then-commit**: After each implementation plan step passes its validation
+    gate, stage the relevant files and present the diff. Wait for the developer to
+    confirm before running `git commit`. Use the implementation plan's task title as
+    the commit message subject, prefixed with the project's commit convention. Do not
+    push — the developer pushes.
+-   **Autonomous**: After each step's validation gate passes, stage and commit
+    immediately. Use the plan's task title as the commit subject. Log each commit hash
+    so the developer can review the history or revert individual steps. Do not push.
+-   **Step-by-step** (no git): Pause after each step's validation gate and wait for
+    the developer's go-ahead. No commits.
+-   **One-shot** (no git): Execute all steps without stopping. Run the full validation
+    gate at the end.
+
+### Validation gate (per step)
+
+Each atomic step must pass before staging/committing or continuing:
+
+```bash
+npm run build-storybook   # stories compile
+npm run test-storybook    # play functions pass
+```
+
+If the gate fails, fix the issue in the current step before moving on. Never commit
+red code or skip a failing gate.
+
+### Commit boundaries
+
+Each of these is one atomic commit:
+
+1. `WidgetProperties.json` + container skeleton (`index.tsx` with phase type and empty switch)
+2. Each presentational component + its story file (one commit per component)
+3. Container story + MSW handlers
+4. Final verification pass (any fixups from the full validation gate)
+
+The implementation plan's task breakdown defines the exact boundaries. One task = one
+commit.
+
 ## Widget File Structure
 
 Create:
@@ -35,6 +110,43 @@ src/widgets/<WidgetName>/
     ├── <Name>View.tsx
     └── <Name>View.stories.tsx
 ```
+
+### Component Decomposition Rule
+
+Each distinct widget phase or mode (idle, loading, in-progress, complete, error, empty)
+must be its own presentational component under `components/`. The container (`index.tsx`)
+uses a discriminated-union state type to track the current phase and renders exactly one
+presentational component at a time based on that state:
+
+```tsx
+// index.tsx — container renders one view per phase
+type Phase =
+    | { kind: 'idle' }
+    | { kind: 'loading' }
+    | { kind: 'in-progress'; progress: number }
+    | { kind: 'complete'; result: Result }
+    | { kind: 'error'; message: string };
+
+const [phase, setPhase] = useState<Phase>({ kind: 'idle' });
+
+switch (phase.kind) {
+    case 'idle':
+        return <IdleView onStart={handleStart} />;
+    case 'loading':
+        return <LoadingView />;
+    case 'in-progress':
+        return <ProgressView progress={phase.progress} />;
+    case 'complete':
+        return <CompleteView result={phase.result} onReset={handleReset} />;
+    case 'error':
+        return <ErrorView message={phase.message} onRetry={handleRetry} />;
+}
+```
+
+Do not combine multiple phases into a single component that switches internally with
+`if`/`else` or conditional rendering blocks — that produces monolithic views that are
+hard to test in isolation. Each `<PhaseView>` gets its own story file with play functions
+covering its specific states and interactions.
 
 `index.tsx` default-exports a React function component whose props match the
 `properties` declared in `WidgetProperties.json` — each property's `name` becomes a
