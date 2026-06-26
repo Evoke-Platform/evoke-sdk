@@ -138,7 +138,42 @@ Rules of the pattern:
 -   The container/Playground story should have a play function that walks through the
     widget's primary end-to-end flow using named `step()` calls. This makes the full
     lifecycle (e.g. upload → progress → result) visible and readable in the Interactions
-    panel. The Interactions panel's replay button lets the developer re-run or interact
+    panel.
+-   **Pace the container story for watchability.** Each named `step()` in a container
+    or end-to-end play function must begin with a 2-second delay so the developer can
+    read the step name in the Interactions panel and watch the UI change before the next
+    step runs. Use a `wait` helper at the top of each step:
+
+    ```tsx
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+    play: async ({ canvasElement, step }) => {
+        const canvas = within(canvasElement);
+
+        await step('User uploads a CSV file', async () => {
+            await wait(2000);
+            // ... interaction and assertions
+        });
+
+        await step('Progress bar reaches 100%', async () => {
+            await wait(2000);
+            // ... interaction and assertions
+        });
+
+        await step('Results summary shows 5 created', async () => {
+            await wait(2000);
+            // ... assertions
+        });
+    };
+    ```
+
+    The `wait` helper is intentional — it makes the Interactions panel usable as a
+    live walkthrough of the widget's happy path. Do not skip it and do not reduce the
+    delay below 2 seconds. The delay goes at the _start_ of each step (before the
+    interaction), not at the end — this gives the developer time to read the step name
+    before the UI changes.
+
+-   The Interactions panel's replay button lets the developer re-run or interact
     manually after the play function completes.
 -   For no-op callback args in stories, use `() => {}` rather than returning `undefined`
     unless the callback's return value is part of the behavior.
