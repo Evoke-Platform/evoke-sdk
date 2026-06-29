@@ -2,9 +2,9 @@ import type { Preview } from '@storybook/react';
 import { initialize, mswLoader } from 'msw-storybook-addon';
 import { MemoryRouter } from 'react-router-dom';
 
-// Intercept the widget's Evoke API calls at the network boundary. 'warn' surfaces any
-// endpoint without a handler — add one in src/mocks/ when you see the warning.
-initialize({ onUnhandledRequest: 'warn' });
+// Intercept the widget's Evoke API calls at the network boundary. 'error' fails the
+// story when any endpoint lacks a handler — add one in src/mocks/ to fix the failure.
+initialize({ onUnhandledRequest: 'error' });
 
 const preview: Preview = {
     loaders: [mswLoader],

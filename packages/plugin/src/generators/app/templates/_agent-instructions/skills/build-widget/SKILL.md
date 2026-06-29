@@ -78,6 +78,7 @@ Record the developer's choice and follow it through the entire build:
 Each atomic step must pass before staging/committing or continuing:
 
 ```bash
+npm run build             # manifestgen + production webpack
 npm run build-storybook   # stories compile
 npm run test-storybook    # play functions pass
 ```

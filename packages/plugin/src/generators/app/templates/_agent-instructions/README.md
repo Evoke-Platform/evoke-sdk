@@ -63,7 +63,6 @@ skill's `description` field. The twelve skills and their roles:
 | `send-correspondence`         | Correspondence (email) endpoints on the data service.                                                                                                                                                                                               |
 | `add-payment-gateway`         | Scaffolding a new payment gateway implementation.                                                                                                                                                                                                   |
 | `plan-payment-gateway`        | Planning phase for payment gateway work.                                                                                                                                                                                                            |
-| `package-and-upload`          | Building and packaging the plugin zip for deployment.                                                                                                                                                                                               |
 
 ## Key Design Decisions
 
