@@ -347,3 +347,11 @@ container needs additional platform providers beyond the shipped router decorato
 plainly in the blueprint/story comments and keep the container thin rather than pretending
 MSW alone solves it. Do not add provider mocks beyond the shipped MSW layer and the
 preview's router decorator unless the developer explicitly asks.
+
+## Review
+
+After the build is complete and the validation gate passes, offer to run a code review
+using the three reviewer skills (`review-accessibility`, `review-performance`,
+`review-behavioral`). The review checks for accessibility gaps, performance hazards, and
+behavioral correctness issues that compile and pass tests but would cause problems in
+production. See the Code Review section in the project instructions for the full protocol.
