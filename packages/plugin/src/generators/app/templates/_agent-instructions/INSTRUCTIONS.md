@@ -18,7 +18,10 @@ bundles custom **widgets** (React components rendered on Evoke app pages) and/or
 This project ships agent skills (under `.claude/skills/` or `.agents/skills/`). Prefer
 them for task-specific guidance — building widgets (build-widget), planning widgets
 (plan-widget), planning and adding payment gateways, rendering forms, building criteria
-filters, sending correspondence, and test-first widget development (storybook-tdd).
+filters, sending correspondence, test-first widget development (storybook-tdd), and
+code review (review-accessibility, review-performance, review-behavioral). Use
+review-agentic-instructions when reviewing CLAUDE.md, AGENTS.md, INSTRUCTIONS.md,
+SKILL.md files, or other agent-facing workflow rules.
 Each skill's frontmatter describes when it applies. If your tool has no skill
 mechanism, read the relevant `SKILL.md` directly as documentation when its description
 matches your task.
@@ -446,6 +449,30 @@ tool has no skill mechanism, follow the core contract below:
 -   One container story renders the real widget over MSW.
 -   Verify with: `npm run build`, `npm run build-storybook`, and
     `npm run test-storybook`.
+
+## Code Review
+
+When the developer asks for a code review, a review, or feedback on the widget code,
+run all three reviewer skills and report a consolidated set of findings:
+
+1. **Accessibility** (`review-accessibility`) — WCAG 2.2 AA: accessible names, keyboard
+   paths, focus management, live regions, contrast, semantic structure
+2. **Performance** (`review-performance`) — polling intervals, timer/subscription cleanup,
+   data bounds, render stability, bundle imports
+3. **Behavioral** (`review-behavioral`) — phase coverage, async safety, error handling,
+   dialog lifecycle, empty states, test quality and coverage
+
+Invoke each reviewer skill (or read its `SKILL.md` as documentation if your tool has no
+skill mechanism) and apply its anti-pattern table and checklist to the current widget code.
+
+Report findings organized by reviewer, with severity (P0 = blocks production, P1 = likely
+bug, P2 = quality issue, P3 = minor improvement). When a finding applies to multiple
+reviewers (e.g. a dialog missing both focus trap and error handling), report it under the
+most relevant one and cross-reference the other.
+
+If the developer asks for a review at the end of a build session, also verify the full
+validation gate (`npm run build-storybook` + `npm run test-storybook`) passes before
+reporting findings — a review on broken code wastes both parties' time.
 
 ## Guardrails
 
