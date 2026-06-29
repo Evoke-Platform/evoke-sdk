@@ -218,6 +218,12 @@ Evoke environment base URL for this project (used for OpenAPI spec lookups):
 
 -   Base URL: _not set_
 
+If the base URL is `_not set_`, ask the developer for the Evoke environment URL before
+doing any API work. Once provided, update the base URL line above and run
+`bash scripts/fetch-openapi-specs.sh` to populate the `.openapi/` cache. Do not guess
+API paths without a verified spec — the hard rule in the Platform Source Of Truth
+section applies even when the base URL is unset.
+
 OpenAPI specs are the single source of truth for endpoint shapes and parameters. Pipe
 through `jq` when looking something up — do not load the full spec into context. Query
 the live environment first; use checked-in snapshots as a fallback/cache.
@@ -471,12 +477,15 @@ reviewers (e.g. a dialog missing both focus trap and error handling), report it 
 most relevant one and cross-reference the other.
 
 If the developer asks for a review at the end of a build session, also verify the full
-validation gate (`npm run build-storybook` + `npm run test-storybook`) passes before
+validation gate (`npm run build`, `npm run build-storybook`, `npm run test-storybook`) passes before
 reporting findings — a review on broken code wastes both parties' time.
 
 ## Guardrails
 
--   Do not commit or push unless the developer explicitly asks.
+-   Do not commit or push unless the developer explicitly asks. When the developer
+    selects Autonomous execution mode in the `build-widget` skill, that selection
+    constitutes explicit permission to commit after each passing validation gate for
+    that build session only. Never push.
 -   Do not write secrets or credentials into the repository.
 -   Do not bypass `manifestgen` — widget and payment gateway discovery depends on it.
 -   Do not add dependencies casually; explain why first and get agreement.
