@@ -19,9 +19,7 @@ This project ships agent skills (under `.claude/skills/` or `.agents/skills/`). 
 them for task-specific guidance — building widgets (build-widget), planning widgets
 (plan-widget), planning and adding payment gateways, rendering forms, building criteria
 filters, sending correspondence, test-first widget development (storybook-tdd), and
-code review (review-accessibility, review-performance, review-behavioral). Use
-review-agentic-instructions when reviewing CLAUDE.md, AGENTS.md, INSTRUCTIONS.md,
-SKILL.md files, or other agent-facing workflow rules.
+code review (review-accessibility, review-performance, review-behavioral).
 Each skill's frontmatter describes when it applies. If your tool has no skill
 mechanism, read the relevant `SKILL.md` directly as documentation when its description
 matches your task.
