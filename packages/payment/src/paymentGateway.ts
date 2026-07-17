@@ -5,7 +5,7 @@ import type { Request, Response } from 'express';
 import { Payment } from './payment';
 
 export interface ParsedQueryString {
-    [key: string]: undefined | string | string[] | ParsedQueryString | ParsedQueryString[];
+    [key: string]: undefined | string | ParsedQueryString | (string | ParsedQueryString)[];
 }
 
 export interface TransferData {
