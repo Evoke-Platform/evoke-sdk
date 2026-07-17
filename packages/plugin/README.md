@@ -31,9 +31,9 @@ The generator can optionally scaffold AI coding instructions.
 
 When prompted, choose:
 
--   **Claude Code (recommended):** adds `CLAUDE.md` and eight skills under `.claude/skills/`.
--   **Codex:** adds `AGENTS.md` and eight skills under `.agents/skills/`.
--   **Generic instructions only:** adds `INSTRUCTIONS.md` and eight skills under `.agents/skills/`
+-   **Claude Code (recommended):** adds `CLAUDE.md` and eleven skills under `.claude/skills/`.
+-   **Codex:** adds `AGENTS.md` and eleven skills under `.agents/skills/`.
+-   **Generic instructions only:** adds `INSTRUCTIONS.md` and eleven skills under `.agents/skills/`
     (readable as plain documentation by tools without a skill mechanism).
 -   **No AI instructions:** adds no agent files.
 

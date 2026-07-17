@@ -27,9 +27,9 @@ else
         echo "Error: no CLAUDE.md / AGENTS.md / INSTRUCTIONS.md found. Pass the base URL as an argument." >&2
         exit 1
     fi
-    BASE_URL=$(grep -oE 'https?://[^ ]+' "$INSTRUCTION_FILE" | grep -v 'raw.githubusercontent' | head -1 || true)
+    BASE_URL=$(grep 'Base URL:' "$INSTRUCTION_FILE" | grep -oE 'https?://[^ >]+' | head -1 || true)
     if [ -z "$BASE_URL" ]; then
-        echo "Error: base URL not found in $INSTRUCTION_FILE. Set it there or pass it as an argument." >&2
+        echo "Error: base URL not found in $INSTRUCTION_FILE. Set the 'Base URL:' line or pass it as an argument." >&2
         exit 1
     fi
     BASE_URL="${BASE_URL%/}"
