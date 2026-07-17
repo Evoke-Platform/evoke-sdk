@@ -1,8 +1,8 @@
 import { UIThemeProvider, defaultTheme } from '@evoke-platform/ui-components';
-import type { Preview } from '@storybook/react';
+import type { Decorator, Preview } from '@storybook/react';
 import React from 'react';
 
-const withTheme: NonNullable<Preview['decorators']>[number] = (Story) =>
+const withTheme: Decorator = (Story) =>
     React.createElement(UIThemeProvider, { theme: defaultTheme }, React.createElement(Story));
 
 const preview: Preview = {
