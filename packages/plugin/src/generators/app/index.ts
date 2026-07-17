@@ -11,6 +11,7 @@ type Answers = {
     projectName: string;
     dirName: string;
     agentInstructions: AgentInstructions;
+    environmentUrl: string;
 };
 
 const instructionFileNames: Record<Exclude<AgentInstructions, 'none'>, string> = {
@@ -19,7 +20,7 @@ const instructionFileNames: Record<Exclude<AgentInstructions, 'none'>, string> =
     generic: 'INSTRUCTIONS.md',
 };
 
-const skillDirectories: Partial<Record<AgentInstructions, string>> = {
+const skillDirectories: Record<Exclude<AgentInstructions, 'none'>, string> = {
     claude: '.claude/skills',
     codex: '.agents/skills',
     generic: '.agents/skills',
@@ -62,6 +63,19 @@ export default class AppGenerator extends Generator {
                     { name: 'No AI instructions', value: 'none' },
                 ],
             },
+            {
+                type: 'input',
+                name: 'environmentUrl',
+                message: 'Evoke environment base URL (optional, set later in instruction file):',
+                default: '',
+                when: (responses: Partial<Answers>) => responses.agentInstructions !== 'none',
+                filter: (value: string) => value.trim().replace(/\/+$/, ''),
+                validate: (value: string) => {
+                    if (!value) return true;
+                    if (/^https?:\/\//.test(value)) return true;
+                    return 'URL must start with https:// or http://';
+                },
+            },
         ];
 
         this.answers = await this.prompt<Answers>(prompts);
@@ -95,11 +109,10 @@ export default class AppGenerator extends Generator {
             answers,
         );
 
-        const skillDirectory = skillDirectories[choice];
-
-        if (skillDirectory) {
-            this.fs.copy(this.templatePath('_agent-instructions/skills/**'), this.destinationPath(skillDirectory));
-        }
+        this.fs.copy(
+            this.templatePath('_agent-instructions/skills/**'),
+            this.destinationPath(skillDirectories[choice]),
+        );
     }
 
     end() {
@@ -122,13 +135,20 @@ export default class AppGenerator extends Generator {
         const choice = this.answers.agentInstructions;
 
         if (choice !== 'none') {
-            const skillDirectory = skillDirectories[choice];
-
             this.log.writeln(
-                skillDirectory
-                    ? `AI coding instructions added: ${instructionFileNames[choice]} and skills under ${skillDirectory}/.`
-                    : `AI coding instructions added: ${instructionFileNames[choice]}.`,
+                `AI coding instructions added: ${instructionFileNames[choice]} and skills under ${skillDirectories[choice]}/.`,
             );
+
+            if (this.answers.environmentUrl) {
+                this.log.writeln(
+                    `Environment URL: ${this.answers.environmentUrl}. Run 'bash scripts/fetch-openapi-specs.sh' to download API specs.`,
+                );
+            } else {
+                this.log.writeln(
+                    `Set your environment URL in ${instructionFileNames[choice]} then run 'bash scripts/fetch-openapi-specs.sh'.`,
+                );
+            }
+
             this.log.writeln();
         }
     }

@@ -214,7 +214,7 @@ signatures) live in the installed context package — inspect them instead of gu
 
 Evoke environment base URL for this project (used for OpenAPI spec lookups):
 
--   Base URL: _not set_
+-   Base URL: <%= environmentUrl || '_not set_' %>
 
 If the base URL is `_not set_`, ask the developer for the Evoke environment URL before
 doing any API work. Once provided, update the base URL line above and run

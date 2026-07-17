@@ -17,6 +17,9 @@ describe('create-plugin', () => {
         'build-criteria-filters',
         'send-correspondence',
         'storybook-tdd',
+        'review-accessibility',
+        'review-behavioral',
+        'review-performance',
     ];
     let runResult: RunResult;
 
@@ -148,6 +151,28 @@ describe('create-plugin', () => {
         runResult.assertFileContent('testdir/src/mocks/evokeHandlers.ts', '/checkAccess$/');
         runResult.assertFileContent('testdir/src/mocks/evokeHandlers.ts', 'objectStore.findInstances()');
         runResult.assertFileContent('testdir/src/mocks/evokeHandlers.ts', '/instances/:instanceId/actions');
+    }).timeout(5000);
+
+    it('interpolates environmentUrl into the instruction file', async () => {
+        runResult = await helpers.run(appGenerator).withPrompts({
+            projectName: 'test',
+            dirName: 'testdir',
+            agentInstructions: 'claude',
+            environmentUrl: 'https://myenv.example.com',
+        });
+
+        runResult.assertFileContent('testdir/CLAUDE.md', 'Base URL: https://myenv.example.com');
+    }).timeout(5000);
+
+    it('leaves Base URL as _not set_ when environmentUrl is empty', async () => {
+        runResult = await helpers.run(appGenerator).withPrompts({
+            projectName: 'test',
+            dirName: 'testdir',
+            agentInstructions: 'claude',
+            environmentUrl: '',
+        });
+
+        runResult.assertFileContent('testdir/CLAUDE.md', 'Base URL: _not set_');
     }).timeout(5000);
 
     it('routes generated instructions to live OpenAPI first', async () => {
