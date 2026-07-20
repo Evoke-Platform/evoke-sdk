@@ -5,9 +5,25 @@ import chalk from 'chalk';
 import validatePackageName from 'validate-npm-package-name';
 import Generator from 'yeoman-generator';
 
+type AgentInstructions = 'claude' | 'codex' | 'generic' | 'none';
+
 type Answers = {
     projectName: string;
     dirName: string;
+    agentInstructions: AgentInstructions;
+    environmentUrl: string;
+};
+
+const instructionFileNames: Record<Exclude<AgentInstructions, 'none'>, string> = {
+    claude: 'CLAUDE.md',
+    codex: 'AGENTS.md',
+    generic: 'INSTRUCTIONS.md',
+};
+
+const skillDirectories: Record<Exclude<AgentInstructions, 'none'>, string> = {
+    claude: '.claude/skills',
+    codex: '.agents/skills',
+    generic: '.agents/skills',
 };
 
 export default class AppGenerator extends Generator {
@@ -35,6 +51,31 @@ export default class AppGenerator extends Generator {
                 message: 'Enter project directory:',
                 default: (responses: Partial<Answers>) => responses.projectName?.split('/').pop() ?? '',
             },
+            {
+                type: 'list',
+                name: 'agentInstructions',
+                message: 'Add AI coding instructions?',
+                default: 'claude',
+                choices: [
+                    { name: 'Claude Code (recommended)', value: 'claude' },
+                    { name: 'Codex', value: 'codex' },
+                    { name: 'Generic instructions only', value: 'generic' },
+                    { name: 'No AI instructions', value: 'none' },
+                ],
+            },
+            {
+                type: 'input',
+                name: 'environmentUrl',
+                message: 'Evoke environment base URL (optional, set later in instruction file):',
+                default: '',
+                when: (responses: Partial<Answers>) => responses.agentInstructions !== 'none',
+                filter: (value: string) => value.trim().replace(/\/+$/, ''),
+                validate: (value: string) => {
+                    if (!value) return true;
+                    if (/^https?:\/\//.test(value)) return true;
+                    return 'URL must start with https:// or http://';
+                },
+            },
         ];
 
         this.answers = await this.prompt<Answers>(prompts);
@@ -49,8 +90,29 @@ export default class AppGenerator extends Generator {
         this.env.cwd = this.answers.dirName;
 
         this.fs.copyTpl(this.templatePath('**'), this.destinationPath(), this.answers, undefined, {
-            globOptions: { dot: true },
+            globOptions: { dot: true, ignore: ['**/_agent-instructions/**'] },
         });
+
+        this._copyAgentInstructions(this.answers);
+    }
+
+    _copyAgentInstructions(answers: Answers) {
+        const choice = answers.agentInstructions;
+
+        if (choice === 'none') {
+            return;
+        }
+
+        this.fs.copyTpl(
+            this.templatePath('_agent-instructions/INSTRUCTIONS.md'),
+            this.destinationPath(instructionFileNames[choice]),
+            answers,
+        );
+
+        this.fs.copy(
+            this.templatePath('_agent-instructions/skills/**'),
+            this.destinationPath(skillDirectories[choice]),
+        );
     }
 
     end() {
@@ -69,5 +131,25 @@ export default class AppGenerator extends Generator {
         this.log.write(prompt).writeln(`cd ${this.answers.dirName}`);
         this.log.write(prompt).writeln('npm run package');
         this.log.writeln();
+
+        const choice = this.answers.agentInstructions;
+
+        if (choice !== 'none') {
+            this.log.writeln(
+                `AI coding instructions added: ${instructionFileNames[choice]} and skills under ${skillDirectories[choice]}/.`,
+            );
+
+            if (this.answers.environmentUrl) {
+                this.log.writeln(
+                    `Environment URL: ${this.answers.environmentUrl}. Run 'bash scripts/fetch-openapi-specs.sh' to download API specs.`,
+                );
+            } else {
+                this.log.writeln(
+                    `Set your environment URL in ${instructionFileNames[choice]} then run 'bash scripts/fetch-openapi-specs.sh'.`,
+                );
+            }
+
+            this.log.writeln();
+        }
     }
 }
