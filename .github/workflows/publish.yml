@@ -56,14 +56,17 @@ jobs:
                   echo Using baseline:
                   git log -1 --oneline baseline
             - name: Build
-              run: yarn build --filter=...[baseline]
-            - name: Publish
+              run: yarn build --filter=...[baseline] --ignore=yarn.lock
+            - name: Release
               run: |
                   git config user.name "GitHub Actions Bot"
                   git config user.email "<>"
-                  npx turbo run release --concurrency 1 --filter=...[baseline] -- --prerelease dev --skip.tag --skip.changelog
-                  npx turbo run deploy --filter=...[baseline] -- --tag dev
+                  npx turbo run release --concurrency 1 --filter=...[baseline] --ignore=yarn.lock -- --prerelease dev --skip.tag --skip.changelog
+            - name: Deploy
+              run: |
+                  npx turbo run deploy --filter=...[baseline] --ignore=yarn.lock -- --tag dev
             - name: Push Changes
+              if: always()
               run: |
                   git fetch origin
                   git merge -m "Merge branch 'main' [skip ci]" origin/main
