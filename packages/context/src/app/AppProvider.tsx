@@ -20,6 +20,7 @@ export type App = {
     navigation?: NavigationMenu;
     defaultPages?: Record<string, string>;
     mfa?: 'required' | 'optional';
+    layoutId?: string | null;
 };
 
 export type Page = {
@@ -31,10 +32,17 @@ export type Page = {
 
 export type PageElement = Container | Widget;
 
+/**
+ * A node that may appear inside a `Container`. Unlike top-level `Page.children`, this also
+ * admits `PageContent`, mirroring cedar's shared `ContainerView.children` shape (which is
+ * used by both `Page` and `AppLayout` trees).
+ */
+export type LayoutElement = PageElement | PageContent;
+
 export type Container = {
     id: string;
     type: 'container';
-    children?: PageElement[];
+    children?: LayoutElement[];
 };
 
 export type Widget = {
@@ -45,6 +53,25 @@ export type Widget = {
     isSticky?: boolean;
     noPadding?: boolean;
     properties: Record<string, unknown>;
+};
+
+/**
+ * Marks where navigation and the routed page content render within an `AppLayout` tree.
+ * Widgets placed before this node act as headers, and anything after it acts as a footer.
+ */
+export type PageContent = {
+    id: string;
+    type: 'pageContent';
+};
+
+/**
+ * An environment-level composition of widgets arranged around the page content. Apps select a
+ * layout via `App.layoutId`, falling back to the environment's default layout when unset.
+ */
+export type AppLayout = {
+    id: string;
+    name: string;
+    children?: LayoutElement[];
 };
 
 export type NavigationLocation = 'side' | 'top' | 'none';
