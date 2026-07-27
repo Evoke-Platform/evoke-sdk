@@ -33,11 +33,14 @@ failing play functions, not as ad-hoc fixes.
 ## Watched Storybook surface
 
 When a developer or browser automation is watching the loop, keep the Storybook manager
-open to a real story with the Interactions panel selected. Prefer opening a primary
-container/Playground story that shows the whole widget's main flow rather than a leaf
-fragment story (spinner, empty state, etc.). If story ordering makes the wrong story
-appear first, correct it in the project-level Storybook config (`storySort` in
-`.storybook/preview.tsx`) or navigate directly to the intended story URL.
+open to a real story with the Interactions panel selected. Prefer opening the widget's
+`Playground` story, which shows the whole widget's main flow, rather than a leaf fragment
+story (spinner, empty state, etc.).
+
+The scaffold's `storySort` in `.storybook/preview.tsx` already sorts `Playground` stories
+first, so this is the default landing spot as long as the container story is named
+`Playground`. If the wrong story still appears first, check that naming before editing
+`storySort` — or navigate directly to the intended story URL.
 
 ```text
 http://127.0.0.1:6006/?path=/story/<story-id>&addonPanel=storybook/interactions/panel

@@ -22,11 +22,47 @@ npx @evoke-platform/plugin
 Do **not** re-run the generator if the scaffold is already present — it will overwrite
 configuration files.
 
+## Step 0: Read The Widget's Plan File
+
+**Before writing or changing any widget code**, check `plans/` for the widget's living
+plan file: `plans/widget-<WidgetName>-blueprint.md`.
+
+**If it exists:** read it in full — `## Current State` tells you what the widget is
+today, `## Session Log` tells you what happened before. Then append a new session entry
+with this session's steps as unchecked boxes:
+
+```markdown
+## Session YYYY-MM-DD — <one-line intent>
+
+-   [ ] Step one
+-   [ ] Step two
+```
+
+**If it does not exist:**
+
+-   Starting a new widget, or making a non-trivial change → invoke the `plan-widget`
+    skill to create the file, then append the first session entry.
+-   Making a small fix to a widget that predates this file → do not force a full
+    interview. Create the file yourself: derive `## Current State` by reading the
+    widget's existing code (props from `WidgetProperties.json`, hooks from `index.tsx`,
+    components from `components/`), append this session's entry, then do the fix. The
+    file is now in place for whoever comes next.
+
+**This applies to every turn that touches widget code — including "quick fix" and
+continuation sessions.** Those are exactly the turns most likely to skip the process,
+and they are the reason the file goes stale. A one-line fix still gets a session entry
+and still updates `## Current State` if it changed the widget's behavior.
+
+If a checklist step names a skill (`storybook-tdd`, `render-evoke-forms`,
+`build-criteria-filters`, etc.), invoke that skill. Skipping a skill a step calls for is
+not permitted. Do not advance past an unchecked box — finish it and check it off
+(`- [x]`) before starting the next one.
+
 ## Execution Mode
 
 Before writing any widget code, determine how the developer wants to pace and version
-the implementation. This decision happens once — after the blueprint is confirmed and the
-implementation plan is ready, at the moment the agent is about to write the first file.
+the implementation. This decision happens once — after the plan file's session entry is
+appended, at the moment the agent is about to write the first file.
 
 ### Step 1: Detect git
 
@@ -86,6 +122,23 @@ npm run test-storybook    # play functions pass
 If the gate fails, fix the issue in the current step before moving on. Never commit
 red code or skip a failing gate.
 
+### After a green gate: update the plan file
+
+Once the gate passes and before (or as part of) the commit for that step, do **both of
+these together as one action** — they are a single step, not two independent ones:
+
+1. **Update `## Current State`** in place so it describes the widget as it now is —
+   props, hooks, components, runtime quirks discovered while implementing, and the
+   current story/test count plus this gate result.
+2. **Check off the step** in this session's `## Session Log` entry (`- [x]`).
+
+Include the plan file in the same commit as the code, and note it in the commit body
+(e.g. `Updates plan file current state.`). Never do half of this: a session log that
+advances while `## Current State` goes stale is the failure this file exists to prevent.
+
+If the step changed nothing about the widget's shape or behavior (a comment, a typo),
+`## Current State` may be left as-is — but the step still gets checked off.
+
 ### Commit boundaries
 
 Each of these is one atomic commit:
@@ -95,8 +148,8 @@ Each of these is one atomic commit:
 3. Container story + MSW handlers
 4. Final verification pass (any fixups from the full validation gate)
 
-The implementation plan's task breakdown defines the exact boundaries. One task = one
-commit.
+Each commit also carries the plan file update for that step (see above). The session
+log's checklist defines the exact boundaries. One step = one commit.
 
 ## Widget File Structure
 
@@ -338,16 +391,35 @@ the `storybook-tdd` skill for the fail-first workflow and assertion pattern. Ver
 against a running Storybook server.
 
 Also write **one container story** (`<WidgetName>.stories.tsx` beside `index.tsx`)
-that renders the real widget over the scaffold's MSW mock layer: set
+that renders the real widget over the scaffold's MSW mock layer. **Name this story
+export `Playground`** — the scaffold's `storySort` in `.storybook/preview.tsx` puts
+stories named `Playground` first, so Storybook opens on the working widget instead of a
+component fragment. Set
 `parameters: { msw: { handlers } }` with handlers from `src/mocks/` covering each
 endpoint the container hits — an unhandled-request warning in the preview console
 means one is missing. Shape fixtures from the installed `.d.ts` types; they are dev
 fixtures, not contract tests. Use explicit fake ids in story args and MSW handlers
 instead of burying sentinels in component logic. MSW only mocks HTTP: if the real
 container needs additional platform providers beyond the shipped router decorator, say so
-plainly in the blueprint/story comments and keep the container thin rather than pretending
+plainly in the plan file's runtime quirks and story comments, and keep the container thin rather than pretending
 MSW alone solves it. Do not add provider mocks beyond the shipped MSW layer and the
 preview's router decorator unless the developer explicitly asks.
+
+### Remove the scaffold's sample story
+
+The generator ships a placeholder story at `src/stories/Sample.stories.tsx` (title
+`Example/SampleWidget`, stories `SampleStory1` and `SampleStory2`). It exists only so a
+freshly generated project has something to open in Storybook. It is not part of the
+widget convention above — real stories live beside the widget they test.
+
+Once the **first real widget's validation gate passes**, delete that file so the
+developer is not left cleaning up dead scaffold output. Delete it only if it is still
+the untouched stub: the title is still `Example/SampleWidget` and the exports are still
+`SampleStory1`/`SampleStory2` with no meaningful assertions added. If a developer
+repurposed the file, leave it alone and mention it instead.
+
+`src/widgets/SampleWidget/` itself stays — it is a working reference for the
+`index.tsx` + `WidgetProperties.json` pairing.
 
 ## Review
 

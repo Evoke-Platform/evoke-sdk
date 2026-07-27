@@ -19,6 +19,17 @@ const preview: Preview = {
     ],
     parameters: {
         actions: { argTypesRegex: '^on[A-Z].*' },
+        options: {
+            // Storybook opens on the first story in the sidebar. A widget's Playground
+            // story shows the whole widget over its mocks, so it makes a better landing
+            // spot for reviewers than an alphabetically-first component fragment.
+            storySort: (a: { id: string }, b: { id: string }) => {
+                const rank = (id: string) => (/playground/i.test(id) ? 0 : 1);
+                const diff = rank(a.id) - rank(b.id);
+
+                return diff !== 0 ? diff : a.id.localeCompare(b.id, undefined, { numeric: true });
+            },
+        },
         // Widgets render on light surfaces in App Viewer; keep the preview consistent
         // regardless of the OS color scheme.
         backgrounds: { default: 'light' },
