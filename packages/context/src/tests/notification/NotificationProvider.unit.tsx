@@ -1,21 +1,20 @@
 // Copyright (c) 2026 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import { render } from '@testing-library/react';
 import { HubConnection } from '@microsoft/signalr';
+import { render } from '@testing-library/react';
 import chai, { expect } from 'chai';
 import dirtyChai from 'dirty-chai';
 import 'global-jsdom/register';
 import { useEffect } from 'react';
 import sinon, { SinonStub } from 'sinon';
 import { ApiServices } from '../../api/index.js';
-import { ObjectStore } from '../../objects/index.js';
-import {
+import NotificationProvider, {
     DocumentSubscription,
     InstanceSubscription,
     useNotification,
 } from '../../notification/NotificationProvider.js';
-import NotificationProvider from '../../notification/NotificationProvider.js';
+import { ObjectStore } from '../../objects/index.js';
 
 chai.use(dirtyChai);
 
@@ -149,13 +148,17 @@ describe('NotificationProvider', () => {
             expect(warnStub.calledWithMatch(/DoesNotExist/)).to.be.true();
         });
 
-        it('does not throw when unsubscribing from an object that cannot be resolved', async () => {
+        it('warns and does not throw when unsubscribing from an object that cannot be resolved', async () => {
             getStub.withArgs('data/objects/DoesNotExist/effective').rejects(new Error('Not Found'));
+
+            const warnStub = sinon.stub(console, 'warn');
 
             await renderProvider();
 
             expect(() => instanceChanges?.unsubscribe('DoesNotExist', () => {})).to.not.throw();
             await flush();
+
+            expect(warnStub.calledWithMatch(/DoesNotExist/)).to.be.true();
         });
 
         it('notifies subscribers of different subtypes that share the same root', async () => {
@@ -220,6 +223,19 @@ describe('NotificationProvider', () => {
             await flush();
 
             expect(onStub.called).to.be.false();
+            expect(warnStub.calledWithMatch(/DoesNotExist/)).to.be.true();
+        });
+
+        it('warns and does not throw when unsubscribing from an object that cannot be resolved', async () => {
+            getStub.withArgs('data/objects/DoesNotExist/effective').rejects(new Error('Not Found'));
+
+            const warnStub = sinon.stub(console, 'warn');
+
+            await renderProvider();
+
+            expect(() => documentChanges?.unsubscribe('DoesNotExist', 'instance1', () => {})).to.not.throw();
+            await flush();
+
             expect(warnStub.calledWithMatch(/DoesNotExist/)).to.be.true();
         });
     });
