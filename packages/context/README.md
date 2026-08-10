@@ -264,6 +264,12 @@ The authentication context includes the following property and functions.
 
 Hook used to obtain an instanceChanges instance and a documentChanges instance.
 
+If `objectId` refers to a subtype, `subscribe`/`unsubscribe` automatically resolve and act on the corresponding
+root object's changes, since change notifications are always emitted under the root object. If `objectId` cannot
+be resolved to an object, a console warning is logged and the call is a no-op (it does not throw). When the root
+object is already known, subscribe to it directly instead of a subtype — this skips the extra lookup needed to
+resolve the root.
+
 ##### `documentChanges.subscribe(objectId, instanceId, (data: DocumentChange[]]) => {})`
 
 Subscribe to the specified object instance changes.

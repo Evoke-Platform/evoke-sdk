@@ -7,6 +7,7 @@ import {
 } from '@microsoft/signalr';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useApiServices } from '../api/index.js';
+import { ObjectStore } from '../objects/index.js';
 
 export type NotificationConnectionInfo = {
     url: string;
@@ -167,21 +168,52 @@ function NotificationProvider({ children }: { children: React.ReactNode }) {
             value={{
                 documentChanges: documentsNotification
                     ? {
-                          subscribe: (objectId, instanceId, callback) =>
-                              documentsNotification.on(`${objectId}/${instanceId}`, callback),
-                          unsubscribe: (objectId, instanceId, callback) =>
-                              callback
-                                  ? documentsNotification.off(`${objectId}/${instanceId}`, callback)
-                                  : documentsNotification.off(`${objectId}/${instanceId}`),
+                          subscribe: (objectId, instanceId, callback) => {
+                              new ObjectStore(api, objectId)
+                                  .get()
+                                  .then((object) =>
+                                      documentsNotification.on(`${object.rootObjectId}/${instanceId}`, callback),
+                                  )
+                                  .catch(() =>
+                                      console.warn(
+                                          `Cannot subscribe to notifications for unknown object "${objectId}"`,
+                                      ),
+                                  );
+                          },
+                          unsubscribe: (objectId, instanceId, callback) => {
+                              new ObjectStore(api, objectId)
+                                  .get()
+                                  .then((object) =>
+                                      callback
+                                          ? documentsNotification.off(`${object.rootObjectId}/${instanceId}`, callback)
+                                          : documentsNotification.off(`${object.rootObjectId}/${instanceId}`),
+                                  )
+                                  .catch(() => undefined);
+                          },
                       }
                     : undefined,
                 instanceChanges: instancesNotification
                     ? {
-                          subscribe: (objectId, callback) => instancesNotification.on(objectId, callback),
-                          unsubscribe: (objectId, callback) =>
-                              callback
-                                  ? instancesNotification.off(objectId, callback)
-                                  : instancesNotification.off(objectId),
+                          subscribe: (objectId, callback) => {
+                              new ObjectStore(api, objectId)
+                                  .get()
+                                  .then((object) => instancesNotification.on(object.rootObjectId, callback))
+                                  .catch(() =>
+                                      console.warn(
+                                          `Cannot subscribe to notifications for unknown object "${objectId}"`,
+                                      ),
+                                  );
+                          },
+                          unsubscribe: (objectId, callback) => {
+                              new ObjectStore(api, objectId)
+                                  .get()
+                                  .then((object) =>
+                                      callback
+                                          ? instancesNotification.off(object.rootObjectId, callback)
+                                          : instancesNotification.off(object.rootObjectId),
+                                  )
+                                  .catch(() => undefined);
+                          },
                       }
                     : undefined,
             }}
