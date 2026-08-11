@@ -114,12 +114,16 @@
         },
         "api": {
             "type": "object",
-            "required": ["url", "resultMapping"],
+            "required": ["url"],
             "additionalProperties": false,
             "properties": {
                 "url": {
                     "type": "string",
                     "description": "URL of the API"
+                },
+                "valuePath": {
+                    "type": "string",
+                    "description": "Dot-notation path to the array of options within the API response, for responses where the options are nested rather than at the top level."
                 },
                 "resultMapping": {
                     "type": "object",
