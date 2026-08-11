@@ -175,7 +175,7 @@ function NotificationProvider({ children }: { children: React.ReactNode }) {
                                       documentsNotification.on(`${object.rootObjectId}/${instanceId}`, callback),
                                   )
                                   .catch(() =>
-                                      console.warn(`Fail to subscribe to notifications for object "${objectId}"`),
+                                      console.warn(`Failed to subscribe to notifications for object "${objectId}"`),
                                   );
                           },
                           unsubscribe: (objectId, instanceId, callback) => {
@@ -187,7 +187,7 @@ function NotificationProvider({ children }: { children: React.ReactNode }) {
                                           : documentsNotification.off(`${object.rootObjectId}/${instanceId}`),
                                   )
                                   .catch(() =>
-                                      console.warn(`Fail to unsubscribe from notifications for object "${objectId}"`),
+                                      console.warn(`Failed to unsubscribe from notifications for object "${objectId}"`),
                                   );
                           },
                       }
@@ -199,7 +199,7 @@ function NotificationProvider({ children }: { children: React.ReactNode }) {
                                   .get()
                                   .then((object) => instancesNotification.on(object.rootObjectId, callback))
                                   .catch(() =>
-                                      console.warn(`Fail to subscribe to notifications for object "${objectId}"`),
+                                      console.warn(`Failed to subscribe to notifications for object "${objectId}"`),
                                   );
                           },
                           unsubscribe: (objectId, callback) => {
@@ -211,7 +211,7 @@ function NotificationProvider({ children }: { children: React.ReactNode }) {
                                           : instancesNotification.off(object.rootObjectId),
                                   )
                                   .catch(() =>
-                                      console.warn(`Fail to unsubscribe from notifications for object "${objectId}"`),
+                                      console.warn(`Failed to unsubscribe from notifications for object "${objectId}"`),
                                   );
                           },
                       }
