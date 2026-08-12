@@ -1,9 +1,9 @@
 // Copyright (c) 2025 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import {createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState} from 'react';
-import {useApiServices} from '../api/index.js';
-import {Obj} from '../objects/index.js';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useApiServices } from '../api/index.js';
+import { Obj } from '../objects/index.js';
 
 export type AppType = 'public' | 'portal' | 'private';
 
