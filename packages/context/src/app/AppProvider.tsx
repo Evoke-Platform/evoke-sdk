@@ -30,19 +30,12 @@ export type Page = {
     children?: PageElement[];
 };
 
-export type PageElement = Container | Widget;
-
-/**
- * A node that may appear inside a `Container`. Unlike top-level `Page.children`, this also
- * admits `PageContent`, mirroring cedar's shared `ContainerView.children` shape (which is
- * used by both `Page` and `AppLayout` trees).
- */
-export type LayoutElement = PageElement | PageContent;
+export type PageElement = Container | Widget | PageContent;
 
 export type Container = {
     id: string;
     type: 'container';
-    children?: LayoutElement[];
+    children?: PageElement[];
 };
 
 export type Widget = {
@@ -53,6 +46,7 @@ export type Widget = {
     isSticky?: boolean;
     noPadding?: boolean;
     properties: Record<string, unknown>;
+    children?: PageElement[]; // Only present if the widget allows children
 };
 
 /**
@@ -71,7 +65,7 @@ export type PageContent = {
 export type AppLayout = {
     id: string;
     name: string;
-    children?: LayoutElement[];
+    children?: PageElement[];
 };
 
 export type NavigationLocation = 'side' | 'top' | 'none';

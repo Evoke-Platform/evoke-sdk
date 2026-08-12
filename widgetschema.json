@@ -64,6 +64,10 @@
             "description": "Array of properties that the widget supports",
             "items": { "$ref": "#/definitions/widgetProperty" }
         },
+        "allowChildren": {
+            "type": "boolean",
+            "description": "Indicates if the widget allows child widgets"
+        },
         "$schema": { "type": "string" }
     },
 
