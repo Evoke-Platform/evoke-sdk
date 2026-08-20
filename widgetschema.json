@@ -286,7 +286,8 @@
                 "itemDisplayName": {
                     "type": "string",
                     "description": "Specifies the label for the singular repeated item within a multiple inputGroup property"
-                }
+                },
+                "deriveValue": { "$ref": "#/definitions/deriveValue" }
             }
         },
         "widgetVisibilityGroup": {
@@ -324,6 +325,61 @@
                 }
             },
             "required": ["field", "operator", "value"]
+        },
+        "anyValue": {
+            "description": "Any value, including null (e.g. to clear a field via writeBack)",
+            "anyOf": [
+                { "type": "string" },
+                { "type": "number" },
+                { "type": "boolean" },
+                { "type": "object" },
+                { "type": "array" },
+                { "type": "null" }
+            ]
+        },
+        "deriveValue": {
+            "type": "object",
+            "description": "Derives a virtual property's value from its sibling fields instead of accepting direct input, evaluating rules in order. A property with deriveValue is implicitly virtual (display-only, never persisted) and is only valid within an inputGroup, where it can read and write sibling fields.",
+            "additionalProperties": false,
+            "required": ["rules"],
+            "properties": {
+                "rules": {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/deriveValueRule" }
+                },
+                "default": {
+                    "allOf": [{ "$ref": "#/definitions/anyValue" }],
+                    "description": "Fallback value when no rule matches. Omit when the rules already end in an unconditional catch-all (a rule whose \"when\" has an empty conditions array), since that rule always matches and this fallback would be unreachable."
+                }
+            }
+        },
+        "deriveValueRule": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["when", "value"],
+            "properties": {
+                "when": { "$ref": "#/definitions/widgetVisibilityGroup" },
+                "value": {
+                    "allOf": [{ "$ref": "#/definitions/anyValue" }],
+                    "description": "Value this property derives when the rule matches"
+                },
+                "writeBack": {
+                    "type": "array",
+                    "description": "Other sibling fields to write when this rule matches",
+                    "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "required": ["field", "value"],
+                        "properties": {
+                            "field": {
+                                "type": "string",
+                                "description": "Name of the sibling widget property to write"
+                            },
+                            "value": { "$ref": "#/definitions/anyValue" }
+                        }
+                    }
+                }
+            }
         }
     }
 }
