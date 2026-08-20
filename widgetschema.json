@@ -358,7 +358,10 @@
             "additionalProperties": false,
             "required": ["when", "value"],
             "properties": {
-                "when": { "$ref": "#/definitions/widgetVisibilityGroup" },
+                "when": {
+                    "allOf": [{ "$ref": "#/definitions/widgetVisibilityGroup" }],
+                    "description": "Condition under which this rule's value and writeBack apply"
+                },
                 "value": {
                     "allOf": [{ "$ref": "#/definitions/anyValue" }],
                     "description": "Value this property derives when the rule matches"
