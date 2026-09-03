@@ -52,6 +52,10 @@
         "allowSticky": {
             "type": "boolean"
         },
+        "allowChildren": {
+            "type": "boolean",
+            "description": "Indicates that the widget is a container; the contained page items are passed to the component as children"
+        },
         "deprecated": {
             "type": "boolean"
         },
