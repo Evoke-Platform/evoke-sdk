@@ -2,6 +2,7 @@ import { UIThemeProvider, defaultTheme } from '@evoke-platform/ui-components';
 import type { Decorator, Preview } from '@storybook/react';
 import { initialize, mswLoader } from 'msw-storybook-addon';
 import { MemoryRouter } from 'react-router-dom';
+import { resetRequestLog } from '../src/mocks/evokeHandlers';
 
 // Intercept the widget's Evoke API calls at the network boundary. 'error' fails the
 // story when any endpoint lacks a handler — add one in src/mocks/ to fix the failure.
@@ -23,8 +24,16 @@ const withRouter: Decorator = (Story) => (
     </MemoryRouter>
 );
 
+// Loaders run per story before render, so the log starts empty for every story without
+// each play function having to remember to clear it.
+const resetLoader = () => {
+    resetRequestLog();
+
+    return {};
+};
+
 const preview: Preview = {
-    loaders: [mswLoader],
+    loaders: [mswLoader, resetLoader],
     decorators: [withTheme, withRouter],
     parameters: {
         actions: { argTypesRegex: '^on[A-Z].*' },

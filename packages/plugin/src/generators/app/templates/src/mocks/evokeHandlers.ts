@@ -21,8 +21,9 @@
 import { HttpResponse, http } from 'msw';
 
 // Capture submissions so play functions can assert on what the widget actually sent.
-// Call resetRequestLog() in each story's play function before interacting, so
-// submissions from prior stories don't leak into assertions.
+// A loader in .storybook/preview.tsx calls resetRequestLog() before every story, so the
+// log already starts empty — a play function only needs to call it directly when it
+// wants a clean slate partway through.
 export const requestLog: { submissions: Array<{ path: string; body: unknown }> } = {
     submissions: [],
 };

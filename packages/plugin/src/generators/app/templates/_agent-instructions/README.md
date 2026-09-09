@@ -6,7 +6,8 @@ exists only for SDK developers working on these templates.
 
 ## How It Gets Into a Scaffold
 
-The Yeoman generator (`../index.ts`) copies two things from this directory:
+The Yeoman generator (`../index.ts`) copies four things from this directory, and only
+when the developer picks an agent — a `none` scaffold receives none of them:
 
 1. **`INSTRUCTIONS.md`** → renamed based on the developer's agent choice:
     - `claude` → `CLAUDE.md` (project root)
@@ -17,12 +18,21 @@ The Yeoman generator (`../index.ts`) copies two things from this directory:
     - `claude` → `.claude/skills/`
     - `codex` → `.agents/skills/`
     - `generic` → `.agents/skills/`
+3. **`scripts/`** → `scripts/` in the project root.
+4. **`plans/`** → `plans/` in the project root. Dot files are included, so `.gitkeep`
+   comes across and the otherwise-empty directory survives.
 
 `INSTRUCTIONS.md` is an EJS template (uses `<%= projectName %>`) and is processed with
-`copyTpl`. Skills are plain-copied with `fs.copy` — no interpolation.
+`copyTpl`. Everything else is plain-copied with `fs.copy` — no interpolation.
 
-Any file in this directory that isn't `INSTRUCTIONS.md` or under `skills/` is ignored
-by the generator and won't appear in scaffolded projects.
+`scripts/` and `plans/` live under this directory specifically so they stay out of a
+`none` scaffold: `fetch-openapi-specs.sh` reads its base URL from the instruction file,
+so without one it can only exit 1, and `plans/` is where the planning skills write
+blueprints. The scaffold's `.gitignore` is deliberately **not** here — every project
+wants one, so it sits in `../` and ships with every choice.
+
+Any file in this directory that isn't `INSTRUCTIONS.md` or under `skills/`, `scripts/`,
+or `plans/` is ignored by the generator and won't appear in scaffolded projects.
 
 ## What Each File Does
 

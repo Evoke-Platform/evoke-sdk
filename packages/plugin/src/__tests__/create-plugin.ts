@@ -118,6 +118,19 @@ describe('create-plugin', () => {
         ]);
     }).timeout(5000);
 
+    it('omits the agent-only script and plans directory for the none choice', async () => {
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'none' });
+
+        // The fetch script reads its base URL from an instruction file that 'none' never
+        // creates, so shipping it would leave a script that only ever exits 1.
+        runResult.assertNoFile(['testdir/scripts/fetch-openapi-specs.sh', 'testdir/plans/.gitkeep']);
+
+        // .gitignore is useful to every project regardless of agent choice.
+        runResult.assertFile(['testdir/.gitignore']);
+    }).timeout(5000);
+
     it('copies skill bodies verbatim', async () => {
         runResult = await helpers
             .run(appGenerator)
@@ -134,9 +147,15 @@ describe('create-plugin', () => {
             .run(appGenerator)
             .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
 
-        runResult.assertFile(['testdir/scripts/fetch-openapi-specs.sh', 'testdir/.gitignore']);
+        runResult.assertFile([
+            'testdir/scripts/fetch-openapi-specs.sh',
+            'testdir/plans/.gitkeep',
+            'testdir/.gitignore',
+        ]);
         runResult.assertFileContent('testdir/scripts/fetch-openapi-specs.sh', 'mailMerge/v3/api-docs');
         runResult.assertFileContent('testdir/.gitignore', '.openapi/');
+        runResult.assertFileContent('testdir/.gitignore', 'node_modules/');
+        runResult.assertFileContent('testdir/.gitignore', 'storybook-static/');
     }).timeout(5000);
 
     it('scaffolds the msw mock layer', async () => {

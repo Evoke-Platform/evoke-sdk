@@ -196,19 +196,28 @@ useEffect(() => {
     if (status !== 'in-progress') return;
 
     let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+
     const poll = async () => {
         const result = await api.get(`/data/importRuns/${runId}`);
         if (cancelled) return;
         if (result.status === 'complete' || result.status === 'failed') {
             setResult(result);
         } else {
-            setTimeout(poll, 3000);
+            timer = setTimeout(poll, 3000);
         }
     };
-    poll();
+
+    // Polling is an async chain with no caller to catch a rejection. Without this,
+    // a failed request leaves the widget stuck on 'in-progress' forever.
+    poll().catch((error) => {
+        if (cancelled) return;
+        setPhase({ kind: 'error', message: 'Could not check import status.', error });
+    });
 
     return () => {
         cancelled = true;
+        clearTimeout(timer);
     };
 }, [status, runId]);
 ```
@@ -218,7 +227,13 @@ Key rules:
 -   Default interval: **3000ms**. Use longer intervals (5–10s) for operations that
     typically take minutes.
 -   Clean up on unmount — set a `cancelled` flag in the effect cleanup to prevent
-    state updates after the component unmounts.
+    state updates after the component unmounts, **and** `clearTimeout` the pending
+    timer. The flag alone still leaves a timer queued; `review-performance` flags that
+    as a leaked timer.
+-   Catch the rejection. The initial `poll()` has no caller to handle a failed request,
+    so an uncaught error leaves the widget on `in-progress` with no way out —
+    `review-behavioral` flags that as an unhandled API error. Move to the error phase
+    with a retry.
 -   Stop polling when the operation reaches a terminal state (`complete`, `failed`,
     `error`). Do not poll indefinitely.
 

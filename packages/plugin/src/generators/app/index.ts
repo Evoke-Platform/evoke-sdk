@@ -113,6 +113,15 @@ export default class AppGenerator extends Generator {
             this.templatePath('_agent-instructions/skills/**'),
             this.destinationPath(skillDirectories[choice]),
         );
+
+        // The fetch script reads its base URL from the instruction file, and plans/ is
+        // where the planning skills write blueprints. Neither is usable without an
+        // agent choice, so both stay out of a 'none' scaffold.
+        this.fs.copy(this.templatePath('_agent-instructions/scripts/**'), this.destinationPath('scripts'));
+
+        this.fs.copy(this.templatePath('_agent-instructions/plans/**'), this.destinationPath('plans'), {
+            globOptions: { dot: true },
+        });
     }
 
     end() {

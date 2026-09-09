@@ -145,10 +145,14 @@ Rules of the pattern:
 -   **Pace the container story for watchability.** Each named `step()` in a container
     or end-to-end play function must begin with a 2-second delay so the developer can
     read the step name in the Interactions panel and watch the UI change before the next
-    step runs. Use a `wait` helper at the top of each step:
+    step runs. The delay is for a human watching in the browser, so it must collapse to
+    zero under `test-storybook` — an eight-step story would otherwise sleep for 16
+    seconds and blow the runner's test timeout. Playwright sets `navigator.webdriver`,
+    which is the signal to skip the wait. Use this helper at the top of each step:
 
     ```tsx
-    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+    // Paced for watchability in the browser; instant under test-storybook.
+    const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, navigator.webdriver ? 0 : ms));
 
     play: async ({ canvasElement, step }) => {
         const canvas = within(canvasElement);
