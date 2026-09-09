@@ -127,8 +127,37 @@ describe('create-plugin', () => {
         // creates, so shipping it would leave a script that only ever exits 1.
         runResult.assertNoFile(['testdir/scripts/fetch-openapi-specs.sh', 'testdir/plans/.gitkeep']);
 
-        // .gitignore is useful to every project regardless of agent choice.
-        runResult.assertFile(['testdir/.gitignore']);
+        // These two are useful to every project regardless of agent choice, so they ship
+        // with the 'none' scaffold too.
+        runResult.assertFile(['testdir/.gitignore', 'testdir/test-runner-jest.config.js']);
+    }).timeout(5000);
+
+    it('pins the test-runner rootDir so test-storybook stays inside the project', async () => {
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        // A generated project is not a git repo, so the test-runner's getProjectRoot()
+        // walk escapes it and lands on the user's home directory — jest then scans
+        // everything under $HOME and the run appears to hang.
+        runResult.assertFile(['testdir/test-runner-jest.config.js']);
+        runResult.assertFileContent('testdir/test-runner-jest.config.js', 'rootDir: __dirname');
+    }).timeout(5000);
+
+    it('keeps the storybook preview free of the two defects that break every story', async () => {
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        // UIThemeProvider is only a default export of a subpath that is not in the
+        // package's `exports` map, and defaultTheme does not exist at all. Importing
+        // either by name yields undefined and every story crashes on render.
+        runResult.assertNoFileContent('testdir/.storybook/preview.tsx', /import\s*{[^}]*UIThemeProvider/);
+        runResult.assertNoFileContent('testdir/.storybook/preview.tsx', /import\s*{[^}]*defaultTheme/);
+
+        // Storybook builds the story index by statically re-parsing the options block as
+        // plain JavaScript, so a type annotation inside storySort makes /index.json 500.
+        runResult.assertNoFileContent('testdir/.storybook/preview.tsx', 'storySort: (a: ');
     }).timeout(5000);
 
     it('copies skill bodies verbatim', async () => {
