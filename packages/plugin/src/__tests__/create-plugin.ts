@@ -158,6 +158,14 @@ describe('create-plugin', () => {
         // Storybook builds the story index by statically re-parsing the options block as
         // plain JavaScript, so a type annotation inside storySort makes /index.json 500.
         runResult.assertNoFileContent('testdir/.storybook/preview.tsx', 'storySort: (a: ');
+
+        // MSW's default worker URL is absolute ('/mockServiceWorker.js'), which 404s when
+        // a published Storybook is served from a per-plugin subfolder rather than a domain
+        // root — every mocked story then errors.
+        runResult.assertFileContent(
+            'testdir/.storybook/preview.tsx',
+            "serviceWorker: { url: './mockServiceWorker.js' }",
+        );
     }).timeout(5000);
 
     it('copies skill bodies verbatim', async () => {

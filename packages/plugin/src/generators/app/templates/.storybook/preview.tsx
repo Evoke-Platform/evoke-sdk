@@ -5,7 +5,12 @@ import { resetRequestLog } from '../src/mocks/evokeHandlers';
 
 // Intercept the widget's Evoke API calls at the network boundary. 'error' fails the
 // story when any endpoint lacks a handler — add one in src/mocks/ to fix the failure.
-initialize({ onUnhandledRequest: 'error' });
+//
+// The worker URL is relative on purpose. MSW defaults to '/mockServiceWorker.js' at the
+// site root, which only resolves when Storybook is served from the root of a domain. A
+// published static build usually lives under a per-plugin subfolder, where the default
+// 404s and every mocked story errors. Relative resolves correctly in both cases.
+initialize({ onUnhandledRequest: 'error', serviceWorker: { url: './mockServiceWorker.js' } });
 
 // There is deliberately no theme decorator here. `UIThemeProvider` is only a default
 // export of @evoke-platform/ui-components' theme subpath, and that subpath is not in the
