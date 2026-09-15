@@ -3,8 +3,39 @@
 
 'use strict';
 
+import assert from 'assert';
+import fs from 'fs';
 import path from 'path';
 import helpers, { RunResult } from 'yeoman-test';
+
+// Return the source of the storySort arrow function, from its opening parenthesis to the
+// closing brace of its body, so a test can try to build it as plain JavaScript.
+function extractStorySort(previewSource: string): string | undefined {
+    const label = previewSource.indexOf('storySort:');
+
+    if (label === -1) {
+        return undefined;
+    }
+
+    const start = previewSource.indexOf('(', label);
+    let depth = 0;
+
+    for (let i = start; i < previewSource.length; i++) {
+        const char = previewSource[i];
+
+        if (char === '(' || char === '{') {
+            depth++;
+        } else if (char === ')' || char === '}') {
+            depth--;
+
+            if (depth === 0 && char === '}') {
+                return previewSource.slice(start, i + 1);
+            }
+        }
+    }
+
+    return undefined;
+}
 
 describe('create-plugin', () => {
     const appGenerator = path.join(__dirname, '../generators/app');
@@ -155,9 +186,20 @@ describe('create-plugin', () => {
         runResult.assertNoFileContent('testdir/.storybook/preview.tsx', /import\s*{[^}]*UIThemeProvider/);
         runResult.assertNoFileContent('testdir/.storybook/preview.tsx', /import\s*{[^}]*defaultTheme/);
 
-        // Storybook builds the story index by statically re-parsing the options block as
-        // plain JavaScript, so a type annotation inside storySort makes /index.json 500.
-        runResult.assertNoFileContent('testdir/.storybook/preview.tsx', 'storySort: (a: ');
+        // Storybook builds the story index by re-reading storySort as plain JavaScript, so
+        // a TypeScript annotation anywhere inside it makes /index.json return 500 and the
+        // test runner find no stories. Rebuild the function the same way rather than
+        // matching one spelling: annotating only the second parameter, or the inner rank
+        // helper, or adding a space before a colon all break Storybook but would slip past
+        // a literal check. Verified to agree with @storybook/csf-tools on every such case.
+        const preview = fs.readFileSync(path.join(runResult.cwd, 'testdir/.storybook/preview.tsx'), 'utf8');
+        const storySort = extractStorySort(preview);
+
+        assert.ok(storySort, 'no storySort function found in the generated preview');
+        assert.doesNotThrow(
+            () => new Function(`return ${storySort}`),
+            `storySort must parse as plain JavaScript, but does not:\n${storySort}`,
+        );
 
         // MSW's default worker URL is absolute ('/mockServiceWorker.js'), which 404s when
         // a published Storybook is served from a per-plugin subfolder rather than a domain
