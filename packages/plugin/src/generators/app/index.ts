@@ -5,7 +5,11 @@ import chalk from 'chalk';
 import validatePackageName from 'validate-npm-package-name';
 import Generator from 'yeoman-generator';
 
-type AgentInstructions = 'claude' | 'codex' | 'generic' | 'none';
+// Two instruction files, because two conventions exist. Claude Code reads CLAUDE.md.
+// AGENTS.md is the cross-tool standard stewarded by the Agentic AI Foundation and read
+// by Codex, Cursor, Copilot's coding agent, Gemini CLI and around twenty other tools.
+// Nothing reads a file named INSTRUCTIONS.md, so there is no third choice to offer.
+type AgentInstructions = 'claude' | 'codex' | 'none';
 
 type Answers = {
     projectName: string;
@@ -17,13 +21,11 @@ type Answers = {
 const instructionFileNames: Record<Exclude<AgentInstructions, 'none'>, string> = {
     claude: 'CLAUDE.md',
     codex: 'AGENTS.md',
-    generic: 'INSTRUCTIONS.md',
 };
 
 const skillDirectories: Record<Exclude<AgentInstructions, 'none'>, string> = {
     claude: '.claude/skills',
     codex: '.agents/skills',
-    generic: '.agents/skills',
 };
 
 export default class AppGenerator extends Generator {
@@ -58,8 +60,7 @@ export default class AppGenerator extends Generator {
                 default: 'claude',
                 choices: [
                     { name: 'Claude Code (recommended)', value: 'claude' },
-                    { name: 'Codex', value: 'codex' },
-                    { name: 'Generic instructions only', value: 'generic' },
+                    { name: 'AGENTS.md (Codex, Cursor, Copilot, Gemini CLI, and others)', value: 'codex' },
                     { name: 'No AI instructions', value: 'none' },
                 ],
             },

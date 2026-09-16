@@ -32,9 +32,10 @@ The generator can optionally scaffold AI coding instructions.
 When prompted, choose:
 
 -   **Claude Code (recommended):** adds `CLAUDE.md` and eleven skills under `.claude/skills/`.
--   **Codex:** adds `AGENTS.md` and eleven skills under `.agents/skills/`.
--   **Generic instructions only:** adds `INSTRUCTIONS.md` and eleven skills under `.agents/skills/`
-    (readable as plain documentation by tools without a skill mechanism).
+-   **AGENTS.md:** adds `AGENTS.md` and eleven skills under `.agents/skills/`. `AGENTS.md`
+    is the cross-tool convention read by Codex, Cursor, Copilot's coding agent, Gemini CLI
+    and many other tools. Tools without a skill mechanism can still read the skill files as
+    plain documentation.
 -   **No AI instructions:** adds no agent files.
 
 The generated guidance covers project structure, commands, widget configuration, forms,

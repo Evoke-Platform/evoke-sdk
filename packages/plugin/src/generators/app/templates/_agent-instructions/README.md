@@ -12,18 +12,21 @@ when the developer picks an agent — a `none` scaffold receives none of them:
 1. **`INSTRUCTIONS.md`** → renamed based on the developer's agent choice:
     - `claude` → `CLAUDE.md` (project root)
     - `codex` → `AGENTS.md` (project root)
-    - `generic` → `INSTRUCTIONS.md` (project root)
     - `none` → nothing copied
 2. **`skills/**`\*\* → copied to the agent's skill directory:
     - `claude` → `.claude/skills/`
     - `codex` → `.agents/skills/`
-    - `generic` → `.agents/skills/`
 3. **`scripts/`** → `scripts/` in the project root.
 4. **`plans/`** → `plans/` in the project root. Dot files are included, so `.gitkeep`
    comes across and the otherwise-empty directory survives.
 
 `INSTRUCTIONS.md` is an EJS template (uses `<%= projectName %>`) and is processed with
 `copyTpl`. Everything else is plain-copied with `fs.copy` — no interpolation.
+
+That filename is the template's own name and never reaches a generated project: the file
+is always renamed to `CLAUDE.md` or `AGENTS.md` on the way out. There is no third choice
+that writes `INSTRUCTIONS.md` verbatim, because no tool reads that name. Claude Code reads
+`CLAUDE.md`, and `AGENTS.md` is the cross-tool convention everything else follows.
 
 `scripts/` and `plans/` live under this directory specifically so they stay out of a
 `none` scaffold: `fetch-openapi-specs.sh` reads its base URL from the instruction file,

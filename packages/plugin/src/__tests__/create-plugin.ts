@@ -116,23 +116,19 @@ describe('create-plugin', () => {
         ]);
     }).timeout(5000);
 
-    it('scaffolds INSTRUCTIONS.md and skills for the generic choice', async () => {
-        runResult = await helpers
-            .run(appGenerator)
-            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'generic' });
+    it('never writes the template filename into a generated project', async () => {
+        // The source template is named INSTRUCTIONS.md and is always renamed on the way
+        // out, to CLAUDE.md or AGENTS.md. No tool reads a file called INSTRUCTIONS.md, so
+        // a project that ends up with one by that name has a copy bug, not a feature.
+        for (const choice of ['claude', 'codex', 'none']) {
+            runResult = await helpers
+                .run(appGenerator)
+                .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: choice });
 
-        runResult.assertFile([
-            'testdir/INSTRUCTIONS.md',
-            ...skillNames.map((skill) => `testdir/.agents/skills/${skill}/SKILL.md`),
-        ]);
-        runResult.assertFileContent('testdir/INSTRUCTIONS.md', '# test');
-        runResult.assertNoFile([
-            'testdir/CLAUDE.md',
-            'testdir/AGENTS.md',
-            'testdir/.claude/skills/plan-widget/SKILL.md',
-            'testdir/_agent-instructions/INSTRUCTIONS.md',
-        ]);
-    }).timeout(5000);
+            runResult.assertNoFile(['testdir/INSTRUCTIONS.md', 'testdir/_agent-instructions/INSTRUCTIONS.md']);
+            runResult.restore();
+        }
+    }).timeout(15000);
 
     it('scaffolds no agent instruction files for the none choice', async () => {
         runResult = await helpers

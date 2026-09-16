@@ -4,7 +4,7 @@
 # Agents use `jq` to query these files — never load them into context directly.
 #
 # Usage: bash scripts/fetch-openapi-specs.sh [base-url]
-#   base-url defaults to the value in CLAUDE.md / AGENTS.md / INSTRUCTIONS.md
+#   base-url defaults to the value in CLAUDE.md / AGENTS.md
 
 set -euo pipefail
 
@@ -17,14 +17,14 @@ if [ "${1:-}" != "" ]; then
     BASE_URL="${1%/}"
 else
     INSTRUCTION_FILE=""
-    for f in CLAUDE.md AGENTS.md INSTRUCTIONS.md; do
+    for f in CLAUDE.md AGENTS.md; do
         if [ -f "$PROJECT_DIR/$f" ]; then
             INSTRUCTION_FILE="$PROJECT_DIR/$f"
             break
         fi
     done
     if [ -z "$INSTRUCTION_FILE" ]; then
-        echo "Error: no CLAUDE.md / AGENTS.md / INSTRUCTIONS.md found. Pass the base URL as an argument." >&2
+        echo "Error: no CLAUDE.md / AGENTS.md found. Pass the base URL as an argument." >&2
         exit 1
     fi
     BASE_URL=$(grep 'Base URL:' "$INSTRUCTION_FILE" | grep -oE 'https?://[^ >]+' | head -1 || true)
