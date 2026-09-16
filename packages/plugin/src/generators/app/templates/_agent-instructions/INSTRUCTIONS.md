@@ -521,5 +521,13 @@ reporting findings — a review on broken code wastes both parties' time.
     constitutes explicit permission to commit after each passing validation gate for
     that build session only. Never push.
 -   Do not write secrets or credentials into the repository.
+-   **Never record a payment result you have not authenticated.** In a payment gateway,
+    `postPaymentResult` and `receivePaymentNotification` both take data from outside the
+    application: a query string the payer can edit, and an endpoint anyone can post to.
+    Confirm the result with the provider, by verifying its signature or by looking the
+    transaction up directly, before setting a `Payment` to `Paid`. Skipping that lets
+    anyone mark an unpaid transaction as paid. The `add-payment-gateway` skill covers
+    how, and the provider's own current documentation is the only correct source for the
+    mechanism.
 -   Do not bypass `manifestgen` — widget and payment gateway discovery depends on it.
 -   Do not add dependencies casually; explain why first and get agreement.
