@@ -120,8 +120,12 @@ These fields are defined on the `Payment` interface in `@evoke-platform/sdk` —
 type as the source of truth. Inspect the installed declarations for the exact current
 shapes:
 
--   `node_modules/@evoke-platform/payment/dist/payment.d.ts`
--   `node_modules/@evoke-platform/payment/dist/paymentGateway.d.ts`
+```bash
+find node_modules/@evoke-platform/payment -name 'payment.d.ts' -o -name 'paymentGateway.d.ts'
+```
+
+Search rather than typing a path: the layout inside the package can change between
+releases, and a search also returns anything added since this skill was written.
 
 ## What NOT to Generate
 

@@ -10,14 +10,20 @@ Mongo-style criteria objects, the same shape used in `filter` widget properties.
 
 Before implementing, inspect the installed package for the current props and examples:
 
--   `node_modules/@evoke-platform/ui-components/dist/published/components/custom/CriteriaBuilder/CriteriaBuilder.d.ts`
--   `node_modules/@evoke-platform/ui-components/dist/published/components/custom/CriteriaBuilder/utils.d.ts`
--   `node_modules/@evoke-platform/ui-components/dist/published/components/custom/CriteriaBuilder/types.d.ts`
--   `node_modules/@evoke-platform/ui-components/dist/published/stories/CriteriaBuilder.stories.js`
+```bash
+# Declarations: the component, plus its subcomponents and its local types and utils
+find node_modules/@evoke-platform/ui-components -path '*CriteriaBuilder*' -name '*.d.ts'
 
-**Import path:** `import { CriteriaBuilder } from '@evoke-platform/sdk'` — the deep
-`dist/published/` paths above are read-only reference, not valid runtime imports; the
-package exports map rejects them in production builds.
+# Worked examples
+find node_modules/@evoke-platform/ui-components -name 'CriteriaBuilder.stories.js'
+```
+
+Search rather than typing a path: the layout inside the package can change between
+releases, and a search also returns anything added since this skill was written.
+
+**Import path:** `import { CriteriaBuilder } from '@evoke-platform/sdk'` — whatever the
+search returns is read-only reference, not a valid runtime import; the package exports
+map rejects deep paths in production builds.
 
 Pass the target object's `properties` array and keep the criteria in component state.
 Use `presetValues`/`enablePresetValues` only when the widget should insert platform

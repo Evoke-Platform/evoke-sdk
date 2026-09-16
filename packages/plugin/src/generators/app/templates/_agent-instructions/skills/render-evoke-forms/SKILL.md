@@ -26,14 +26,23 @@ To render an Evoke form inside a widget, use the V2 components re-exported by th
 
 Before implementing, inspect the installed package for the current props and examples:
 
--   `node_modules/@evoke-platform/ui-components/dist/published/index.d.ts`
--   `node_modules/@evoke-platform/ui-components/dist/published/components/custom/FormV2/FormRendererContainer.d.ts`
--   `node_modules/@evoke-platform/ui-components/dist/published/components/custom/FormV2/FormRenderer.d.ts`
--   `node_modules/@evoke-platform/ui-components/dist/published/stories/FormRendererContainer.stories.js`
--   `node_modules/@evoke-platform/ui-components/dist/published/stories/FormRenderer.stories.js`
+```bash
+# Props for both components. Drop the FormRenderer prefix to see everything the V2
+# form folder ships, which is large.
+find node_modules/@evoke-platform/ui-components -path '*FormV2*' -name 'FormRenderer*.d.ts'
+
+# Worked examples
+find node_modules/@evoke-platform/ui-components -name 'FormRenderer*.stories.js'
+
+# Everything the package exports
+node -p "require.resolve('@evoke-platform/ui-components').replace(/\.js$/,'.d.ts')"
+```
+
+Search rather than typing a path: the layout inside the package can change between
+releases, and a search also returns anything added since this skill was written.
 
 The `.d.ts` files are the source of truth for the installed version. Story files are
-read-only examples if present; do not import from `dist/published/stories`.
+read-only examples if present; never import from a story path.
 
 If a developer asks for "a form", clarify whether they mean an Evoke V2 form rendered
 from an object/action/form definition or a custom local UI. For Evoke forms, use V2

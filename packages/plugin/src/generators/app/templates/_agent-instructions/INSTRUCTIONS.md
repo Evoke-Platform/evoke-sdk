@@ -118,16 +118,43 @@ same name. Check Storybook Controls and the installed `.d.ts` before using wrapp
 components. `Snackbar` is the common sharp edge here: the installed type requires
 `handleClose`, and Storybook examples show `message` plus `error` as the normal alert API.
 
-For current component APIs, inspect the installed package instead of relying on memory:
+### Finding the truth about an installed package
 
--   Enumerate the custom components:
-    `ls node_modules/@evoke-platform/ui-components/dist/published/components/custom/`
--   Root exports: `node_modules/@evoke-platform/ui-components/dist/published/index.d.ts`
--   Component props: `node_modules/@evoke-platform/ui-components/dist/published/components/custom/**`
--   Optional examples: `node_modules/@evoke-platform/ui-components/dist/published/stories/*.stories.js`
+<a id="package-lookup"></a>
 
-The package `exports` map only supports root/color/icon imports. Treat deep files under
-`dist/published/` as read-only reference material, not supported import paths.
+For current component APIs, inspect the installed package instead of relying on memory.
+Locate files by searching, not by typing a path from memory: the folder layout inside a
+package is that package's private business and can change in any release, and a search
+also returns files added since this document was written.
+
+**What can I import?** Resolve the package's entry point and read the declarations beside
+it. This is the authoritative list of every name the package exposes:
+
+```bash
+node -p "require.resolve('@evoke-platform/ui-components').replace(/\.js$/,'.d.ts')"
+```
+
+Read the file that prints. The same command works for `@evoke-platform/context` and
+`@evoke-platform/payment`. It has to go through the entry point rather than the package's
+`package.json`, because the `exports` map refuses to serve that file.
+
+**What shape is one component, hook or type?** Search the package by name:
+
+```bash
+find node_modules/@evoke-platform/ui-components -path '*CriteriaBuilder*' -name '*.d.ts'
+find node_modules/@evoke-platform/context -name 'objects.d.ts'
+```
+
+Read whatever comes back. A component's folder usually holds its subcomponents and a
+local `types.d.ts` and `utils.d.ts` alongside the main declarations, and all of them are
+fair reference material.
+
+**What components exist at all?** The root declarations from the first command list every
+export. The published catalog linked under Platform Source Of Truth is the better view
+for humans, with live prop tables.
+
+Everything found this way is read-only reference. The `exports` map only supports root,
+colour and icon imports, so never turn a path you discovered into an import statement.
 
 Icons are exported from the UI package's icon subpaths (for example
 `@evoke-platform/ui-components/icons/Add`). Those subpaths are supported by the package
@@ -238,13 +265,21 @@ Key rules:
     `error`). Do not poll indefinitely.
 
 The hook and store types (e.g. `ObjectStore`'s full method list, `ApiServices`
-signatures) live in the installed context package — inspect them instead of guessing:
+signatures) live in the installed context package — inspect them instead of guessing,
+using the search commands in [Finding the truth about an installed
+package](#package-lookup):
 
--   `node_modules/@evoke-platform/context/dist/objects/objects.d.ts` — `ObjectStore`,
-    instance and action types (the file is `objects.d.ts`, not `ObjectStore.d.ts`)
--   `node_modules/@evoke-platform/context/dist/api/` — `ApiServices` signatures
--   `node_modules/@evoke-platform/context/dist/index.d.ts` — everything the package
-    exports
+```bash
+# ObjectStore, instance and action types. Note the declarations are named after the
+# concept, objects, not after the interface, so search rather than guessing a filename.
+find node_modules/@evoke-platform/context -name 'objects.d.ts'
+
+# ApiServices signatures
+find node_modules/@evoke-platform/context -path '*api*' -name '*.d.ts'
+
+# Everything the package exports
+node -p "require.resolve('@evoke-platform/context').replace(/\.js$/,'.d.ts')"
+```
 
 ## Environment
 
