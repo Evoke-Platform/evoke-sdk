@@ -122,36 +122,43 @@ components. `Snackbar` is the common sharp edge here: the installed type require
 
 <a id="package-lookup"></a>
 
-For current component APIs, inspect the installed package instead of relying on memory.
-Locate files by searching, not by typing a path from memory: the folder layout inside a
-package is that package's private business and can change in any release, and a search
-also returns files added since this document was written.
+Inspect the installed package instead of relying on memory. **Start at the declarations
+the package itself publishes and follow its re-exports. Never type an internal file path.**
+A file like `payment.d.ts` or a folder like `FormV2` is that package's private business
+and can be renamed in any release, whereas an exported name is public API.
 
-**What can I import?** Resolve the package's entry point and read the declarations beside
-it. This is the authoritative list of every name the package exposes:
+**Step 1, always: read the package's published declarations.** Resolve the entry point
+and swap the extension:
 
 ```bash
-node -p "require.resolve('@evoke-platform/ui-components').replace(/\.js$/,'.d.ts')"
+node -p "require.resolve('@evoke-platform/payment').replace(/\.js$/,'.d.ts')"
 ```
 
-Read the file that prints. The same command works for `@evoke-platform/context` and
-`@evoke-platform/payment`. It has to go through the entry point rather than the package's
-`package.json`, because the `exports` map refuses to serve that file.
+Read the file that prints. The same command works for every `@evoke-platform` package. It
+has to go through the entry point rather than the package's `package.json`, because some
+of these packages have an `exports` map that refuses to serve that file.
 
-**What shape is one component, hook or type?** Search the package by name:
+**Step 2, only if step 1 did not answer it: follow the re-export, or search by exported
+name.** How far step 1 gets you differs by package:
+
+-   `@evoke-platform/payment` and `@evoke-platform/context` re-export everything from the
+    root, so the root declarations plus the files they name give you the whole surface,
+    including `Payment`, `PaymentGateway` and `ObjectStore`.
+-   `@evoke-platform/ui-components` names its components at the root but not their prop
+    types. Follow the `from './components/custom'` re-export the root declares, or search
+    for the component by its exported name:
 
 ```bash
 find node_modules/@evoke-platform/ui-components -path '*CriteriaBuilder*' -name '*.d.ts'
-find node_modules/@evoke-platform/context -name 'objects.d.ts'
 ```
 
-Read whatever comes back. A component's folder usually holds its subcomponents and a
-local `types.d.ts` and `utils.d.ts` alongside the main declarations, and all of them are
-fair reference material.
+Searching for `CriteriaBuilder` is fine, because that is the name you import. Searching
+for a filename you remembered is not. A component's folder usually holds its
+subcomponents and a local `types.d.ts` and `utils.d.ts`, all fair reference material.
 
-**What components exist at all?** The root declarations from the first command list every
-export. The published catalog linked under Platform Source Of Truth is the better view
-for humans, with live prop tables.
+**What components exist at all?** The root declarations from step 1 list every export.
+The published catalog linked under Platform Source Of Truth is the better view for
+humans, with live prop tables.
 
 Everything found this way is read-only reference. The `exports` map only supports root,
 colour and icon imports, so never turn a path you discovered into an import statement.
@@ -270,16 +277,12 @@ using the search commands in [Finding the truth about an installed
 package](#package-lookup):
 
 ```bash
-# ObjectStore, instance and action types. Note the declarations are named after the
-# concept, objects, not after the interface, so search rather than guessing a filename.
-find node_modules/@evoke-platform/context -name 'objects.d.ts'
-
-# ApiServices signatures
-find node_modules/@evoke-platform/context -path '*api*' -name '*.d.ts'
-
-# Everything the package exports
 node -p "require.resolve('@evoke-platform/context').replace(/\.js$/,'.d.ts')"
 ```
+
+The root declarations re-export the whole package, so read that file and follow the
+re-export for the area you need: objects for `ObjectStore` and the instance and action
+types, api for `ApiServices` signatures.
 
 ## Environment
 

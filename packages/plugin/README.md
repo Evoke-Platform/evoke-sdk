@@ -40,7 +40,10 @@ When prompted, choose:
 
 The generated guidance covers project structure, commands, widget configuration, forms,
 test-first Storybook development, criteria filters, correspondence sending, payment gateway safety, and guardrails.
-Generated projects include Storybook interaction testing with `npm run test-storybook` for a CLI pass/fail signal.
+The agent instructions are built around a feedback loop. Generated projects include
+Storybook interaction tests and `npm run test-storybook`, which returns a plain pass or
+fail. Without that, an agent is changing UI code blind, with no way to tell what actually
+worked. The tests ship with every generated project regardless of the choice above.
 
 ## License
 

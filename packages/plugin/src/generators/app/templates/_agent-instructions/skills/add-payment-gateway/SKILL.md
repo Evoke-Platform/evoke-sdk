@@ -121,11 +121,13 @@ type as the source of truth. Inspect the installed declarations for the exact cu
 shapes:
 
 ```bash
-find node_modules/@evoke-platform/payment -name 'payment.d.ts' -o -name 'paymentGateway.d.ts'
+node -p "require.resolve('@evoke-platform/payment').replace(/\.js$/,'.d.ts')"
 ```
 
-Search rather than typing a path: the layout inside the package can change between
-releases, and a search also returns anything added since this skill was written.
+Read what that prints. The package re-exports its whole surface from there, so the root
+declarations and the files they name cover `Payment` and `PaymentGateway`. Start from the
+declarations the package publishes rather than a filename, which is internal and can be
+renamed in any release.
 
 ## What NOT to Generate
 

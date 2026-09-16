@@ -27,9 +27,8 @@ To render an Evoke form inside a widget, use the V2 components re-exported by th
 Before implementing, inspect the installed package for the current props and examples:
 
 ```bash
-# Props for both components. Drop the FormRenderer prefix to see everything the V2
-# form folder ships, which is large.
-find node_modules/@evoke-platform/ui-components -path '*FormV2*' -name 'FormRenderer*.d.ts'
+# Props for both components, found by their exported names rather than by folder
+find node_modules/@evoke-platform/ui-components -path '*FormRenderer*' -name '*.d.ts'
 
 # Worked examples
 find node_modules/@evoke-platform/ui-components -name 'FormRenderer*.stories.js'
