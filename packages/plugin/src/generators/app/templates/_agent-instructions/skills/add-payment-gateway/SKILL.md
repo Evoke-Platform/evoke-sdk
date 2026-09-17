@@ -47,7 +47,7 @@ export class MyGateway implements PaymentGateway {
     }
 
     // UNTRUSTED INPUT. This endpoint is reachable by anyone who learns its URL, not only
-    // by the provider. Verify the request's signature before reading the body.
+    // by the provider. Authenticate it using the provider's documented mechanism.
     receivePaymentNotification(request: Request, response: Response): Payment | null | PromiseLike<Payment | null> {
         throw new Error('Method not implemented.');
     }
@@ -116,18 +116,9 @@ processor's books. Populate every field the provider's response supplies:
 | `authorizationCode`    | `string`                                                              | authorization code, if the provider returns one                                    |
 | `transactionEnd`       | `string` (ISO date time)                                              | when the result was received                                                       |
 
-These fields are defined on the `Payment` interface in `@evoke-platform/sdk` — treat that
-type as the source of truth. Inspect the installed declarations for the exact current
-shapes:
-
-```bash
-node -p "require.resolve('@evoke-platform/payment').replace(/\.js$/,'.d.ts')"
-```
-
-Read what that prints. The package re-exports its whole surface from there, so the root
-declarations and the files they name cover `Payment` and `PaymentGateway`. Start from the
-declarations the package publishes rather than a filename, which is internal and can be
-renamed in any release.
+These fields are defined on `Payment`, re-exported by `@evoke-platform/sdk` from
+`@evoke-platform/payment`. Read that installed npm package's exported `Payment` and
+`PaymentGateway` types for the current shapes.
 
 ## What NOT to Generate
 

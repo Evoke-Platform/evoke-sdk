@@ -24,24 +24,9 @@ To render an Evoke form inside a widget, use the V2 components re-exported by th
     discard confirmation), either use `FormRenderer` and own `value`/`onChange`, or use
     `onValidationChange` as a simple dirty proxy when that tradeoff is acceptable.
 
-Before implementing, inspect the installed package for the current props and examples:
-
-```bash
-# Props for both components, found by their exported names rather than by folder
-find node_modules/@evoke-platform/ui-components -path '*FormRenderer*' -name '*.d.ts'
-
-# Worked examples
-find node_modules/@evoke-platform/ui-components -name 'FormRenderer*.stories.js'
-
-# Everything the package exports
-node -p "require.resolve('@evoke-platform/ui-components').replace(/\.js$/,'.d.ts')"
-```
-
-Search rather than typing a path: the layout inside the package can change between
-releases, and a search also returns anything added since this skill was written.
-
-The `.d.ts` files are the source of truth for the installed version. Story files are
-read-only examples if present; never import from a story path.
+Before implementing, read `FormRenderer`, `FormRendererContainer`, and their props from
+the installed `@evoke-platform/ui-components` npm package's exported types. Use the
+published component catalog for examples.
 
 If a developer asks for "a form", clarify whether they mean an Evoke V2 form rendered
 from an object/action/form definition or a custom local UI. For Evoke forms, use V2

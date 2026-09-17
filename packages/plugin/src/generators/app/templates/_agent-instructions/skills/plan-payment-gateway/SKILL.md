@@ -21,16 +21,16 @@ Payment gateways move real money. Do not write gateway code until a blueprint ex
    configured in the Evoke environment.
 5. **Sandbox vs production** — how are environments distinguished? Never default to
    production.
-6. **Webhooks and signatures** — does the provider send asynchronous notifications
-   (`receivePaymentNotification`)? How are they verified (signature scheme, shared
-   secrets)?
+6. **Authenticate inbound results** — how will `postPaymentResult` and, if used,
+   `receivePaymentNotification` authenticate results using the provider's documented
+   mechanism? Cover both the browser return and asynchronous notifications.
 7. **Testing plan** — sandbox accounts, test cards, and failure cases: declined,
    timeout, duplicate notification. Note: the scaffold ships no test runner — pick one
    (e.g. Vitest or Mocha), add it as a `devDependency` with a `test` script, and write
    the tests before implementation is considered done.
-8. **Security checklist** — secrets never logged or committed; webhook payloads not
-   trusted until the signature verifies; amounts validated against the original payment;
-   notification handling idempotent.
+8. **Security checklist** — secrets never logged or committed; neither inbound result
+   trusted until provider-specific authentication succeeds; amounts validated against
+   the original payment; notification handling idempotent.
 
 Keep the blueprint under two minutes to read. Confirm it with the developer before
 implementation.

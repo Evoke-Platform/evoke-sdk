@@ -89,7 +89,7 @@ Route to the lightest trustworthy source before guessing:
 -   Storybook story index:
     <https://cedardevdocs.z2.web.core.usgovcloudapi.net/components/index.json>
 -   Installed compile-time truth:
-    `node_modules/@evoke-platform/**/**/*.d.ts`
+    the types exported by the installed `@evoke-platform/sdk` npm package and its re-exports
 -   Runtime/API truth:
     the environment OpenAPI URLs in the Environment section below
 
@@ -118,50 +118,9 @@ same name. Check Storybook Controls and the installed `.d.ts` before using wrapp
 components. `Snackbar` is the common sharp edge here: the installed type requires
 `handleClose`, and Storybook examples show `message` plus `error` as the normal alert API.
 
-### Finding the truth about an installed package
-
-<a id="package-lookup"></a>
-
-Inspect the installed package instead of relying on memory. **Start at the declarations
-the package itself publishes and follow its re-exports. Never type an internal file path.**
-A file like `payment.d.ts` or a folder like `FormV2` is that package's private business
-and can be renamed in any release, whereas an exported name is public API.
-
-**Step 1, always: read the package's published declarations.** Resolve the entry point
-and swap the extension:
-
-```bash
-node -p "require.resolve('@evoke-platform/payment').replace(/\.js$/,'.d.ts')"
-```
-
-Read the file that prints. The same command works for every `@evoke-platform` package. It
-has to go through the entry point rather than the package's `package.json`, because some
-of these packages have an `exports` map that refuses to serve that file.
-
-**Step 2, only if step 1 did not answer it: follow the re-export, or search by exported
-name.** How far step 1 gets you differs by package:
-
--   `@evoke-platform/payment` and `@evoke-platform/context` re-export everything from the
-    root, so the root declarations plus the files they name give you the whole surface,
-    including `Payment`, `PaymentGateway` and `ObjectStore`.
--   `@evoke-platform/ui-components` names its components at the root but not their prop
-    types. Follow the `from './components/custom'` re-export the root declares, or search
-    for the component by its exported name:
-
-```bash
-find node_modules/@evoke-platform/ui-components -path '*CriteriaBuilder*' -name '*.d.ts'
-```
-
-Searching for `CriteriaBuilder` is fine, because that is the name you import. Searching
-for a filename you remembered is not. A component's folder usually holds its
-subcomponents and a local `types.d.ts` and `utils.d.ts`, all fair reference material.
-
-**What components exist at all?** The root declarations from step 1 list every export.
-The published catalog linked under Platform Source Of Truth is the better view for
-humans, with live prop tables.
-
-Everything found this way is read-only reference. The `exports` map only supports root,
-colour and icon imports, so never turn a path you discovered into an import statement.
+For current component props, read the types exported by the installed
+`@evoke-platform/ui-components` npm package. Follow its re-exports as needed; do not
+assume internal filenames or import from them. Use the published component catalog for examples.
 
 Icons are exported from the UI package's icon subpaths (for example
 `@evoke-platform/ui-components/icons/Add`). Those subpaths are supported by the package
@@ -176,8 +135,8 @@ copies, two contexts). Import context-carrying components from the package root 
 **Never import runtime components from `@mui/material`, `@mui/icons-material`, or
 `@mui/x-data-grid` directly.** The core MUI-wrapped components (`Button`, `Dialog`,
 `Select`, `MenuItem`, `CircularProgress`, `LinearProgress`, `Typography`, and the rest)
-ARE re-exported from the SDK root — the ui-components root `index.d.ts` contains
-`export * from './components/core'`. Importing runtime `@mui/*` components directly
+ARE re-exported from the SDK root — follow the UI package's published declarations to
+verify the installed surface. Importing runtime `@mui/*` components directly
 bundles a second copy of Material UI into the plugin, which escapes the host App Viewer's
 theme and bloats the bundle. Use `DataGrid` from the SDK (it wraps `x-data-grid`; check
 the installed version's prop signatures — e.g. `valueFormatter` params changed between
@@ -185,7 +144,7 @@ x-data-grid v6 and v7). Use `@evoke-platform/ui-components/icons/<Name>` for ico
 
 Type-only imports are different: if a specific x-data-grid type is not exported by the
 installed SDK surface, a type-only import from `@mui/x-data-grid` is acceptable. Verify
-the installed `index.d.ts` before assuming either way.
+the installed declarations before assuming either way.
 
 The re-exports include many of the types and sub-components you would otherwise reach
 into MUI for: common grid and Dialog sub-components (`GridSortModel`, `GridCellParams`,
@@ -194,8 +153,8 @@ into MUI for: common grid and Dialog sub-components (`GridSortModel`, `GridCellP
 `@evoke-platform/sdk` in the installed version. Verify the installed declarations before
 using them — do not rely on memory or older dogfood runs.
 
-When checking what a package exports, read the relevant `index.d.ts` in full — the files
-are small. Do not conclude an export is missing from a truncated or partial read.
+When checking what a package exports, read its declaration entry and relevant re-exports
+in full. Do not conclude an export is missing from a truncated or partial read.
 
 Evoke widgets run inside App Viewer, which already wraps remote widgets with the platform
 providers. Use SDK hooks instead of creating your own Axios clients, auth plumbing, or
@@ -272,17 +231,8 @@ Key rules:
     `error`). Do not poll indefinitely.
 
 The hook and store types (e.g. `ObjectStore`'s full method list, `ApiServices`
-signatures) live in the installed context package — inspect them instead of guessing,
-using the search commands in [Finding the truth about an installed
-package](#package-lookup):
-
-```bash
-node -p "require.resolve('@evoke-platform/context').replace(/\.js$/,'.d.ts')"
-```
-
-The root declarations re-export the whole package, so read that file and follow the
-re-export for the area you need: objects for `ObjectStore` and the instance and action
-types, api for `ApiServices` signatures.
+signatures) are exported by the installed `@evoke-platform/context` npm package. Read
+those types rather than guessing their signatures or internal filenames.
 
 ## Environment
 

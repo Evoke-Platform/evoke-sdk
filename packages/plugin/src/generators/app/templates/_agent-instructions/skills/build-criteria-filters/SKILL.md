@@ -8,22 +8,12 @@ description: Build filter/criteria UI with CriteriaBuilder and convert its Mongo
 Use `CriteriaBuilder` when the widget needs a Builder-style filter editor. It edits Evoke's
 Mongo-style criteria objects, the same shape used in `filter` widget properties.
 
-Before implementing, inspect the installed package for the current props and examples:
+Before implementing, read `CriteriaBuilder` and its props from the installed
+`@evoke-platform/ui-components` npm package's exported types. Use the published component
+catalog for examples.
 
-```bash
-# Declarations: the component, plus its subcomponents and its local types and utils
-find node_modules/@evoke-platform/ui-components -path '*CriteriaBuilder*' -name '*.d.ts'
-
-# Worked examples
-find node_modules/@evoke-platform/ui-components -name 'CriteriaBuilder.stories.js'
-```
-
-Search rather than typing a path: the layout inside the package can change between
-releases, and a search also returns anything added since this skill was written.
-
-**Import path:** `import { CriteriaBuilder } from '@evoke-platform/sdk'` — whatever the
-search returns is read-only reference, not a valid runtime import; the package exports
-map rejects deep paths in production builds.
+**Import path:** `import { CriteriaBuilder } from '@evoke-platform/sdk'`. Internal files
+reached through declarations are read-only reference, not supported runtime import paths.
 
 Pass the target object's `properties` array and keep the criteria in component state.
 Use `presetValues`/`enablePresetValues` only when the widget should insert platform
@@ -64,9 +54,9 @@ table above. Do not reach for `parseMongoDB` (exported from the SDK): despite th
 it converts stored Mongo criteria into CriteriaBuilder's internal UI state for
 re-populating the editor — its output is not a data API query.
 
-Type the converted output as `Where` — exported from `@evoke-platform/sdk` (declared in
-`@evoke-platform/context`'s `objects/filters.d.ts` as `Condition | AndClause | OrClause`)
-— before passing it to `findInstances({ where })` or a `filter.where` query parameter.
+Type the converted output as `Where`, exported from `@evoke-platform/sdk`, before
+passing it to `findInstances({ where })` or a `filter.where` query parameter. Inspect
+the installed declaration for its current shape.
 
 Type caveat: the platform emits `regexp` and `not` at runtime (its own conversion maps
 `$regex`/`$not` to them, and production widgets send `regexp` clauses), but the installed
