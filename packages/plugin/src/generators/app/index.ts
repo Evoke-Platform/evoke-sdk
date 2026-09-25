@@ -5,11 +5,22 @@ import chalk from 'chalk';
 import validatePackageName from 'validate-npm-package-name';
 import Generator from 'yeoman-generator';
 
-// Two instruction files, because two conventions exist. Claude Code reads CLAUDE.md.
-// AGENTS.md is the cross-tool standard stewarded by the Agentic AI Foundation and read
-// by Codex, Cursor, Copilot's coding agent, Gemini CLI and around twenty other tools.
-// Nothing reads a file named INSTRUCTIONS.md, so there is no third choice to offer.
-type AgentInstructions = 'claude' | 'codex' | 'none';
+// The instructions are one file for everyone; the skills are not, and cannot be.
+//
+// AGENTS.md is the cross-tool standard stewarded by the Agentic AI Foundation, read by
+// Codex, Cursor, Copilot's coding agent, Gemini CLI and around twenty other tools. Claude
+// Code reads it too, but only when no CLAUDE.md sits beside it, and not at all in sessions
+// where that support is unavailable. So every scaffold gets AGENTS.md plus a CLAUDE.md
+// holding a single `@AGENTS.md` import. That is Anthropic's documented way to share one
+// file, and it keeps working wherever reading AGENTS.md directly does not.
+//
+// Skills are the part that stays split. Claude Code discovers them only under
+// .claude/skills and reads nothing under .agents/, while .agents/skills is the cross-tool
+// convention Codex, Cursor and Copilot settled on. No single directory serves both.
+// Symlinking one at the other would, but Git checks symlinks out as plain text files on
+// Windows without extra setup, which would leave those clones with no skills at all. So
+// the developer picks, and that choice decides only where the skills land.
+type AgentInstructions = 'claude' | 'agents' | 'none';
 
 type Answers = {
     projectName: string;
@@ -18,14 +29,12 @@ type Answers = {
     environmentUrl: string;
 };
 
-const instructionFileNames: Record<Exclude<AgentInstructions, 'none'>, string> = {
-    claude: 'CLAUDE.md',
-    codex: 'AGENTS.md',
-};
+const INSTRUCTION_FILE = 'AGENTS.md';
+const CLAUDE_IMPORT_FILE = 'CLAUDE.md';
 
 const skillDirectories: Record<Exclude<AgentInstructions, 'none'>, string> = {
     claude: '.claude/skills',
-    codex: '.agents/skills',
+    agents: '.agents/skills',
 };
 
 export default class AppGenerator extends Generator {
@@ -54,13 +63,15 @@ export default class AppGenerator extends Generator {
                 default: (responses: Partial<Answers>) => responses.projectName?.split('/').pop() ?? '',
             },
             {
+                // Every choice but 'none' writes the same AGENTS.md and CLAUDE.md. This
+                // only picks where the skills go, because skill discovery differs by tool.
                 type: 'list',
                 name: 'agentInstructions',
-                message: 'Add AI coding instructions?',
+                message: 'Add AI coding instructions? (choose where skills should go)',
                 default: 'claude',
                 choices: [
-                    { name: 'Claude Code (recommended)', value: 'claude' },
-                    { name: 'AGENTS.md (Codex, Cursor, Copilot, Gemini CLI, and others)', value: 'codex' },
+                    { name: 'Claude Code — skills in .claude/skills (recommended)', value: 'claude' },
+                    { name: 'Codex, Cursor, Copilot and others — skills in .agents/skills', value: 'agents' },
                     { name: 'No AI instructions', value: 'none' },
                 ],
             },
@@ -106,9 +117,15 @@ export default class AppGenerator extends Generator {
 
         this.fs.copyTpl(
             this.templatePath('_agent-instructions/INSTRUCTIONS.md'),
-            this.destinationPath(instructionFileNames[choice]),
+            this.destinationPath(INSTRUCTION_FILE),
             answers,
         );
+
+        // A CLAUDE.md that imports AGENTS.md rather than a second copy of it. Claude Code
+        // ignores AGENTS.md whenever a CLAUDE.md sits beside it, so this file is what makes
+        // the shared one reach Claude at all, and it also covers sessions where reading
+        // AGENTS.md directly is unavailable.
+        this.fs.copy(this.templatePath('_agent-instructions/CLAUDE.md'), this.destinationPath(CLAUDE_IMPORT_FILE));
 
         this.fs.copy(
             this.templatePath('_agent-instructions/skills/**'),
@@ -146,7 +163,7 @@ export default class AppGenerator extends Generator {
 
         if (choice !== 'none') {
             this.log.writeln(
-                `AI coding instructions added: ${instructionFileNames[choice]} and skills under ${skillDirectories[choice]}/.`,
+                `AI coding instructions added: ${INSTRUCTION_FILE}, a ${CLAUDE_IMPORT_FILE} that imports it, and skills under ${skillDirectories[choice]}/.`,
             );
 
             if (this.answers.environmentUrl) {
@@ -155,7 +172,7 @@ export default class AppGenerator extends Generator {
                 );
             } else {
                 this.log.writeln(
-                    `Set your environment URL in ${instructionFileNames[choice]} then run 'bash scripts/fetch-openapi-specs.sh'.`,
+                    `Set your environment URL in ${INSTRUCTION_FILE} then run 'bash scripts/fetch-openapi-specs.sh'.`,
                 );
             }
 

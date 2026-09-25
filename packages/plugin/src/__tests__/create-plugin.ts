@@ -80,47 +80,53 @@ describe('create-plugin', () => {
         ]);
     }).timeout(5000);
 
-    it('scaffolds CLAUDE.md and skills for the claude choice', async () => {
+    it('writes the same two instruction files whichever skill location is chosen', async () => {
+        for (const choice of ['claude', 'agents']) {
+            runResult = await helpers
+                .run(appGenerator)
+                .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: choice });
+
+            runResult.assertFile(['testdir/AGENTS.md', 'testdir/CLAUDE.md']);
+
+            // The guidance lives in AGENTS.md only.
+            runResult.assertFileContent('testdir/AGENTS.md', '# test');
+
+            // CLAUDE.md is the import, not a second copy. Claude Code ignores AGENTS.md
+            // whenever a CLAUDE.md sits beside it, so this file is what makes the shared
+            // one reach Claude at all.
+            runResult.assertFileContent('testdir/CLAUDE.md', '@AGENTS.md');
+            runResult.assertNoFileContent('testdir/CLAUDE.md', '# test');
+
+            runResult.assertNoFile(['testdir/INSTRUCTIONS.md', 'testdir/_agent-instructions/INSTRUCTIONS.md']);
+            runResult.restore();
+        }
+    }).timeout(10000);
+
+    it('puts skills where the chosen tool discovers them, and only there', async () => {
+        // Claude Code finds skills only under .claude/skills and reads nothing under
+        // .agents/; .agents/skills is the convention Codex, Cursor and Copilot use. A
+        // scaffold that guesses wrong ships eleven skills no tool will load.
         runResult = await helpers
             .run(appGenerator)
             .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
 
-        runResult.assertFile([
-            'testdir/CLAUDE.md',
-            ...skillNames.map((skill) => `testdir/.claude/skills/${skill}/SKILL.md`),
-        ]);
-        runResult.assertFileContent('testdir/CLAUDE.md', '# test');
-        runResult.assertNoFile([
-            'testdir/AGENTS.md',
-            'testdir/INSTRUCTIONS.md',
-            'testdir/.agents/skills/plan-widget/SKILL.md',
-            'testdir/_agent-instructions/INSTRUCTIONS.md',
-        ]);
-    }).timeout(5000);
+        runResult.assertFile(skillNames.map((skill) => `testdir/.claude/skills/${skill}/SKILL.md`));
+        runResult.assertNoFile(['testdir/.agents/skills/plan-widget/SKILL.md']);
+        runResult.restore();
 
-    it('scaffolds AGENTS.md and skills for the codex choice', async () => {
         runResult = await helpers
             .run(appGenerator)
-            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'codex' });
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'agents' });
 
-        runResult.assertFile([
-            'testdir/AGENTS.md',
-            ...skillNames.map((skill) => `testdir/.agents/skills/${skill}/SKILL.md`),
-        ]);
-        runResult.assertFileContent('testdir/AGENTS.md', '# test');
-        runResult.assertNoFile([
-            'testdir/CLAUDE.md',
-            'testdir/INSTRUCTIONS.md',
-            'testdir/.claude/skills/plan-widget/SKILL.md',
-            'testdir/_agent-instructions/INSTRUCTIONS.md',
-        ]);
-    }).timeout(5000);
+        runResult.assertFile(skillNames.map((skill) => `testdir/.agents/skills/${skill}/SKILL.md`));
+        runResult.assertNoFile(['testdir/.claude/skills/plan-widget/SKILL.md']);
+    }).timeout(10000);
 
     it('never writes the template filename into a generated project', async () => {
         // The source template is named INSTRUCTIONS.md and is always renamed on the way
         // out, to CLAUDE.md or AGENTS.md. No tool reads a file called INSTRUCTIONS.md, so
         // a project that ends up with one by that name has a copy bug, not a feature.
-        for (const choice of ['claude', 'codex', 'none']) {
+        for (const choice of ['claude', 'agents', 'none']) {
             runResult = await helpers
                 .run(appGenerator)
                 .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: choice });
@@ -255,7 +261,7 @@ describe('create-plugin', () => {
             environmentUrl: 'https://myenv.example.com',
         });
 
-        runResult.assertFileContent('testdir/CLAUDE.md', 'Base URL: https://myenv.example.com');
+        runResult.assertFileContent('testdir/AGENTS.md', 'Base URL: https://myenv.example.com');
     }).timeout(5000);
 
     it('leaves Base URL as _not set_ when environmentUrl is empty', async () => {
@@ -266,7 +272,7 @@ describe('create-plugin', () => {
             environmentUrl: '',
         });
 
-        runResult.assertFileContent('testdir/CLAUDE.md', 'Base URL: _not set_');
+        runResult.assertFileContent('testdir/AGENTS.md', 'Base URL: _not set_');
     }).timeout(5000);
 
     it('routes generated instructions to live OpenAPI first', async () => {
@@ -275,10 +281,10 @@ describe('create-plugin', () => {
             .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
 
         runResult.assertFileContent(
-            'testdir/CLAUDE.md',
+            'testdir/AGENTS.md',
             'https://cedardevdocs.z2.web.core.usgovcloudapi.net/components/index.json',
         );
-        runResult.assertFileContent('testdir/CLAUDE.md', 'Preferred lookup order:');
-        runResult.assertFileContent('testdir/CLAUDE.md', 'Live environment URL with `curl | jq`');
+        runResult.assertFileContent('testdir/AGENTS.md', 'Preferred lookup order:');
+        runResult.assertFileContent('testdir/AGENTS.md', 'Live environment URL with `curl | jq`');
     }).timeout(5000);
 });

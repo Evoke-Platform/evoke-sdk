@@ -4,7 +4,7 @@
 # Agents use `jq` to query these files — never load them into context directly.
 #
 # Usage: bash scripts/fetch-openapi-specs.sh [base-url]
-#   base-url defaults to the value in CLAUDE.md / AGENTS.md
+#   base-url defaults to the value in AGENTS.md
 
 set -euo pipefail
 
@@ -16,20 +16,23 @@ OUT="$PROJECT_DIR/.openapi"
 if [ "${1:-}" != "" ]; then
     BASE_URL="${1%/}"
 else
-    INSTRUCTION_FILE=""
-    for f in CLAUDE.md AGENTS.md; do
-        if [ -f "$PROJECT_DIR/$f" ]; then
-            INSTRUCTION_FILE="$PROJECT_DIR/$f"
-            break
-        fi
+    # Keep looking until a file actually yields a URL, rather than stopping at the first
+    # file that exists. CLAUDE.md is normally a one-line import of AGENTS.md and holds no
+    # Base URL of its own, so stopping there would fail on every scaffolded project.
+    FOUND_ANY=""
+    BASE_URL=""
+    for f in AGENTS.md CLAUDE.md; do
+        [ -f "$PROJECT_DIR/$f" ] || continue
+        FOUND_ANY="yes"
+        BASE_URL=$(grep 'Base URL:' "$PROJECT_DIR/$f" | grep -oE 'https?://[^ >]+' | head -1 || true)
+        [ -n "$BASE_URL" ] && break
     done
-    if [ -z "$INSTRUCTION_FILE" ]; then
-        echo "Error: no CLAUDE.md / AGENTS.md found. Pass the base URL as an argument." >&2
+    if [ -z "$FOUND_ANY" ]; then
+        echo "Error: no AGENTS.md / CLAUDE.md found. Pass the base URL as an argument." >&2
         exit 1
     fi
-    BASE_URL=$(grep 'Base URL:' "$INSTRUCTION_FILE" | grep -oE 'https?://[^ >]+' | head -1 || true)
     if [ -z "$BASE_URL" ]; then
-        echo "Error: base URL not found in $INSTRUCTION_FILE. Set the 'Base URL:' line or pass it as an argument." >&2
+        echo "Error: base URL not found. Set the 'Base URL:' line in AGENTS.md or pass it as an argument." >&2
         exit 1
     fi
     BASE_URL="${BASE_URL%/}"

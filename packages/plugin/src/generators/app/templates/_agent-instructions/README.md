@@ -6,27 +6,50 @@ exists only for SDK developers working on these templates.
 
 ## How It Gets Into a Scaffold
 
-The Yeoman generator (`../index.ts`) copies four things from this directory, and only
-when the developer picks an agent — a `none` scaffold receives none of them:
+The Yeoman generator (`../index.ts`) copies five things from this directory, and only
+when the developer asks for instructions — a `none` scaffold receives none of them:
 
-1. **`INSTRUCTIONS.md`** → renamed based on the developer's agent choice:
-    - `claude` → `CLAUDE.md` (project root)
-    - `codex` → `AGENTS.md` (project root)
-    - `none` → nothing copied
-2. **`skills/**`\*\* → copied to the agent's skill directory:
+1. **`INSTRUCTIONS.md`** → `AGENTS.md` in the project root.
+2. **`CLAUDE.md`** → `CLAUDE.md` in the project root. One line: `@AGENTS.md`.
+3. **`skills/**`\*\* → the skill directory for the developer's choice:
     - `claude` → `.claude/skills/`
-    - `codex` → `.agents/skills/`
-3. **`scripts/`** → `scripts/` in the project root.
-4. **`plans/`** → `plans/` in the project root. Dot files are included, so `.gitkeep`
+    - `agents` → `.agents/skills/`
+4. **`scripts/`** → `scripts/` in the project root.
+5. **`plans/`** → `plans/` in the project root. Dot files are included, so `.gitkeep`
    comes across and the otherwise-empty directory survives.
 
 `INSTRUCTIONS.md` is an EJS template (uses `<%= projectName %>`) and is processed with
 `copyTpl`. Everything else is plain-copied with `fs.copy` — no interpolation.
 
-That filename is the template's own name and never reaches a generated project: the file
-is always renamed to `CLAUDE.md` or `AGENTS.md` on the way out. There is no third choice
-that writes `INSTRUCTIONS.md` verbatim, because no tool reads that name. Claude Code reads
-`CLAUDE.md`, and `AGENTS.md` is the cross-tool convention everything else follows.
+That filename is the template's own name and never reaches a generated project: it is
+always renamed to `AGENTS.md` on the way out. Nothing reads a file called
+`INSTRUCTIONS.md`.
+
+### Why two files for one set of instructions
+
+`AGENTS.md` is the cross-tool convention, read by Codex, Cursor, Copilot's coding agent,
+Gemini CLI and around twenty other tools. Claude Code reads it too, but only when no
+`CLAUDE.md` sits beside it, and not at all in sessions where that support is unavailable.
+
+So the scaffold also writes a `CLAUDE.md` containing just `@AGENTS.md`. That is
+Anthropic's documented way to keep one shared file, it makes the shared file reach Claude,
+and it keeps working where reading `AGENTS.md` directly does not. There is one copy of the
+guidance, not two.
+
+### Why the skills still need a choice
+
+Instructions unify; skill discovery does not. Claude Code finds skills only under
+`.claude/skills/` and reads nothing under `.agents/`, while `.agents/skills/` is the
+cross-tool convention Codex, Cursor and Copilot settled on. No single directory serves
+both.
+
+Symlinking one at the other would, and Claude Code does support symlinked skill entries.
+It is rejected here because Git checks a committed symlink out as a plain text file on
+Windows unless `core.symlinks` is enabled, so those clones would silently end up with no
+skills at all. Duplicating the eleven skills into both directories was the other option,
+and it doubles what ships and invites the two copies to drift.
+
+So the prompt asks, and that answer decides only this one directory.
 
 `scripts/` and `plans/` live under this directory specifically so they stay out of a
 `none` scaffold: `fetch-openapi-specs.sh` reads its base URL from the instruction file,
