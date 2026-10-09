@@ -66,7 +66,7 @@
         },
         "allowChildren": {
             "type": "boolean",
-            "description": "Indicates if the widget allows child widgets"
+            "description": "Indicates that the widget is a container; the contained page items are passed to the component as children"
         },
         "$schema": { "type": "string" }
     },
