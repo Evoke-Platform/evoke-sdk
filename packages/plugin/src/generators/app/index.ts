@@ -67,12 +67,12 @@ export default class AppGenerator extends Generator {
                 // only picks where the skills go, because skill discovery differs by tool.
                 type: 'list',
                 name: 'agentInstructions',
-                message: 'Add AI coding instructions? (choose where skills should go)',
+                message: 'Add the Plugin Agent (beta)? AI coding instructions and skills for building Evoke plugins.',
                 default: 'claude',
                 choices: [
-                    { name: 'Claude Code — skills in .claude/skills (recommended)', value: 'claude' },
-                    { name: 'Codex, Cursor, Copilot and others — skills in .agents/skills', value: 'agents' },
-                    { name: 'No AI instructions', value: 'none' },
+                    { name: 'Yes, for Claude Code — skills in .claude/skills', value: 'claude' },
+                    { name: 'Yes, for Codex, Cursor, Copilot and others — skills in .agents/skills', value: 'agents' },
+                    { name: 'No', value: 'none' },
                 ],
             },
             {
@@ -168,7 +168,7 @@ export default class AppGenerator extends Generator {
 
         if (choice !== 'none') {
             this.log.writeln(
-                `AI coding instructions added: ${INSTRUCTION_FILE}, a ${CLAUDE_IMPORT_FILE} that imports it, and skills under ${skillDirectories[choice]}/.`,
+                `Plugin Agent (beta) added: ${INSTRUCTION_FILE}, a ${CLAUDE_IMPORT_FILE} that imports it, and skills under ${skillDirectories[choice]}/.`,
             );
 
             if (this.answers.environmentUrl) {

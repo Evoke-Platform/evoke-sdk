@@ -25,15 +25,16 @@ npm run package
 A deployable zip will be created in the `target/` directory under the project root, which can be uploaded to
 an Evoke environment.
 
-### Agent Guidance
+### Plugin Agent (beta)
 
-The generator can optionally scaffold AI coding instructions.
+The generator can optionally add the Plugin Agent: AI coding instructions and skills for
+building Evoke plugins. It is a beta feature and still evolving.
 
 When prompted, choose:
 
--   **Claude Code (recommended):** eleven skills under `.claude/skills/`.
--   **Codex, Cursor, Copilot and others:** eleven skills under `.agents/skills/`.
--   **No AI instructions:** adds no agent files.
+-   **Yes, for Claude Code:** eleven skills under `.claude/skills/`.
+-   **Yes, for Codex, Cursor, Copilot and others:** eleven skills under `.agents/skills/`.
+-   **No:** adds no agent files.
 
 Either choice writes the same two files: `AGENTS.md` with the guidance, and a `CLAUDE.md`
 containing a single `@AGENTS.md` import. `AGENTS.md` is the cross-tool convention read by
