@@ -55,7 +55,9 @@ So the prompt asks, and that answer decides only this one directory.
 `none` scaffold: `fetch-openapi-specs.sh` reads its base URL from the instruction file,
 so without one it can only exit 1, and `plans/` is where the planning skills write
 blueprints. The scaffold's `.gitignore` is deliberately **not** here — every project
-wants one, so it sits in `../` and ships with every choice.
+wants one, so it sits in `../` and ships with every choice. It is stored there as
+`gitignore`, without the dot, because npm strips any file named `.gitignore` from a
+published package; the generator renames it on the way out.
 
 Any file in this directory that isn't `INSTRUCTIONS.md` or under `skills/`, `scripts/`,
 or `plans/` is ignored by the generator and won't appear in scaffolded projects.

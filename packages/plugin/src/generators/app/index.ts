@@ -102,8 +102,13 @@ export default class AppGenerator extends Generator {
         this.env.cwd = this.answers.dirName;
 
         this.fs.copyTpl(this.templatePath('**'), this.destinationPath(), this.answers, undefined, {
-            globOptions: { dot: true, ignore: ['**/_agent-instructions/**'] },
+            globOptions: { dot: true, ignore: ['**/_agent-instructions/**', '**/gitignore'] },
         });
+
+        // npm strips every file named .gitignore when it packs a package, so a template
+        // stored under that name never reaches anyone who installs the generator from the
+        // registry. It is stored as `gitignore` and renamed here instead.
+        this.fs.copy(this.templatePath('gitignore'), this.destinationPath('.gitignore'));
 
         this._copyAgentInstructions(this.answers);
     }

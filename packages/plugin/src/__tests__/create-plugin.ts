@@ -237,6 +237,10 @@ describe('create-plugin', () => {
         runResult.assertFileContent('testdir/.gitignore', '.openapi/');
         runResult.assertFileContent('testdir/.gitignore', 'node_modules/');
         runResult.assertFileContent('testdir/.gitignore', 'storybook-static/');
+
+        // The template is stored as `gitignore` so npm publishes it; only the renamed
+        // copy should reach the project.
+        runResult.assertNoFile(['testdir/gitignore']);
     }).timeout(5000);
 
     it('scaffolds the msw mock layer', async () => {
