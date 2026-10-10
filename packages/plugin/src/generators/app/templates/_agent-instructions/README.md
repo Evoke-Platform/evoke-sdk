@@ -6,8 +6,11 @@ exists only for SDK developers working on these templates.
 
 ## How It Gets Into a Scaffold
 
-The Yeoman generator (`../index.ts`) copies five things from this directory, and only
-when the developer asks for instructions — a `none` scaffold receives none of them:
+Two Yeoman generators copy five things from this directory through one shared module,
+`src/lib/plugin-agent.ts`: the new-project scaffold (`../index.ts`) when the developer
+asks for instructions, and `add-plugin-agent` (`../../add-plugin-agent/index.ts`) for a
+project that already exists. The second one points its template root at this generator's
+`templates/` folder, so there is still exactly one copy of everything here:
 
 1. **`INSTRUCTIONS.md`** → `AGENTS.md` in the project root.
 2. **`CLAUDE.md`** → `CLAUDE.md` in the project root. One line: `@AGENTS.md`.
@@ -179,6 +182,8 @@ When modifying templates:
     ```bash
     node packages/plugin/bin/create-plugin.js
     ```
+5. To test the existing-project path, copy an older plugin project somewhere scratch and
+   run `node packages/plugin/bin/create-plugin.js add-plugin-agent` inside the copy.
 
 Template changes don't require TypeScript compilation — they're plain-copied. But
 the `yarn build` step is still needed to update the `dist/` copy that the generator
