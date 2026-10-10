@@ -27,6 +27,17 @@ import {
     TestToolingReport,
 } from '../../lib/test-tooling';
 
+// Yeoman's constructor calls determineAppname(), which reads package.json as JSON and throws a
+// stack-carrying error on a broken file before initializing() can report it. A broken package.json
+// must reach detectPluginProject, and nothing here reads this.appname, so skip the read. It lives
+// on a base class because Yeoman queues a generator's own public prototype methods as run-loop
+// tasks (getTaskNames), and inherited ones are not enumerated.
+class ExistingProjectGenerator extends Generator {
+    determineAppname() {
+        return path.basename(this.destinationRoot());
+    }
+}
+
 export class UsageError extends Error {
     constructor(message: string) {
         super(message);
@@ -44,7 +55,7 @@ type Options = {
 // It writes the same five items the new-project scaffold writes, merges .gitignore, and
 // offers the Storybook test tooling the instructions assume. Everything else in the
 // project is left alone.
-export default class AddPluginAgentGenerator extends Generator {
+export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
     projectName = '';
     projectPkg: PackageJson = {};
     templatePkg: PackageJson = {};
