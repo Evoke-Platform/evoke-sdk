@@ -10,6 +10,8 @@ import helpers, { RunResult } from 'yeoman-test';
 import {
     MID_ERA_CLAUDE_MD,
     MID_ERA_SKILL,
+    YEAR_OLD_MAIN_TS,
+    YEAR_OLD_PREVIEW_TS,
     writeCurrentProject,
     writeMidEraProject,
     writeYearOldProject,
@@ -39,6 +41,27 @@ const agentItems = (skills: 'claude' | 'agents') => [
 
 // Answers every prompt through options so a test only names what it is about.
 const quiet = { skills: 'claude', 'env-url': '', 'add-test-tooling': false };
+
+// Collects everything the generator prints. yeoman-environment sends this.log to stderr, so
+// the 'ready' event (the generator instance, before it runs) is where the three print
+// methods the generator uses can be wrapped. Returns the array lines are pushed into.
+function captureLog(context: ReturnType<typeof helpers.run>): string[] {
+    const lines: string[] = [];
+
+    context.on('ready', (generator: { log: Record<'writeln' | 'ok' | 'write', (message?: string) => unknown> }) => {
+        for (const method of ['writeln', 'ok', 'write'] as const) {
+            const original = generator.log[method].bind(generator.log);
+
+            generator.log[method] = (message?: string) => {
+                lines.push(message ?? '');
+
+                return original(message);
+            };
+        }
+    });
+
+    return lines;
+}
 
 describe('add-plugin-agent', () => {
     const generator = path.join(__dirname, '../generators/add-plugin-agent');
@@ -243,6 +266,162 @@ describe('add-plugin-agent', () => {
 
         runResult.assertFile(agentItems('claude'));
         runResult.assertFileContent('AGENTS.md', '# current-widgets');
+    }).timeout(10000);
+
+    it('adds the missing test tooling when asked, changing nothing that already existed', async () => {
+        runResult = await helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeYearOldProject(dir);
+                const pkgPath = path.join(dir, 'package.json');
+                const existing = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+                // A tooling dependency the project already has, at a version unlike the template's.
+                existing.devDependencies['@storybook/addon-interactions'] = '7.0.0-custom';
+                fs.writeFileSync(pkgPath, JSON.stringify(existing, null, 4) + '\n');
+            })
+            .withOptions({ ...quiet, 'add-test-tooling': true });
+
+        const raw = fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8');
+        const pkg = JSON.parse(raw);
+
+        for (const name of ['@storybook/jest', '@storybook/test-runner', 'msw', 'msw-storybook-addon', 'playwright']) {
+            assert.ok(pkg.devDependencies[name], `${name} missing`);
+        }
+
+        assert.strictEqual(pkg.devDependencies['@storybook/react'], '7.6.17', 'pinned version was changed');
+        assert.strictEqual(
+            pkg.devDependencies['@storybook/addon-interactions'],
+            '7.0.0-custom',
+            'existing version was changed',
+        );
+        assert.strictEqual(pkg.scripts.build, 'webpack --mode production');
+        assert.strictEqual(pkg.scripts['test-storybook'], 'test-storybook --url http://127.0.0.1:6006');
+        assert.strictEqual(pkg.scripts.postinstall, 'playwright install chromium && msw init');
+        assert.deepStrictEqual(pkg.msw, { workerDirectory: ['.storybook/public'] });
+
+        // Four-space indentation survives, so the diff is the added keys and nothing else.
+        assert.ok(raw.startsWith('{\n    "name"'), raw.slice(0, 40));
+
+        runResult.assertFile(['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts']);
+        runResult.assertFileContent('test-runner-jest.config.js', 'rootDir: __dirname');
+        runResult.assertFileContent('.gitignore', '.storybook/public/');
+
+        // Printed, never written.
+        runResult.assertFileContent('.storybook/main.ts', YEAR_OLD_MAIN_TS);
+        runResult.assertFileContent('.storybook/preview.ts', YEAR_OLD_PREVIEW_TS);
+        runResult.assertNoFile(['.storybook/preview.tsx']);
+    }).timeout(10000);
+
+    it('leaves an existing postinstall script alone when adding tooling', async () => {
+        const context = helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeYearOldProject(dir);
+                const pkgPath = path.join(dir, 'package.json');
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+                pkg.scripts.postinstall = 'node ./scripts/setup.js';
+                fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+            })
+            .withOptions({ ...quiet, 'add-test-tooling': true });
+        const log = captureLog(context);
+
+        runResult = await context;
+
+        const pkg = JSON.parse(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'));
+
+        assert.strictEqual(pkg.scripts.postinstall, 'node ./scripts/setup.js');
+        assert.ok(pkg.devDependencies.msw);
+
+        const output = log.join('\n');
+
+        assert.ok(output.includes('Your existing postinstall script was left alone'), output);
+        assert.ok(output.includes('&& playwright install chromium && msw init'), output);
+    }).timeout(10000);
+
+    it('closes with the two manual Storybook edits when the tooling was added', async () => {
+        const context = helpers
+            .run(generator)
+            .doInDir(writeYearOldProject)
+            .withOptions({ ...quiet, 'add-test-tooling': true });
+        const log = captureLog(context);
+
+        runResult = await context;
+
+        const output = log.join('\n');
+
+        assert.ok(output.includes('Storybook test tooling added'), output);
+        assert.ok(output.includes("staticDirs: ['./public']"), output);
+        assert.ok(output.includes('mswLoader'), output);
+    }).timeout(10000);
+
+    it('closes by naming what is missing and how to add it when the tooling was not added', async () => {
+        const context = helpers.run(generator).doInDir(writeYearOldProject).withOptions(quiet);
+        const log = captureLog(context);
+
+        runResult = await context;
+
+        const lines = log.join('\n').split('\n');
+
+        assert.ok(lines.includes('Storybook test tooling was not added. Missing:'), lines.join('\n'));
+        assert.ok(lines.includes('  [ ] script test-storybook'), lines.join('\n'));
+        assert.ok(
+            lines.some((line) => line.includes('Re-run with --add-test-tooling')),
+            lines.join('\n'),
+        );
+    }).timeout(10000);
+
+    it('skips the tooling when told no, and does not touch package.json', async () => {
+        runResult = await helpers.run(generator).doInDir(writeYearOldProject).withOptions(quiet);
+
+        runResult.assertNoFileContent('package.json', 'msw');
+        runResult.assertNoFile(['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts']);
+    }).timeout(10000);
+
+    it('asks the tooling question only when something is missing', async () => {
+        // The mocked answer to the tooling prompt is Yes. If the prompt were asked on a
+        // complete project, the two tooling files would be overwritten with the templates
+        // (yeoman-test forces overwrites). They must come through byte-identical.
+        let packageJsonBefore = '';
+
+        runResult = await helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeCurrentProject(dir);
+                packageJsonBefore = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+            })
+            .withOptions({ skills: 'claude', 'env-url': '' })
+            .withPrompts({ addTestTooling: true });
+
+        runResult.assertFile('AGENTS.md');
+        assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), packageJsonBefore);
+        runResult.assertFileContent('test-runner-jest.config.js', 'module.exports = {};');
+        runResult.assertNoFileContent('test-runner-jest.config.js', 'getJestConfig');
+        runResult.assertFileContent('src/mocks/evokeHandlers.ts', 'export const handlers = [];');
+    }).timeout(10000);
+
+    it('answers the tooling prompt from the terminal when no option is given', async () => {
+        runResult = await helpers
+            .run(generator)
+            .doInDir(writeYearOldProject)
+            .withOptions({ skills: 'claude', 'env-url': '' })
+            .withPrompts({ addTestTooling: true });
+
+        runResult.assertFile(['test-runner-jest.config.js']);
+        runResult.assertFileContent('package.json', '"test-storybook"');
+    }).timeout(10000);
+
+    it('writes no tooling when the tooling prompt is answered No', async () => {
+        runResult = await helpers
+            .run(generator)
+            .doInDir(writeYearOldProject)
+            .withOptions({ skills: 'claude', 'env-url': '' })
+            .withPrompts({ addTestTooling: false });
+
+        runResult.assertFile('AGENTS.md');
+        runResult.assertNoFile(['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts']);
+        runResult.assertNoFileContent('package.json', 'test-storybook');
     }).timeout(10000);
 });
 
