@@ -13,6 +13,7 @@ export const TEST_TOOLING_DEV_DEPENDENCIES = [
     'msw',
     'msw-storybook-addon',
     'playwright',
+    'react-router-dom',
 ];
 
 export const TEST_TOOLING_FILES = ['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts'];
@@ -128,14 +129,33 @@ export function formatTestToolingReport(report: TestToolingReport): string[] {
     return report.items.map((item) => `  [${item.present ? 'x' : ' '}] ${item.label}`);
 }
 
-// Every real project has edited these two files, so they are printed, not written.
-export const STORYBOOK_MANUAL_EDITS = [
-    '  .storybook/main.ts',
-    "    - add 'msw-storybook-addon' to addons ('@storybook/addon-interactions' too, if missing)",
-    "    - add:  staticDirs: ['./public'],",
-    '  .storybook/preview.ts or preview.tsx',
-    "    - add:  import { initialize, mswLoader } from 'msw-storybook-addon';",
-    "    - add:  initialize({ onUnhandledRequest: 'error', serviceWorker: { url: './mockServiceWorker.js' } });",
-    '    - add mswLoader to the preview loaders:  loaders: [mswLoader],',
-    '  Then start Storybook and run: npm run test-storybook',
-].join('\n');
+// Every real project has edited these two files, so they are printed, not written. Following
+// them ends with the preview a new scaffold has: MSW, the router SDK components need, and
+// the request-log reset the installed src/mocks/evokeHandlers.ts relies on. The loaders and
+// decorators lines say to merge, because a second key would silently replace the project's own.
+// keptOwnHandlers: the project already had src/mocks/evokeHandlers.ts, which is never replaced,
+// so its version may not export resetRequestLog.
+export function storybookManualEdits(keptOwnHandlers: boolean): string {
+    return [
+        '  .storybook/main.ts',
+        "    - add 'msw-storybook-addon' to addons ('@storybook/addon-interactions' too, if missing)",
+        "    - add:  staticDirs: ['./public'],",
+        '  .storybook/preview.ts  ->  rename it to preview.tsx (the router decorator below is JSX)',
+        "    - add:  import { initialize, mswLoader } from 'msw-storybook-addon';",
+        "    - add:  import { MemoryRouter } from 'react-router-dom';",
+        "    - add:  import { resetRequestLog } from '../src/mocks/evokeHandlers';",
+        ...(keptOwnHandlers
+            ? [
+                  '      (if you kept your own src/mocks/evokeHandlers.ts, export a resetRequestLog() from it, ' +
+                      "as the scaffold's version does)",
+              ]
+            : []),
+        "    - add:  initialize({ onUnhandledRequest: 'error', serviceWorker: { url: './mockServiceWorker.js' } });",
+        '    - add this entry to your existing loaders (create them if there are none), ' +
+            'with mswLoader before the reset loader:  ' +
+            'loaders: [mswLoader, () => { resetRequestLog(); return {}; }],',
+        '    - add this entry to your existing decorators (create them if there are none):  ' +
+            'decorators: [(Story) => <MemoryRouter><Story /></MemoryRouter>],',
+        '  Then start Storybook and run: npm run test-storybook',
+    ].join('\n');
+}

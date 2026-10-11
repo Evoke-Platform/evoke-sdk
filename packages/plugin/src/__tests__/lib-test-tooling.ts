@@ -24,6 +24,7 @@ const TEMPLATE: PackageJson = {
         msw: '^2.10.4',
         'msw-storybook-addon': '^2.0.5',
         playwright: '^1.40.0',
+        'react-router-dom': '^6.16.0',
         typescript: '^5.0.2',
     },
     scripts: {
@@ -57,6 +58,7 @@ describe('inspectTestTooling', () => {
             'devDependency msw',
             'devDependency msw-storybook-addon',
             'devDependency playwright',
+            'devDependency react-router-dom',
             'script test-storybook',
             "script postinstall running 'msw init'",
             `package.json msw.workerDirectory includes ${MSW_WORKER_DIRECTORY}`,
@@ -109,6 +111,7 @@ describe('planPackageJsonAdditions', () => {
                 msw: '^2.10.4',
                 'msw-storybook-addon': '^2.0.5',
                 playwright: '^1.40.0',
+                'react-router-dom': '^6.16.0',
             },
             scripts: {
                 'test-storybook': 'test-storybook --url http://127.0.0.1:6006',
@@ -126,6 +129,14 @@ describe('planPackageJsonAdditions', () => {
 
         assert.ok(!('msw' in (additions.devDependencies ?? {})), 'msw was declared a second time');
         assert.ok('playwright' in (additions.devDependencies ?? {}));
+    });
+
+    it('does not re-declare react-router-dom when the project lists it under dependencies', () => {
+        const pkg: PackageJson = { ...YEAR_OLD, dependencies: { 'react-router-dom': '^6.0.0' } };
+        const additions = planPackageJsonAdditions(pkg, TEMPLATE);
+
+        assert.ok(!('react-router-dom' in (additions.devDependencies ?? {})), 'react-router-dom was declared twice');
+        assert.ok('msw' in (additions.devDependencies ?? {}));
     });
 
     it('returns an empty object for a current scaffold', () => {

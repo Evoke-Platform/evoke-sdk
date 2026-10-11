@@ -82,8 +82,9 @@ lists what is missing and asks whether to add it. Answering yes adds only the mi
 `package.json` entries plus `test-runner-jest.config.js` and `src/mocks/evokeHandlers.ts`,
 then, if `package.json` gained anything, runs the project's package manager install. Two files
 are left for you because every project customizes them, and the exact edits are printed: `.storybook/main.ts` needs the
-`msw-storybook-addon` addon and `staticDirs: ['./public']`, and `.storybook/preview.ts`
-needs the MSW `initialize()` call and `mswLoader`. Answering no changes nothing and the
+`msw-storybook-addon` addon and `staticDirs: ['./public']`, and `.storybook/preview.ts` is renamed to `preview.tsx` and
+needs the MSW `initialize()` call and `mswLoader`, a `MemoryRouter` decorator (SDK components call router hooks), and a
+loader that calls `resetRequestLog()` before each story. Answering no changes nothing and the
 instructions will reference a test command the project does not have yet.
 
 Projects already on Storybook 8 or newer get the agent files but not the tooling, because the bundled tooling and instructions target Storybook 7.

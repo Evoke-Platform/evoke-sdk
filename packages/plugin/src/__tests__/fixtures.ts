@@ -94,6 +94,7 @@ export function writeCurrentProject(dir: string) {
         msw: '^2.10.4',
         'msw-storybook-addon': '^2.0.5',
         playwright: '^1.40.0',
+        'react-router-dom': '^6.16.0',
     });
     Object.assign(pkg.scripts, {
         'test-storybook': 'test-storybook --url http://127.0.0.1:6006',

@@ -24,8 +24,8 @@ import {
     planPackageJsonAdditions,
     POSTINSTALL_MARKER,
     SCAFFOLD_STORYBOOK_MAJOR,
-    STORYBOOK_MANUAL_EDITS,
     storybookMajorOf,
+    storybookManualEdits,
     storybookPortOf,
     TEST_TOOLING_FILES,
     TestToolingReport,
@@ -67,6 +67,8 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
     report: TestToolingReport = { items: [], complete: true };
     addTestTooling = false;
     newerStorybookMajor: number | undefined;
+    keptOwnHandlers = false;
+    addedTestStorybookScript = false;
 
     constructor(args: string | string[], options: Generator.GeneratorOptions) {
         super(args, options);
@@ -222,6 +224,9 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
         const pkgPath = this.destinationPath('package.json');
         const additions = planPackageJsonAdditions(this.projectPkg, this.templatePkg);
 
+        this.addedTestStorybookScript = additions.scripts?.['test-storybook'] !== undefined;
+        this.keptOwnHandlers = this.fs.exists(this.destinationPath('src/mocks/evokeHandlers.ts'));
+
         if (Object.keys(additions).length > 0) {
             // Keep the project's own indentation so the diff is the added keys and nothing else.
             const indent = /^([ \t]+)"/m.exec(this.fs.read(pkgPath))?.[1] ?? 2;
@@ -264,15 +269,22 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
 
         if (this.newerStorybookMajor !== undefined) {
             this.log.writeln();
-            this.log.writeln(
-                `This project uses Storybook ${this.newerStorybookMajor}. The Plugin Agent's test tooling and instructions target Storybook ${SCAFFOLD_STORYBOOK_MAJOR}, so the tooling was not added: its Storybook ${SCAFFOLD_STORYBOOK_MAJOR} packages would break this project's Storybook.`,
-            );
-            this.log.writeln(
-                `The agent files were added. Interaction tests and npm run test-storybook need setting up for Storybook ${this.newerStorybookMajor} by hand.`,
-            );
 
-            if ((this.options as Options)['add-test-tooling'] !== undefined) {
-                this.log.writeln('--add-test-tooling was ignored for this reason.');
+            if (this.report.complete) {
+                this.log.writeln(
+                    `This project uses Storybook ${this.newerStorybookMajor} and already has the test tooling. The agent files were added. The existing test tooling was left as it is.`,
+                );
+            } else {
+                this.log.writeln(
+                    `This project uses Storybook ${this.newerStorybookMajor}. The Plugin Agent's test tooling and instructions target Storybook ${SCAFFOLD_STORYBOOK_MAJOR}, so the tooling was not added: its Storybook ${SCAFFOLD_STORYBOOK_MAJOR} packages would break this project's Storybook.`,
+                );
+                this.log.writeln(
+                    `The agent files were added. Interaction tests and npm run test-storybook need setting up for Storybook ${this.newerStorybookMajor} by hand.`,
+                );
+
+                if ((this.options as Options)['add-test-tooling'] === true) {
+                    this.log.writeln('--add-test-tooling was ignored for this reason.');
+                }
             }
         } else if (!this.report.complete) {
             this.log.writeln();
@@ -281,13 +293,13 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
                 this.log.writeln(
                     'Storybook test tooling added. Two files are yours to edit, because every project customizes them:',
                 );
-                this.log.writeln(STORYBOOK_MANUAL_EDITS);
+                this.log.writeln(storybookManualEdits(this.keptOwnHandlers));
 
                 const port = storybookPortOf(this.projectPkg);
 
-                if (port !== DEFAULT_STORYBOOK_PORT) {
+                if (port !== DEFAULT_STORYBOOK_PORT && this.addedTestStorybookScript) {
                     this.log.writeln(
-                        `This project runs Storybook on port ${port}. The Plugin Agent instructions assume port ${DEFAULT_STORYBOOK_PORT}; tell your agent the port, or change the storybook script to -p ${DEFAULT_STORYBOOK_PORT}.`,
+                        `This project runs Storybook on port ${port}, so test-storybook was set to the same port. The Plugin Agent instructions read the port from package.json.`,
                     );
                 }
 

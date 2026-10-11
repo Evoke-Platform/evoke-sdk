@@ -285,10 +285,18 @@ describe('add-plugin-agent', () => {
         const raw = fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8');
         const pkg = JSON.parse(raw);
 
-        for (const name of ['@storybook/jest', '@storybook/test-runner', 'msw', 'msw-storybook-addon', 'playwright']) {
+        for (const name of [
+            '@storybook/jest',
+            '@storybook/test-runner',
+            'msw',
+            'msw-storybook-addon',
+            'playwright',
+            'react-router-dom',
+        ]) {
             assert.ok(pkg.devDependencies[name], `${name} missing`);
         }
 
+        assert.strictEqual(pkg.devDependencies['react-router-dom'], '^6.16.0');
         assert.strictEqual(pkg.devDependencies['@storybook/react'], '7.6.17', 'pinned version was changed');
         assert.strictEqual(
             pkg.devDependencies['@storybook/addon-interactions'],
@@ -354,7 +362,45 @@ describe('add-plugin-agent', () => {
         assert.ok(output.includes('Storybook test tooling added'), output);
         assert.ok(output.includes("staticDirs: ['./public']"), output);
         assert.ok(output.includes('mswLoader'), output);
+        assert.ok(output.includes('MemoryRouter'), output);
+        assert.ok(output.includes('resetRequestLog'), output);
+        assert.ok(output.includes('rename it to preview.tsx'), output);
+
+        // An existing loaders or decorators entry must be merged into, not replaced by a second key.
+        for (const key of ['loaders', 'decorators']) {
+            const line = output.split('\n').find((l) => l.includes(`${key}: [`));
+
+            assert.ok(line?.includes(`existing ${key}`), `${key} line does not say to merge: ${line}`);
+        }
+
+        assert.ok(output.includes('mswLoader before the reset loader'), output);
+        assert.ok(!output.includes('export a resetRequestLog()'), output);
         assert.ok(!output.includes('runs Storybook on port'), output);
+    }).timeout(10000);
+
+    it('tells the developer to export resetRequestLog when the project kept its own handlers file', async () => {
+        const mine = "import { http } from 'msw';\nexport const handlers = [http.get('/mine', () => null)];\n";
+        const context = helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeYearOldProject(dir);
+                fs.mkdirSync(path.join(dir, 'src/mocks'), { recursive: true });
+                fs.writeFileSync(path.join(dir, 'src/mocks/evokeHandlers.ts'), mine);
+            })
+            .withOptions({ ...quiet, 'add-test-tooling': true });
+        const log = captureLog(context);
+
+        runResult = await context;
+
+        const output = log.join('\n');
+        const lines = output.split('\n');
+        const importAt = lines.findIndex((l) =>
+            l.includes("import { resetRequestLog } from '../src/mocks/evokeHandlers'"),
+        );
+
+        assert.ok(importAt >= 0, output);
+        assert.ok(lines[importAt + 1].includes('export a resetRequestLog() from it'), output);
+        assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'src/mocks/evokeHandlers.ts'), 'utf8'), mine);
     }).timeout(10000);
 
     it('uses the project Storybook port for test-storybook and says so', async () => {
@@ -378,6 +424,32 @@ describe('add-plugin-agent', () => {
         assert.strictEqual(pkg.scripts['test-storybook'], 'test-storybook --url http://127.0.0.1:3000');
         assert.strictEqual(pkg.scripts.storybook, 'storybook dev -p 3000');
         assert.ok(log.join('\n').includes('This project runs Storybook on port 3000'), log.join('\n'));
+        // The instructions read the port from package.json, so the note must not tell the
+        // developer that they assume 6006.
+        assert.ok(!log.join('\n').includes('assume port'), log.join('\n'));
+    }).timeout(10000);
+
+    it('does not say test-storybook was set when the project already had its own test-storybook script', async () => {
+        const context = helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeYearOldProject(dir);
+                const pkgPath = path.join(dir, 'package.json');
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+                pkg.scripts.storybook = 'storybook dev -p 3000';
+                pkg.scripts['test-storybook'] = 'test-storybook --url http://localhost:3000 --maxWorkers=2';
+                fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+            })
+            .withOptions({ ...quiet, 'add-test-tooling': true });
+        const log = captureLog(context);
+
+        runResult = await context;
+
+        const pkg = JSON.parse(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'));
+
+        assert.strictEqual(pkg.scripts['test-storybook'], 'test-storybook --url http://localhost:3000 --maxWorkers=2');
+        assert.ok(!log.join('\n').includes('so test-storybook was set'), log.join('\n'));
     }).timeout(10000);
 
     it('closes by naming what is missing and how to add it when the tooling was not added', async () => {
@@ -394,6 +466,26 @@ describe('add-plugin-agent', () => {
             lines.some((line) => line.includes('Re-run with --add-test-tooling')),
             lines.join('\n'),
         );
+    }).timeout(10000);
+
+    it('does not add react-router-dom when the project already depends on it', async () => {
+        runResult = await helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeYearOldProject(dir);
+                const pkgPath = path.join(dir, 'package.json');
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+                pkg.dependencies['react-router-dom'] = '^6.0.0';
+                fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+            })
+            .withOptions({ ...quiet, 'add-test-tooling': true });
+
+        const pkg = JSON.parse(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'));
+
+        assert.strictEqual(pkg.devDependencies['react-router-dom'], undefined);
+        assert.strictEqual(pkg.dependencies['react-router-dom'], '^6.0.0');
+        assert.ok(pkg.devDependencies.msw);
     }).timeout(10000);
 
     describe('on Storybook 8 or newer', () => {
@@ -435,6 +527,43 @@ describe('add-plugin-agent', () => {
             assert.ok(output.includes('The agent files were added.'), output);
             assert.ok(output.includes('--add-test-tooling was ignored'), output);
             assert.ok(!output.includes('Re-run with --add-test-tooling'), output);
+        }).timeout(10000);
+
+        it('does not say --add-test-tooling was ignored when it was --no-add-test-tooling', async () => {
+            const context = helpers.run(generator).doInDir(writeStorybook9Project).withOptions(quiet);
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            const output = log.join('\n');
+
+            assert.ok(output.includes('This project uses Storybook 9'), output);
+            assert.ok(!output.includes('--add-test-tooling was ignored'), output);
+        }).timeout(10000);
+
+        it('only notes that complete existing tooling was left as it is', async () => {
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    writeCurrentProject(dir);
+
+                    const pkgPath = path.join(dir, 'package.json');
+                    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+                    pkg.devDependencies.storybook = '^9.0.13';
+                    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+                })
+                .withOptions(quiet);
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            const output = log.join('\n');
+
+            assert.ok(output.includes('The agent files were added.'), output);
+            assert.ok(output.includes('existing test tooling was left as it is'), output);
+            assert.ok(!output.includes('the tooling was not added'), output);
+            assert.ok(!output.includes('need setting up'), output);
         }).timeout(10000);
 
         it('never asks the tooling question', async () => {
