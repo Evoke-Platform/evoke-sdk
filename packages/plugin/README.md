@@ -86,6 +86,8 @@ are left for you because every project customizes them, and the exact edits are 
 needs the MSW `initialize()` call and `mswLoader`. Answering no changes nothing and the
 instructions will reference a test command the project does not have yet.
 
+Projects already on Storybook 8 or newer get the agent files but not the tooling, because the bundled tooling and instructions target Storybook 7.
+
 Options for scripts and non-interactive use:
 
 | Option                                         | Effect                                                        |

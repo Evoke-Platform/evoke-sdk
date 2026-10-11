@@ -396,6 +396,72 @@ describe('add-plugin-agent', () => {
         );
     }).timeout(10000);
 
+    describe('on Storybook 8 or newer', () => {
+        const writeStorybook9Project = (dir: string) => {
+            writeYearOldProject(dir);
+
+            const pkgPath = path.join(dir, 'package.json');
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+            delete pkg.devDependencies['@storybook/react'];
+            delete pkg.devDependencies['@storybook/addon-interactions'];
+            pkg.devDependencies.storybook = '^9.0.13';
+            pkg.devDependencies['@storybook/react-webpack5'] = '^9.0.13';
+            fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+        };
+
+        const tooling = ['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts'];
+
+        it('adds the agent files but not the tooling, even when --add-test-tooling is passed', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    writeStorybook9Project(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ ...quiet, 'add-test-tooling': true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            runResult.assertNoFile(tooling);
+            runResult.assertFile(['AGENTS.md', '.claude/skills/build-widget/SKILL.md']);
+
+            const output = log.join('\n');
+
+            assert.ok(output.includes('This project uses Storybook 9'), output);
+            assert.ok(output.includes('The agent files were added.'), output);
+            assert.ok(output.includes('--add-test-tooling was ignored'), output);
+            assert.ok(!output.includes('Re-run with --add-test-tooling'), output);
+        }).timeout(10000);
+
+        it('never asks the tooling question', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    writeStorybook9Project(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ skills: 'claude', 'env-url': '' })
+                .withPrompts({ addTestTooling: true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            runResult.assertNoFile(tooling);
+
+            const output = log.join('\n');
+
+            assert.ok(output.includes('This project uses Storybook 9'), output);
+            assert.ok(!output.includes('--add-test-tooling was ignored'), output);
+            assert.ok(!output.includes('Re-run with --add-test-tooling'), output);
+        }).timeout(10000);
+    });
+
     it('skips the tooling when told no, and does not touch package.json', async () => {
         runResult = await helpers.run(generator).doInDir(writeYearOldProject).withOptions(quiet);
 

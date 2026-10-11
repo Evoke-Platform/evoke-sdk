@@ -10,6 +10,8 @@ import {
     inspectTestTooling,
     MSW_WORKER_DIRECTORY,
     planPackageJsonAdditions,
+    SCAFFOLD_STORYBOOK_MAJOR,
+    storybookMajorOf,
     storybookPortOf,
     TEST_TOOLING_DEV_DEPENDENCIES,
 } from '../lib/test-tooling';
@@ -212,5 +214,42 @@ describe('planPackageJsonAdditions with a custom Storybook port', () => {
         const pkg: PackageJson = { ...YEAR_OLD, scripts: { ...YEAR_OLD.scripts, storybook: 'storybook dev -p 3000' } };
 
         assert.strictEqual(planPackageJsonAdditions(pkg, template).scripts?.['test-storybook'], 'test-storybook');
+    });
+});
+
+describe('storybookMajorOf', () => {
+    it('reads the first integer of the storybook spec', () => {
+        assert.strictEqual(storybookMajorOf({ devDependencies: { storybook: '^9.0.13' } }), 9);
+        assert.strictEqual(storybookMajorOf({ devDependencies: { storybook: '~8.1.0' } }), 8);
+        assert.strictEqual(storybookMajorOf({ devDependencies: { storybook: '7.6.17' } }), 7);
+    });
+
+    it('falls back to @storybook/react when storybook is not declared', () => {
+        assert.strictEqual(storybookMajorOf({ devDependencies: { '@storybook/react': '>=7.0.0' } }), 7);
+    });
+
+    it('prefers storybook over @storybook/react', () => {
+        const pkg: PackageJson = { devDependencies: { storybook: '^9.0.0', '@storybook/react': '^7.0.0' } };
+
+        assert.strictEqual(storybookMajorOf(pkg), 9);
+    });
+
+    it('also looks in dependencies', () => {
+        assert.strictEqual(storybookMajorOf({ dependencies: { storybook: '^8.0.0' } }), 8);
+    });
+
+    it('is undefined when neither package is declared', () => {
+        assert.strictEqual(storybookMajorOf({}), undefined);
+        assert.strictEqual(storybookMajorOf({ devDependencies: { typescript: '^5.0.2' } }), undefined);
+    });
+
+    it('is undefined when the spec has no digits', () => {
+        assert.strictEqual(storybookMajorOf({ devDependencies: { storybook: 'latest' } }), undefined);
+        assert.strictEqual(storybookMajorOf({ devDependencies: { storybook: '*' } }), undefined);
+        assert.strictEqual(storybookMajorOf({ devDependencies: { storybook: 'next' } }), undefined);
+    });
+
+    it('treats Storybook 7 as the scaffold major', () => {
+        assert.strictEqual(SCAFFOLD_STORYBOOK_MAJOR, 7);
     });
 });

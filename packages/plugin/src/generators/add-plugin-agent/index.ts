@@ -23,7 +23,9 @@ import {
     inspectTestTooling,
     planPackageJsonAdditions,
     POSTINSTALL_MARKER,
+    SCAFFOLD_STORYBOOK_MAJOR,
     STORYBOOK_MANUAL_EDITS,
+    storybookMajorOf,
     storybookPortOf,
     TEST_TOOLING_FILES,
     TestToolingReport,
@@ -64,6 +66,7 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
     answers: PluginAgentAnswers | undefined;
     report: TestToolingReport = { items: [], complete: true };
     addTestTooling = false;
+    newerStorybookMajor: number | undefined;
 
     constructor(args: string | string[], options: Generator.GeneratorOptions) {
         super(args, options);
@@ -143,6 +146,17 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
         };
 
         this.report = inspectTestTooling(this.projectPkg, (file) => this.fs.exists(this.destinationPath(file)));
+
+        // The tooling is Storybook 7 packages and would break a newer Storybook, so the
+        // question is never asked and --add-test-tooling is ignored.
+        const major = storybookMajorOf(this.projectPkg);
+
+        if (major !== undefined && major > SCAFFOLD_STORYBOOK_MAJOR) {
+            this.newerStorybookMajor = major;
+            this.addTestTooling = false;
+
+            return;
+        }
 
         if (this.report.complete) {
             return;
@@ -248,7 +262,19 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
             );
         }
 
-        if (!this.report.complete) {
+        if (this.newerStorybookMajor !== undefined) {
+            this.log.writeln();
+            this.log.writeln(
+                `This project uses Storybook ${this.newerStorybookMajor}. The Plugin Agent's test tooling and instructions target Storybook ${SCAFFOLD_STORYBOOK_MAJOR}, so the tooling was not added: its Storybook ${SCAFFOLD_STORYBOOK_MAJOR} packages would break this project's Storybook.`,
+            );
+            this.log.writeln(
+                `The agent files were added. Interaction tests and npm run test-storybook need setting up for Storybook ${this.newerStorybookMajor} by hand.`,
+            );
+
+            if ((this.options as Options)['add-test-tooling'] !== undefined) {
+                this.log.writeln('--add-test-tooling was ignored for this reason.');
+            }
+        } else if (!this.report.complete) {
             this.log.writeln();
 
             if (this.addTestTooling) {

@@ -29,6 +29,19 @@ export function storybookPortOf(pkg: PackageJson): string {
     return match?.[1] ?? DEFAULT_STORYBOOK_PORT;
 }
 
+// Storybook major the scaffold, its tooling and the agent instructions target.
+export const SCAFFOLD_STORYBOOK_MAJOR = 7;
+
+// The major version the project declares for Storybook, or undefined when it declares none
+// or a spec with no number in it (latest, *, next).
+export function storybookMajorOf(pkg: PackageJson): number | undefined {
+    const declared = { ...pkg.dependencies, ...pkg.devDependencies };
+    const spec = declared.storybook ?? declared['@storybook/react'];
+    const digits = typeof spec === 'string' ? /\d+/.exec(spec)?.[0] : undefined;
+
+    return digits === undefined ? undefined : Number(digits);
+}
+
 export type TestToolingItem = { label: string; present: boolean };
 export type TestToolingReport = { items: TestToolingItem[]; complete: boolean };
 
