@@ -10,6 +10,7 @@ import {
     inspectTestTooling,
     MSW_WORKER_DIRECTORY,
     planPackageJsonAdditions,
+    storybookPortOf,
     TEST_TOOLING_DEV_DEPENDENCIES,
 } from '../lib/test-tooling';
 
@@ -157,5 +158,43 @@ describe('formatTestToolingReport', () => {
         });
 
         assert.deepStrictEqual(lines, ['  [x] devDependency msw', '  [ ] script test-storybook']);
+    });
+});
+
+describe('storybookPortOf', () => {
+    const withScript = (storybook?: string): PackageJson => ({ scripts: storybook ? { storybook } : {} });
+
+    it('reads the port from -p, --port and --port=', () => {
+        assert.strictEqual(storybookPortOf(withScript('storybook dev -p 3000')), '3000');
+        assert.strictEqual(storybookPortOf(withScript('storybook dev --port 3001')), '3001');
+        assert.strictEqual(storybookPortOf(withScript('storybook dev --port=4000')), '4000');
+        assert.strictEqual(storybookPortOf(withScript('storybook dev -p=4001')), '4001');
+    });
+
+    it('falls back to 6006 without a storybook script or a port flag', () => {
+        assert.strictEqual(storybookPortOf({}), '6006');
+        assert.strictEqual(storybookPortOf(withScript()), '6006');
+        assert.strictEqual(storybookPortOf(withScript('storybook dev')), '6006');
+    });
+});
+
+describe('planPackageJsonAdditions with a custom Storybook port', () => {
+    it('points test-storybook at the project port', () => {
+        const pkg: PackageJson = { ...YEAR_OLD, scripts: { ...YEAR_OLD.scripts, storybook: 'storybook dev -p 3000' } };
+
+        assert.strictEqual(
+            planPackageJsonAdditions(pkg, TEMPLATE).scripts?.['test-storybook'],
+            'test-storybook --url http://127.0.0.1:3000',
+        );
+    });
+
+    it('uses the template command unchanged when it has no default URL to replace', () => {
+        const template: PackageJson = {
+            ...TEMPLATE,
+            scripts: { ...TEMPLATE.scripts, 'test-storybook': 'test-storybook' },
+        };
+        const pkg: PackageJson = { ...YEAR_OLD, scripts: { ...YEAR_OLD.scripts, storybook: 'storybook dev -p 3000' } };
+
+        assert.strictEqual(planPackageJsonAdditions(pkg, template).scripts?.['test-storybook'], 'test-storybook');
     });
 });

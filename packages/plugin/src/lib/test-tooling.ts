@@ -19,6 +19,16 @@ export const TEST_TOOLING_FILES = ['test-runner-jest.config.js', 'src/mocks/evok
 export const POSTINSTALL_MARKER = 'msw init';
 export const MSW_WORKER_DIRECTORY = '.storybook/public';
 
+export const DEFAULT_STORYBOOK_PORT = '6006';
+
+// Older projects run Storybook on another port (for example 3000), and
+// test-storybook must point at the same one or it exits at once saying Storybook is not running.
+export function storybookPortOf(pkg: PackageJson): string {
+    const match = /(?:^|\s)(?:-p|--port)(?:=|\s+)(\d+)(?!\S)/.exec(pkg.scripts?.storybook ?? '');
+
+    return match?.[1] ?? DEFAULT_STORYBOOK_PORT;
+}
+
 export type TestToolingItem = { label: string; present: boolean };
 export type TestToolingReport = { items: TestToolingItem[]; complete: boolean };
 
@@ -77,7 +87,10 @@ export function planPackageJsonAdditions(pkg: PackageJson, templatePkg: PackageJ
         const command = templatePkg.scripts?.[name];
 
         if (command && !(name in existingScripts)) {
-            scripts[name] = command;
+            scripts[name] =
+                name === 'test-storybook'
+                    ? command.replace(`127.0.0.1:${DEFAULT_STORYBOOK_PORT}`, `127.0.0.1:${storybookPortOf(pkg)}`)
+                    : command;
         }
     }
 

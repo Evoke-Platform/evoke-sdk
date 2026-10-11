@@ -18,11 +18,13 @@ import {
     writePluginAgentFiles,
 } from '../../lib/plugin-agent';
 import {
+    DEFAULT_STORYBOOK_PORT,
     formatTestToolingReport,
     inspectTestTooling,
     planPackageJsonAdditions,
     POSTINSTALL_MARKER,
     STORYBOOK_MANUAL_EDITS,
+    storybookPortOf,
     TEST_TOOLING_FILES,
     TestToolingReport,
 } from '../../lib/test-tooling';
@@ -250,6 +252,14 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
                     'Storybook test tooling added. Two files are yours to edit, because every project customizes them:',
                 );
                 this.log.writeln(STORYBOOK_MANUAL_EDITS);
+
+                const port = storybookPortOf(this.projectPkg);
+
+                if (port !== DEFAULT_STORYBOOK_PORT) {
+                    this.log.writeln(
+                        `This project runs Storybook on port ${port}. The Plugin Agent instructions assume port ${DEFAULT_STORYBOOK_PORT}; tell your agent the port, or change the storybook script to -p ${DEFAULT_STORYBOOK_PORT}.`,
+                    );
+                }
 
                 const postinstall = this.projectPkg.scripts?.postinstall;
 

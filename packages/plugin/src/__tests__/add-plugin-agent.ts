@@ -354,6 +354,30 @@ describe('add-plugin-agent', () => {
         assert.ok(output.includes('Storybook test tooling added'), output);
         assert.ok(output.includes("staticDirs: ['./public']"), output);
         assert.ok(output.includes('mswLoader'), output);
+        assert.ok(!output.includes('runs Storybook on port'), output);
+    }).timeout(10000);
+
+    it('uses the project Storybook port for test-storybook and says so', async () => {
+        const context = helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeYearOldProject(dir);
+                const pkgPath = path.join(dir, 'package.json');
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+                pkg.scripts.storybook = 'storybook dev -p 3000';
+                fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+            })
+            .withOptions({ ...quiet, 'add-test-tooling': true });
+        const log = captureLog(context);
+
+        runResult = await context;
+
+        const pkg = JSON.parse(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'));
+
+        assert.strictEqual(pkg.scripts['test-storybook'], 'test-storybook --url http://127.0.0.1:3000');
+        assert.strictEqual(pkg.scripts.storybook, 'storybook dev -p 3000');
+        assert.ok(log.join('\n').includes('This project runs Storybook on port 3000'), log.join('\n'));
     }).timeout(10000);
 
     it('closes by naming what is missing and how to add it when the tooling was not added', async () => {
