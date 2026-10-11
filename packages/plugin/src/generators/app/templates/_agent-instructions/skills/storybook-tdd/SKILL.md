@@ -43,10 +43,12 @@ first, so this is the default landing spot as long as the container story is nam
 `storySort` — or navigate directly to the intended story URL.
 
 ```text
-http://127.0.0.1:6006/?path=/story/<story-id>&addonPanel=storybook/interactions/panel
+http://127.0.0.1:<port>/?path=/story/<story-id>&addonPanel=storybook/interactions/panel
 ```
 
-Get `<story-id>` from `http://127.0.0.1:6006/index.json`; do not guess it from the file
+`<port>` is the Storybook port from `AGENTS.md`'s Commands section: the `-p` or `--port`
+value in the `storybook` script in `package.json`, or 6006 when the script sets none. Get
+`<story-id>` from `http://127.0.0.1:<port>/index.json`; do not guess it from the file
 name. Do not use `iframe.html` as the human-facing watch surface — a bad id there shows
 a large missing-story error instead of a useful UI. The manager URL keeps the rendered
 component visible while the bottom panel shows `PASS`/`FAIL` and the named steps.

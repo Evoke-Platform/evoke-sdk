@@ -412,11 +412,16 @@ correctly. The skill carries the conversion map.
 | Command                   | What it does                                                                |
 | ------------------------- | --------------------------------------------------------------------------- |
 | `npm run start`           | webpack dev server                                                          |
-| `npm run storybook`       | Storybook dev server on port 6006                                           |
+| `npm run storybook`       | Storybook dev server on the project's Storybook port (see below)            |
 | `npm run build`           | generates `dist/manifest.json` (manifestgen), then production webpack build |
 | `npm run package`         | builds, then zips `dist/` into `target/plugin.zip`                          |
 | `npm run build-storybook` | static Storybook build                                                      |
-| `npm run test-storybook`  | executes Storybook `play` functions against Storybook on port 6006          |
+| `npm run test-storybook`  | executes Storybook `play` functions against the running Storybook           |
+
+The Storybook port is the `-p` or `--port` value in the `storybook` script in
+`package.json`, or 6006 when the script sets none. New projects use 6006, but older
+projects often use another port, such as 3000. Read it from `package.json` rather than
+assuming 6006. The `--url` in the `test-storybook` script must point at that same port.
 
 `npm run package` produces the deployable artifact: `target/plugin.zip` is what gets
 uploaded to an Evoke environment. Uploading is a manual step the developer performs in

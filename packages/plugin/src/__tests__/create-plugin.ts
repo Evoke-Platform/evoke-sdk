@@ -279,6 +279,25 @@ describe('create-plugin', () => {
         runResult.assertFileContent('testdir/AGENTS.md', 'Base URL: _not set_');
     }).timeout(5000);
 
+    it('tells the agent to read the Storybook port from package.json instead of assuming 6006', async () => {
+        // Older projects often run Storybook on 3000. Guidance that names 6006 sends an
+        // agent to a port nothing is listening on, and test-storybook fails before any story runs.
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        runResult.assertFileContent(
+            'testdir/AGENTS.md',
+            'The Storybook port is the `-p` or `--port` value in the `storybook` script',
+        );
+        runResult.assertNoFileContent('testdir/AGENTS.md', 'on port 6006');
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'http://127.0.0.1:<port>/index.json',
+        );
+        runResult.assertNoFileContent('testdir/.claude/skills/storybook-tdd/SKILL.md', '127.0.0.1:6006');
+    }).timeout(5000);
+
     it('routes generated instructions to live OpenAPI first', async () => {
         runResult = await helpers
             .run(appGenerator)
