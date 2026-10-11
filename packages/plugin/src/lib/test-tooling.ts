@@ -41,14 +41,14 @@ function workerDirectoriesOf(pkg: PackageJson): string[] {
 }
 
 export function inspectTestTooling(pkg: PackageJson, fileExists: (relativePath: string) => boolean): TestToolingReport {
-    const devDependencies = pkg.devDependencies ?? {};
+    const declared = { ...pkg.dependencies, ...pkg.devDependencies };
     const scripts = pkg.scripts ?? {};
     const workerDirectories = workerDirectoriesOf(pkg);
 
     const items: TestToolingItem[] = [
         ...TEST_TOOLING_DEV_DEPENDENCIES.map((name) => ({
             label: `devDependency ${name}`,
-            present: name in devDependencies,
+            present: name in declared,
         })),
         { label: 'script test-storybook', present: 'test-storybook' in scripts },
         {
@@ -70,7 +70,7 @@ export function inspectTestTooling(pkg: PackageJson, fileExists: (relativePath: 
 // mem-fs-editor's extendJSON, which deep-merges objects and replaces arrays.
 export function planPackageJsonAdditions(pkg: PackageJson, templatePkg: PackageJson): Partial<PackageJson> {
     const additions: Partial<PackageJson> = {};
-    const existingDevDependencies = pkg.devDependencies ?? {};
+    const declared = { ...pkg.dependencies, ...pkg.devDependencies };
     const existingScripts = pkg.scripts ?? {};
     const devDependencies: Record<string, string> = {};
     const scripts: Record<string, string> = {};
@@ -78,7 +78,7 @@ export function planPackageJsonAdditions(pkg: PackageJson, templatePkg: PackageJ
     for (const name of TEST_TOOLING_DEV_DEPENDENCIES) {
         const version = templatePkg.devDependencies?.[name];
 
-        if (version && !(name in existingDevDependencies)) {
+        if (version && !(name in declared)) {
             devDependencies[name] = version;
         }
     }

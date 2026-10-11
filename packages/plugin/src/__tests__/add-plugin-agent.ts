@@ -425,6 +425,35 @@ describe('add-plugin-agent', () => {
         runResult.assertFileContent('src/mocks/evokeHandlers.ts', 'export const handlers = [];');
     }).timeout(10000);
 
+    it('never overwrites a tooling file the project already has, even when forced', async () => {
+        const customHandlers =
+            "import { http } from 'msw';\nexport const handlers = [http.get('/mine', () => null)];\n";
+        const customRunnerConfig = 'module.exports = { mine: true };\n';
+        let packageJsonBefore = '';
+
+        runResult = await helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeCurrentProject(dir);
+                const pkgPath = path.join(dir, 'package.json');
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+                // Incomplete report (postinstall lacks msw init), so the tooling path runs.
+                pkg.scripts.postinstall = 'node ./scripts/setup.js';
+                fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+                packageJsonBefore = fs.readFileSync(pkgPath, 'utf8');
+                fs.writeFileSync(path.join(dir, 'src/mocks/evokeHandlers.ts'), customHandlers);
+                fs.writeFileSync(path.join(dir, 'test-runner-jest.config.js'), customRunnerConfig);
+            })
+            .withOptions({ skills: 'claude', 'env-url': '', 'add-test-tooling': true, force: true });
+
+        const onDisk = (file: string) => fs.readFileSync(path.join(runResult!.cwd, file), 'utf8');
+
+        assert.strictEqual(onDisk('src/mocks/evokeHandlers.ts'), customHandlers);
+        assert.strictEqual(onDisk('test-runner-jest.config.js'), customRunnerConfig);
+        assert.strictEqual(onDisk('package.json'), packageJsonBefore);
+    }).timeout(10000);
+
     it('answers the tooling prompt from the terminal when no option is given', async () => {
         runResult = await helpers
             .run(generator)

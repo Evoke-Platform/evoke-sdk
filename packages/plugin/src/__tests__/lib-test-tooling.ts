@@ -70,6 +70,14 @@ describe('inspectTestTooling', () => {
         assert.ok(report.items.every((item) => item.present));
     });
 
+    it('counts a tooling package under dependencies as present', () => {
+        const { msw, ...devDependencies } = CURRENT.devDependencies!;
+        const pkg: PackageJson = { ...CURRENT, dependencies: { msw }, devDependencies };
+        const item = inspectTestTooling(pkg, () => true).items.find((i) => i.label === 'devDependency msw');
+
+        assert.strictEqual(item?.present, true);
+    });
+
     it('accepts msw.workerDirectory written as a plain string by msw 1.x', () => {
         const pkg: PackageJson = { ...CURRENT, msw: { workerDirectory: '.storybook/public' } };
 
@@ -108,6 +116,14 @@ describe('planPackageJsonAdditions', () => {
         });
         assert.ok(!('@storybook/addon-interactions' in additions.devDependencies!), 'present dep was re-added');
         assert.ok(!('build' in (additions.scripts ?? {})), 'unrelated template script leaked in');
+    });
+
+    it('does not re-declare a tooling package the project lists under dependencies', () => {
+        const pkg: PackageJson = { ...YEAR_OLD, dependencies: { msw: '^1.0.0' } };
+        const additions = planPackageJsonAdditions(pkg, TEMPLATE);
+
+        assert.ok(!('msw' in (additions.devDependencies ?? {})), 'msw was declared a second time');
+        assert.ok('playwright' in (additions.devDependencies ?? {}));
     });
 
     it('returns an empty object for a current scaffold', () => {

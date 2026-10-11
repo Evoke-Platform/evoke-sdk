@@ -218,8 +218,12 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
             this._markAsMerge(pkgPath);
         }
 
+        // src/mocks/evokeHandlers.ts is the project's own MSW handlers once it exists, so a tooling
+        // file is only ever created, never replaced, whatever --force or the conflict prompt says.
         for (const file of TEST_TOOLING_FILES) {
-            this.fs.copy(this.templatePath(file), this.destinationPath(file));
+            if (!this.fs.exists(this.destinationPath(file))) {
+                this.fs.copy(this.templatePath(file), this.destinationPath(file));
+            }
         }
     }
 

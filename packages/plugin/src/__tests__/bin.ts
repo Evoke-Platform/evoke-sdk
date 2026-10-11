@@ -12,8 +12,8 @@ import { writeYearOldProject } from './fixtures';
 
 const bin = path.join(__dirname, '../../bin/create-plugin.js');
 
-function runBin(args: string[], cwd: string) {
-    return spawnSync(process.execPath, [bin, ...args], { cwd, encoding: 'utf8', timeout: 15000 });
+function runBin(args: string[], cwd: string, env?: NodeJS.ProcessEnv) {
+    return spawnSync(process.execPath, [bin, ...args], { cwd, encoding: 'utf8', timeout: 15000, env });
 }
 
 describe('create-plugin bin', function () {
@@ -88,6 +88,35 @@ describe('create-plugin bin', function () {
         // writes to stderr, not stdout. Only console.log output lands on stdout.
         assert.match(result.stderr, /Plugin Agent \(beta\) added to tabs-unlimited/);
         assert.match(result.stderr, /not added/);
+    });
+
+    // yeoman-test never queues the install task, so the install trigger is checked through the real bin.
+    it('still runs the package manager install when the tooling was added to package.json', () => {
+        writeYearOldProject(dir);
+
+        // A stand-in npm that records its arguments, so no real install runs.
+        const stubs = fs.mkdtempSync(path.join(os.tmpdir(), 'ait61-npm-stub-'));
+        const record = path.join(stubs, 'npm-args.txt');
+
+        try {
+            fs.writeFileSync(path.join(stubs, 'npm'), `#!/bin/sh\necho "$@" >> "${record}"\n`, { mode: 0o755 });
+
+            const result = runBin(
+                ['add-plugin-agent', '--skills', 'claude', '--env-url', '', '--add-test-tooling'],
+                dir,
+                {
+                    ...process.env,
+                    PATH: `${stubs}${path.delimiter}${process.env.PATH}`,
+                },
+            );
+
+            assert.strictEqual(result.status, 0, result.stderr);
+            assert.match(result.stderr, /Changes to package\.json were detected/);
+            assert.ok(fs.existsSync(record), result.stderr);
+            assert.strictEqual(fs.readFileSync(record, 'utf8').trim(), 'install');
+        } finally {
+            fs.rmSync(stubs, { recursive: true, force: true });
+        }
     });
 
     it('honours --force for a conflicting CLAUDE.md', () => {
