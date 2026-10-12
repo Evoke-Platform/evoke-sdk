@@ -33,14 +33,57 @@ export function storybookPortOf(pkg: PackageJson): string {
 // Storybook major the scaffold, its tooling and the agent instructions target.
 export const SCAFFOLD_STORYBOOK_MAJOR = 7;
 
-// The major version the project declares for Storybook, or undefined when it declares none
-// or a spec with no number in it (latest, *, next).
-export function storybookMajorOf(pkg: PackageJson): number | undefined {
-    const declared = { ...pkg.dependencies, ...pkg.devDependencies };
-    const spec = declared.storybook ?? declared['@storybook/react'];
-    const digits = typeof spec === 'string' ? /\d+/.exec(spec)?.[0] : undefined;
+// What a project declares for a package: nothing, a spec with no number in it (latest, *,
+// next, workspace:*) that cannot be checked, or a major version.
+export type DeclaredVersion = { kind: 'absent' } | { kind: 'unknown'; spec: string } | { kind: 'major'; major: number };
 
-    return digits === undefined ? undefined : Number(digits);
+function declaredVersionOf(pkg: PackageJson, names: string[]): DeclaredVersion {
+    const declared: Record<string, unknown> = { ...pkg.dependencies, ...pkg.devDependencies };
+
+    for (const name of names) {
+        const spec = declared[name];
+
+        if (typeof spec === 'string') {
+            const digits = /\d+/.exec(spec)?.[0];
+
+            return digits === undefined ? { kind: 'unknown', spec } : { kind: 'major', major: Number(digits) };
+        }
+    }
+
+    return { kind: 'absent' };
+}
+
+// storybook first, then @storybook/react, then the framework packages: a project may
+// declare only one of them. The first one declared decides, so an unreadable spec on an
+// earlier package is never hidden by a numeric one on a later package.
+export function storybookVersionOf(pkg: PackageJson): DeclaredVersion {
+    return declaredVersionOf(pkg, [
+        'storybook',
+        '@storybook/react',
+        '@storybook/react-webpack5',
+        '@storybook/react-vite',
+    ]);
+}
+
+// The major version the project declares for Storybook, or undefined when it declares none
+// or a spec with no number in it. Callers that must tell those apart use storybookVersionOf.
+export function storybookMajorOf(pkg: PackageJson): number | undefined {
+    const version = storybookVersionOf(pkg);
+
+    return version.kind === 'major' ? version.major : undefined;
+}
+
+export function mswVersionOf(pkg: PackageJson): DeclaredVersion {
+    return declaredVersionOf(pkg, ['msw']);
+}
+
+// The bundled handlers file imports http and HttpResponse from 'msw', which only MSW 2 has.
+export const SCAFFOLD_MSW_MAJOR = 2;
+
+export function mswMajorOf(pkg: PackageJson): number | undefined {
+    const version = mswVersionOf(pkg);
+
+    return version.kind === 'major' ? version.major : undefined;
 }
 
 export type TestToolingItem = { label: string; present: boolean };

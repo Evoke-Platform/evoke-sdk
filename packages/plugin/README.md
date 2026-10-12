@@ -87,7 +87,7 @@ needs the MSW `initialize()` call and `mswLoader`, a `MemoryRouter` decorator (S
 loader that calls `resetRequestLog()` before each story. Answering no changes nothing and the
 instructions will reference a test command the project does not have yet.
 
-Projects already on Storybook 8 or newer get the agent files but not the tooling, because the bundled tooling and instructions target Storybook 7.
+Projects already on Storybook 8 or newer get the agent files but not the tooling, because the bundled tooling and instructions target Storybook 7. The same applies when the Storybook version cannot be read (for example `latest` or `workspace:*`) and when the project uses MSW 1, because the bundled mock handlers need MSW 2.
 
 Options for scripts and non-interactive use:
 

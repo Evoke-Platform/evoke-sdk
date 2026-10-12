@@ -346,6 +346,7 @@ describe('add-plugin-agent', () => {
 
         assert.ok(output.includes('Your existing postinstall script was left alone'), output);
         assert.ok(output.includes('&& playwright install chromium && msw init'), output);
+        assert.ok(output.includes('npx playwright install chromium && npx msw init .storybook/public'), output);
     }).timeout(10000);
 
     it('closes with the two manual Storybook edits when the tooling was added', async () => {
@@ -588,6 +589,167 @@ describe('add-plugin-agent', () => {
             assert.ok(output.includes('This project uses Storybook 9'), output);
             assert.ok(!output.includes('--add-test-tooling was ignored'), output);
             assert.ok(!output.includes('Re-run with --add-test-tooling'), output);
+        }).timeout(10000);
+    });
+
+    describe("when the project's versions cannot take the tooling", () => {
+        const tooling = ['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts'];
+        const edit = (change: (pkg: Record<string, Record<string, string>>) => void) => (dir: string) => {
+            writeYearOldProject(dir);
+
+            const pkgPath = path.join(dir, 'package.json');
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+            change(pkg);
+            fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+        };
+
+        it('skips the tooling when Storybook is declared as latest', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    edit((pkg) => {
+                        pkg.devDependencies.storybook = 'latest';
+                        delete pkg.devDependencies['@storybook/react'];
+                    })(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ ...quiet, 'add-test-tooling': true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            runResult.assertNoFile(tooling);
+            runResult.assertFile(['AGENTS.md']);
+
+            const output = log.join('\n');
+
+            assert.ok(
+                output.includes(
+                    'This project declares Storybook as "latest", so its version cannot be checked. The Plugin Agent\'s test tooling targets Storybook 7, so it was not added.',
+                ),
+                output,
+            );
+            assert.ok(output.includes('cannot be checked'), output);
+            assert.ok(!output.includes('Re-run with --add-test-tooling'), output);
+            assert.ok(output.includes('The agent files were added.'), output);
+            assert.ok(output.includes('--add-test-tooling was ignored'), output);
+        }).timeout(10000);
+
+        it('never asks the tooling question when the Storybook version is unreadable', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    edit((pkg) => {
+                        pkg.devDependencies.storybook = '*';
+                    })(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ skills: 'claude', 'env-url': '' })
+                .withPrompts({ addTestTooling: true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            runResult.assertNoFile(tooling);
+            assert.ok(log.join('\n').includes('cannot be checked'));
+            assert.ok(!log.join('\n').includes('--add-test-tooling was ignored'));
+            assert.ok(!log.join('\n').includes('Re-run with --add-test-tooling'));
+        }).timeout(10000);
+
+        it('skips the tooling when MSW 1 is installed', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    edit((pkg) => {
+                        pkg.devDependencies.msw = '^1.3.0';
+                    })(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ ...quiet, 'add-test-tooling': true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            runResult.assertNoFile(tooling);
+            runResult.assertFile(['AGENTS.md']);
+
+            const output = log.join('\n');
+
+            assert.ok(
+                output.includes(
+                    "This project uses MSW 1. The Plugin Agent's mock handlers and Storybook addon need MSW 2, so the test tooling was not added.",
+                ),
+                output,
+            );
+            assert.ok(output.includes('The agent files were added.'), output);
+            assert.ok(output.includes('--add-test-tooling was ignored'), output);
+            assert.ok(!output.includes('Re-run with --add-test-tooling'), output);
+        }).timeout(10000);
+
+        it('skips the tooling and names the spec when MSW is declared but unreadable', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    edit((pkg) => {
+                        pkg.devDependencies.msw = 'latest';
+                    })(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ ...quiet, 'add-test-tooling': true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            runResult.assertNoFile(tooling);
+            assert.ok(log.join('\n').includes('declares MSW as "latest"'), log.join('\n'));
+            assert.ok(!log.join('\n').includes('Re-run with --add-test-tooling'));
+        }).timeout(10000);
+
+        it('reports the Storybook version when Storybook is latest and MSW is 1', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    edit((pkg) => {
+                        pkg.devDependencies.storybook = 'latest';
+                        pkg.devDependencies.msw = '^1.3.0';
+                    })(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ ...quiet, 'add-test-tooling': true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            runResult.assertNoFile(tooling);
+
+            const output = log.join('\n');
+
+            assert.ok(output.includes('cannot be checked'), output);
+            assert.ok(!output.includes('Re-run with --add-test-tooling'), output);
+        }).timeout(10000);
+
+        it('still adds the tooling for MSW 2', async () => {
+            runResult = await helpers
+                .run(generator)
+                .doInDir(
+                    edit((pkg) => {
+                        pkg.devDependencies.msw = '^2.4.0';
+                    }),
+                )
+                .withOptions({ ...quiet, 'add-test-tooling': true });
+
+            runResult.assertFile(tooling);
         }).timeout(10000);
     });
 

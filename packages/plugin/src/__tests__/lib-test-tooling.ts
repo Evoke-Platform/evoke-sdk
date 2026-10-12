@@ -9,10 +9,13 @@ import {
     formatTestToolingReport,
     inspectTestTooling,
     MSW_WORKER_DIRECTORY,
+    mswMajorOf,
+    mswVersionOf,
     planPackageJsonAdditions,
     SCAFFOLD_STORYBOOK_MAJOR,
     storybookMajorOf,
     storybookPortOf,
+    storybookVersionOf,
     TEST_TOOLING_DEV_DEPENDENCIES,
 } from '../lib/test-tooling';
 
@@ -262,5 +265,85 @@ describe('storybookMajorOf', () => {
 
     it('treats Storybook 7 as the scaffold major', () => {
         assert.strictEqual(SCAFFOLD_STORYBOOK_MAJOR, 7);
+    });
+});
+
+describe('storybookVersionOf', () => {
+    it('reads the major of a numeric spec', () => {
+        assert.deepStrictEqual(storybookVersionOf({ devDependencies: { storybook: '^9.0.13' } }), {
+            kind: 'major',
+            major: 9,
+        });
+    });
+
+    it('is unknown, with the spec, when a declared spec has no digits', () => {
+        for (const spec of ['latest', '*', 'next', 'workspace:*']) {
+            assert.deepStrictEqual(storybookVersionOf({ devDependencies: { storybook: spec } }), {
+                kind: 'unknown',
+                spec,
+            });
+        }
+    });
+
+    it('is absent when no Storybook package is declared', () => {
+        assert.deepStrictEqual(storybookVersionOf({}), { kind: 'absent' });
+        assert.deepStrictEqual(storybookVersionOf({ devDependencies: { typescript: '^5.0.2' } }), { kind: 'absent' });
+    });
+
+    it('finds the version on a framework package when nothing else declares it', () => {
+        assert.deepStrictEqual(storybookVersionOf({ devDependencies: { '@storybook/react-webpack5': '^9.0.0' } }), {
+            kind: 'major',
+            major: 9,
+        });
+        assert.deepStrictEqual(storybookVersionOf({ devDependencies: { '@storybook/react-vite': '^8.2.0' } }), {
+            kind: 'major',
+            major: 8,
+        });
+    });
+
+    it('looks in the order storybook, @storybook/react, then the frameworks', () => {
+        const pkg: PackageJson = {
+            devDependencies: { '@storybook/react-vite': '^9.0.0', '@storybook/react': '^8.0.0' },
+        };
+
+        assert.deepStrictEqual(storybookVersionOf(pkg), { kind: 'major', major: 8 });
+        assert.deepStrictEqual(
+            storybookVersionOf({ devDependencies: { ...pkg.devDependencies, storybook: '^7.0.0' } }),
+            {
+                kind: 'major',
+                major: 7,
+            },
+        );
+    });
+
+    it('does not let a numeric framework spec hide an unreadable storybook spec', () => {
+        const pkg: PackageJson = { devDependencies: { storybook: 'latest', '@storybook/react-webpack5': '^7.0.0' } };
+
+        assert.deepStrictEqual(storybookVersionOf(pkg), { kind: 'unknown', spec: 'latest' });
+    });
+
+    it('keeps storybookMajorOf returning a number only for a readable version', () => {
+        assert.strictEqual(storybookMajorOf({ devDependencies: { '@storybook/react-webpack5': '^9.0.0' } }), 9);
+    });
+});
+
+describe('mswMajorOf', () => {
+    it('reads the major from dependencies or devDependencies', () => {
+        assert.strictEqual(mswMajorOf({ devDependencies: { msw: '^1.3.0' } }), 1);
+        assert.strictEqual(mswMajorOf({ dependencies: { msw: '2.4.9' } }), 2);
+    });
+
+    it('is undefined when msw is absent or unreadable', () => {
+        assert.strictEqual(mswMajorOf({}), undefined);
+        assert.strictEqual(mswMajorOf({ devDependencies: { msw: 'latest' } }), undefined);
+    });
+
+    it('tells absent from unreadable through mswVersionOf', () => {
+        assert.deepStrictEqual(mswVersionOf({}), { kind: 'absent' });
+        assert.deepStrictEqual(mswVersionOf({ devDependencies: { msw: 'latest' } }), {
+            kind: 'unknown',
+            spec: 'latest',
+        });
+        assert.deepStrictEqual(mswVersionOf({ devDependencies: { msw: '^1.3.0' } }), { kind: 'major', major: 1 });
     });
 });

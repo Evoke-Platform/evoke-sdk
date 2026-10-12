@@ -221,9 +221,9 @@ npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 &
 for i in $(seq 1 60); do curl -sf http://127.0.0.1:<port>/index.json > /dev/null && break; sleep 2; done
 npm run test-storybook
 
-# Stop the background server when you are done with the red/green loop. Agent tools
-# often run each command in a fresh shell, so stop it by its command line, not a job id.
-pkill -f "storybook dev"
+# Stop the server listening on this project's Storybook port. Agent tools often run each
+# command in a fresh shell, so stop it by port rather than by job id.
+lsof -ti tcp:<port> -sTCP:LISTEN | xargs -r kill
 ```
 
 If the wait loop ends without Storybook serving, read `storybook.log`: it names the

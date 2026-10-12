@@ -227,6 +227,14 @@ describe('create-plugin', () => {
             'npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 &',
         );
 
+        // Stop only this project's server, by port. pkill by command line would also kill
+        // every other Storybook dev server on the machine.
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'lsof -ti tcp:<port> -sTCP:LISTEN | xargs -r kill',
+        );
+        runResult.assertNoFileContent('testdir/.claude/skills/storybook-tdd/SKILL.md', 'pkill -f "storybook dev"');
+
         // The unattended commands log to storybook.log in the project, so the scaffold's
         // .gitignore must keep it out of commits.
         runResult.assertFileContent('testdir/.gitignore', '*.log');

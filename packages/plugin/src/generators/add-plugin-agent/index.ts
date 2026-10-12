@@ -21,10 +21,13 @@ import {
     DEFAULT_STORYBOOK_PORT,
     formatTestToolingReport,
     inspectTestTooling,
+    MSW_WORKER_DIRECTORY,
     planPackageJsonAdditions,
     POSTINSTALL_MARKER,
+    mswVersionOf,
+    SCAFFOLD_MSW_MAJOR,
     SCAFFOLD_STORYBOOK_MAJOR,
-    storybookMajorOf,
+    storybookVersionOf,
     storybookManualEdits,
     storybookPortOf,
     TEST_TOOLING_FILES,
@@ -67,6 +70,8 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
     report: TestToolingReport = { items: [], complete: true };
     addTestTooling = false;
     newerStorybookMajor: number | undefined;
+    // Why the tooling was not offered when the project's Storybook or MSW cannot take it.
+    toolingBlockedBy: string | undefined;
     keptOwnHandlers = false;
     addedTestStorybookScript = false;
 
@@ -151,10 +156,28 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
 
         // The tooling is Storybook 7 packages and would break a newer Storybook, so the
         // question is never asked and --add-test-tooling is ignored.
-        const major = storybookMajorOf(this.projectPkg);
+        const storybook = storybookVersionOf(this.projectPkg);
 
-        if (major !== undefined && major > SCAFFOLD_STORYBOOK_MAJOR) {
-            this.newerStorybookMajor = major;
+        if (storybook.kind === 'major' && storybook.major > SCAFFOLD_STORYBOOK_MAJOR) {
+            this.newerStorybookMajor = storybook.major;
+            this.addTestTooling = false;
+
+            return;
+        }
+
+        // A declared version that cannot be read could be Storybook 8 or 9, so it is treated
+        // like a newer one. The same goes for an MSW the handlers file cannot compile against.
+        const msw = mswVersionOf(this.projectPkg);
+
+        if (storybook.kind === 'unknown') {
+            this.toolingBlockedBy = `This project declares Storybook as "${storybook.spec}", so its version cannot be checked. The Plugin Agent's test tooling targets Storybook ${SCAFFOLD_STORYBOOK_MAJOR}, so it was not added.`;
+        } else if (msw.kind === 'major' && msw.major < SCAFFOLD_MSW_MAJOR) {
+            this.toolingBlockedBy = `This project uses MSW ${msw.major}. The Plugin Agent's mock handlers and Storybook addon need MSW ${SCAFFOLD_MSW_MAJOR}, so the test tooling was not added.`;
+        } else if (msw.kind === 'unknown') {
+            this.toolingBlockedBy = `This project declares MSW as "${msw.spec}", so its version cannot be checked. The Plugin Agent's mock handlers and Storybook addon need MSW ${SCAFFOLD_MSW_MAJOR}, so the test tooling was not added.`;
+        }
+
+        if (this.toolingBlockedBy !== undefined) {
             this.addTestTooling = false;
 
             return;
@@ -286,6 +309,18 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
                     this.log.writeln('--add-test-tooling was ignored for this reason.');
                 }
             }
+        } else if (this.toolingBlockedBy !== undefined) {
+            if (!this.report.complete) {
+                this.log.writeln();
+                this.log.writeln(this.toolingBlockedBy);
+                this.log.writeln(
+                    'The agent files were added. Interaction tests and npm run test-storybook need setting up by hand.',
+                );
+
+                if ((this.options as Options)['add-test-tooling'] === true) {
+                    this.log.writeln('--add-test-tooling was ignored for this reason.');
+                }
+            }
         } else if (!this.report.complete) {
             this.log.writeln();
 
@@ -308,6 +343,11 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
                 if (postinstall && !postinstall.includes(POSTINSTALL_MARKER)) {
                     this.log.writeln(
                         `Your existing postinstall script was left alone. Append to it:  && ${this.templatePkg.scripts?.postinstall}`,
+                    );
+                    // The install this command ran only executed the old postinstall, so the browser
+                    // and the MSW worker file test-storybook needs do not exist yet.
+                    this.log.writeln(
+                        `Until then, run these once so test-storybook can start:  npx playwright install chromium && npx msw init ${MSW_WORKER_DIRECTORY}`,
                     );
                 }
             } else {
