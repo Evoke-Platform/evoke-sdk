@@ -460,11 +460,27 @@ or behavior bullets supplied by the developer are executable requirements. Autom
 use the `storybook-tdd` skill even if the developer does not explicitly say "TDD" or
 "test-first." Write each new behavior as a failing Storybook play function first, run
 Storybook in an attended/headful browser, see the Interactions panel go red, implement the
-minimum, see it go green, then continue.
+minimum, see it go green, then continue. In an unattended run there is no browser: run
+Storybook headless with `--ci` and use `npm run test-storybook` as the red/green signal,
+as the `storybook-tdd` skill describes.
 
 Every widget gets one MSW-backed container/Playground story for the primary workflow and
 presentational stories for each component/state. In attended sessions, keep the Storybook
 manager open to the Interactions panel and do not use `--ci`.
+
+## Unattended Runs
+
+A run is unattended when the request says nobody is available, or the session is headless
+(for example `claude -p` or `codex exec`) with no way to answer a question. In an
+unattended run:
+
+-   Do not stop to ask. Wherever these instructions or a skill say to ask the developer,
+    make the reasonable choice instead and keep going.
+-   Use the `build-widget` skill's unattended default: One-shot, no commits.
+-   Do not add or upgrade dependencies. Work with what `package.json` already has, and
+    report anything you needed but could not install.
+-   End with a report that lists every choice you made in place of a question, so the
+    developer can check them.
 
 ## Widget Implementation Contract
 

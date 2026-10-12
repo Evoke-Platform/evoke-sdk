@@ -212,6 +212,26 @@ describe('create-plugin', () => {
         );
     }).timeout(5000);
 
+    it('gives an unattended run a default instead of a question it cannot answer', async () => {
+        // Headless agent runs (claude -p, codex exec) cannot answer build-widget's
+        // execution-mode question or open a browser for Storybook. Without a stated
+        // default they guess, and every run guesses differently.
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        runResult.assertFileContent('testdir/AGENTS.md', '## Unattended Runs');
+        runResult.assertFileContent('testdir/.claude/skills/build-widget/SKILL.md', '**If no developer can answer**');
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 &',
+        );
+
+        // The unattended commands log to storybook.log in the project, so the scaffold's
+        // .gitignore must keep it out of commits.
+        runResult.assertFileContent('testdir/.gitignore', '*.log');
+    }).timeout(5000);
+
     it('copies skill bodies verbatim', async () => {
         runResult = await helpers
             .run(appGenerator)

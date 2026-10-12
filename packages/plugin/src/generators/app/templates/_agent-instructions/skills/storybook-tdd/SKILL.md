@@ -208,6 +208,27 @@ npm run test-storybook
 > the normal Storybook dev-server command and keep the browser visible so the developer
 > can watch the Interactions panel go red → green in real time.
 
+**Unattended runs** (nobody is watching, or the session is headless) have no browser to
+open, so `--ci` is required there. Run Storybook in the background from the project
+root, wait until it serves, run the tests, then stop it. `<port>` is the Storybook port
+from `AGENTS.md`'s Commands section.
+
+```bash
+# Unattended run only. The log stays inside the project; *.log is already gitignored.
+npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 &
+
+# Wait up to two minutes for the story index, then run the tests.
+for i in $(seq 1 60); do curl -sf http://127.0.0.1:<port>/index.json > /dev/null && break; sleep 2; done
+npm run test-storybook
+
+# Stop the background server when you are done with the red/green loop. Agent tools
+# often run each command in a fresh shell, so stop it by its command line, not a job id.
+pkill -f "storybook dev"
+```
+
+If the wait loop ends without Storybook serving, read `storybook.log`: it names the
+build error. Treat that as a broken build to fix, not as a failing test.
+
 > **New story files require a dev server restart.** After scaffolding new widget story
 > files while Storybook is already running, webpack HMR will not always discover them.
 > Stop the dev server (`Ctrl+C`) and run `npm run storybook` again before running
@@ -241,10 +262,10 @@ When using browser automation against Storybook:
     `waitUntil: 'load'` is acceptable and avoids the manager's WebSocket traffic.
     It is not the preferred watch surface for red/green work.
 
-In unattended dogfood runs, the harness runs `npm run test-storybook` after the builder
-finishes. The builder should still write play functions before implementation and report
-which red/green checks it performed. If it could not run the CLI loop itself, say so
-plainly; the harness result is the final automated signal.
+In unattended runs, run the loop yourself with the unattended commands above. Write play
+functions before implementation and report which red/green checks you performed. If you
+could not run the CLI loop, say so plainly. When a dogfood harness also runs
+`npm run test-storybook` after you finish, its result is the final automated signal.
 
 ## Regression-first Storybook loop
 
