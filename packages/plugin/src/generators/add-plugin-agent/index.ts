@@ -20,10 +20,12 @@ import {
 import {
     DEFAULT_STORYBOOK_PORT,
     formatTestToolingReport,
+    hasToolingToAdd,
     inspectTestTooling,
     MSW_WORKER_DIRECTORY,
     planPackageJsonAdditions,
     POSTINSTALL_MARKER,
+    mergePackageJson,
     mswVersionOf,
     SCAFFOLD_MSW_MAJOR,
     SCAFFOLD_STORYBOOK_MAJOR,
@@ -72,6 +74,9 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
     newerStorybookMajor: number | undefined;
     // Why the tooling was not offered when the project's Storybook or MSW cannot take it.
     toolingBlockedBy: string | undefined;
+    // Something is missing, but only in a place this command never edits (a postinstall the
+    // project wrote itself), so there is nothing it could add.
+    nothingToAdd = false;
     keptOwnHandlers = false;
     addedTestStorybookScript = false;
 
@@ -169,7 +174,9 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
         // like a newer one. The same goes for an MSW the handlers file cannot compile against.
         const msw = mswVersionOf(this.projectPkg);
 
-        if (storybook.kind === 'unknown') {
+        if (storybook.kind === 'absent') {
+            this.toolingBlockedBy = 'This project has no Storybook, so the Storybook test tooling was not added.';
+        } else if (storybook.kind === 'unknown') {
             this.toolingBlockedBy = `This project declares Storybook as "${storybook.spec}", so its version cannot be checked. The Plugin Agent's test tooling targets Storybook ${SCAFFOLD_STORYBOOK_MAJOR}, so it was not added.`;
         } else if (msw.kind === 'major' && msw.major < SCAFFOLD_MSW_MAJOR) {
             this.toolingBlockedBy = `This project uses MSW ${msw.major}. The Plugin Agent's mock handlers and Storybook addon need MSW ${SCAFFOLD_MSW_MAJOR}, so the test tooling was not added.`;
@@ -184,6 +191,15 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
         }
 
         if (this.report.complete) {
+            return;
+        }
+
+        const fileExists = (file: string) => this.fs.exists(this.destinationPath(file));
+
+        if (!hasToolingToAdd(this.projectPkg, this.templatePkg, fileExists)) {
+            this.nothingToAdd = true;
+            this.addTestTooling = false;
+
             return;
         }
 
@@ -251,12 +267,9 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
         this.keptOwnHandlers = this.fs.exists(this.destinationPath('src/mocks/evokeHandlers.ts'));
 
         if (Object.keys(additions).length > 0) {
-            // Keep the project's own indentation so the diff is the added keys and nothing else.
-            const indent = /^([ \t]+)"/m.exec(this.fs.read(pkgPath))?.[1] ?? 2;
-
             // Writing package.json is what makes Yeoman run the package manager install
             // when this generator finishes, the same way a fresh scaffold gets installed.
-            this.fs.extendJSON(pkgPath, additions, undefined, indent);
+            this.fs.write(pkgPath, mergePackageJson(this.fs.read(pkgPath), additions));
             this._markAsMerge(pkgPath);
         }
 
@@ -266,6 +279,22 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
             if (!this.fs.exists(this.destinationPath(file))) {
                 this.fs.copy(this.templatePath(file), this.destinationPath(file));
             }
+        }
+    }
+
+    // The postinstall script is the one tooling piece this command never edits.
+    _logPostinstallHint() {
+        const postinstall = this.projectPkg.scripts?.postinstall;
+
+        if (postinstall && !postinstall.includes(POSTINSTALL_MARKER)) {
+            this.log.writeln(
+                `Your existing postinstall script was left alone. Append to it:  && ${this.templatePkg.scripts?.postinstall}`,
+            );
+            // Nothing this command ran executes the new postinstall, so the browser and the MSW
+            // worker file test-storybook needs may not exist yet.
+            this.log.writeln(
+                `Until then, run these once so test-storybook can start:  npx playwright install chromium && npx msw init ${MSW_WORKER_DIRECTORY}`,
+            );
         }
     }
 
@@ -321,6 +350,9 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
                     this.log.writeln('--add-test-tooling was ignored for this reason.');
                 }
             }
+        } else if (this.nothingToAdd) {
+            this.log.writeln();
+            this._logPostinstallHint();
         } else if (!this.report.complete) {
             this.log.writeln();
 
@@ -338,18 +370,7 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
                     );
                 }
 
-                const postinstall = this.projectPkg.scripts?.postinstall;
-
-                if (postinstall && !postinstall.includes(POSTINSTALL_MARKER)) {
-                    this.log.writeln(
-                        `Your existing postinstall script was left alone. Append to it:  && ${this.templatePkg.scripts?.postinstall}`,
-                    );
-                    // The install this command ran only executed the old postinstall, so the browser
-                    // and the MSW worker file test-storybook needs do not exist yet.
-                    this.log.writeln(
-                        `Until then, run these once so test-storybook can start:  npx playwright install chromium && npx msw init ${MSW_WORKER_DIRECTORY}`,
-                    );
-                }
+                this._logPostinstallHint();
             } else {
                 this.log.writeln('Storybook test tooling was not added. Missing:');
 

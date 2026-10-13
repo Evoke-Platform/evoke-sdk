@@ -128,6 +128,7 @@ describe('add-plugin-agent', () => {
         assert.strictEqual(content.split('# Added by @evoke-platform/plugin add-plugin-agent').length - 1, 1);
         assert.ok(content.includes('.openapi/'));
         assert.ok(content.includes('storybook-static/'));
+        assert.ok(content.includes('storybook.pid'));
     }).timeout(10000);
 
     it('merges .gitignore and package.json without an overwrite prompt', async () => {
@@ -766,7 +767,7 @@ describe('add-plugin-agent', () => {
         // (yeoman-test forces overwrites). They must come through byte-identical.
         let packageJsonBefore = '';
 
-        runResult = await helpers
+        const context = helpers
             .run(generator)
             .doInDir((dir) => {
                 writeCurrentProject(dir);
@@ -774,7 +775,14 @@ describe('add-plugin-agent', () => {
             })
             .withOptions({ skills: 'claude', 'env-url': '' })
             .withPrompts({ addTestTooling: true });
+        const log = captureLog(context);
 
+        runResult = await context;
+
+        // The file checks below pass even when the prompt is wrongly shown (the generator never
+        // overwrites tooling files), so the printed text that comes right before the prompt is
+        // what proves the question was not asked.
+        assert.doesNotMatch(log.join('\n'), /This project is missing some of that tooling/);
         runResult.assertFile('AGENTS.md');
         assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), packageJsonBefore);
         runResult.assertFileContent('test-runner-jest.config.js', 'module.exports = {};');
@@ -832,6 +840,152 @@ describe('add-plugin-agent', () => {
         runResult.assertFile('AGENTS.md');
         runResult.assertNoFile(['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts']);
         runResult.assertNoFileContent('package.json', 'test-storybook');
+    }).timeout(10000);
+
+    it('neither asks nor says "added" when the only gap is a postinstall the command never edits', async () => {
+        let packageJsonBefore = '';
+
+        const context = helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeCurrentProject(dir);
+                const pkgPath = path.join(dir, 'package.json');
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+                pkg.scripts.postinstall = 'node ./scripts/setup.js';
+                fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+                packageJsonBefore = fs.readFileSync(pkgPath, 'utf8');
+            })
+            .withOptions({ skills: 'claude', 'env-url': '' })
+            .withPrompts({ addTestTooling: true });
+        const log = captureLog(context);
+
+        runResult = await context;
+
+        const output = log.join('\n');
+
+        assert.ok(output.includes('Your existing postinstall script was left alone'), output);
+        assert.ok(output.includes('npx playwright install chromium && npx msw init .storybook/public'), output);
+        assert.doesNotMatch(output, /Storybook test tooling added/);
+        assert.doesNotMatch(output, /This project is missing some of that tooling/);
+        assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), packageJsonBefore);
+    }).timeout(10000);
+
+    it('says the same for --add-test-tooling when there is nothing to add', async () => {
+        const context = helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeCurrentProject(dir);
+                const pkgPath = path.join(dir, 'package.json');
+                const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+                pkg.scripts.postinstall = 'node ./scripts/setup.js';
+                fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+            })
+            .withOptions({ skills: 'claude', 'env-url': '', 'add-test-tooling': true });
+        const log = captureLog(context);
+
+        runResult = await context;
+
+        const output = log.join('\n');
+
+        assert.ok(output.includes('Your existing postinstall script was left alone'), output);
+        assert.doesNotMatch(output, /Storybook test tooling added/);
+    }).timeout(10000);
+
+    describe('when the project has no Storybook', () => {
+        const writeNoStorybookProject = (dir: string) => {
+            writeYearOldProject(dir);
+
+            const pkgPath = path.join(dir, 'package.json');
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+            for (const name of Object.keys(pkg.devDependencies)) {
+                if (name === 'storybook' || name.startsWith('@storybook/')) {
+                    delete pkg.devDependencies[name];
+                }
+            }
+
+            delete pkg.scripts.storybook;
+            delete pkg.scripts['build-storybook'];
+            fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+        };
+
+        it('skips the tooling even when --add-test-tooling is passed, and says why', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    writeNoStorybookProject(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ ...quiet, 'add-test-tooling': true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            runResult.assertNoFile(['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts']);
+            runResult.assertFile('AGENTS.md');
+
+            const output = log.join('\n');
+
+            assert.ok(
+                output.includes('This project has no Storybook, so the Storybook test tooling was not added.'),
+                output,
+            );
+            assert.ok(output.includes('The agent files were added.'), output);
+            assert.ok(output.includes('--add-test-tooling was ignored'), output);
+        }).timeout(10000);
+
+        it('never asks the tooling question', async () => {
+            const context = helpers
+                .run(generator)
+                .doInDir(writeNoStorybookProject)
+                .withOptions({ skills: 'claude', 'env-url': '' })
+                .withPrompts({ addTestTooling: true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.doesNotMatch(log.join('\n'), /This project is missing some of that tooling/);
+            runResult.assertNoFile(['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts']);
+        }).timeout(10000);
+    });
+
+    it('keeps the CRLF line endings and missing final newline of package.json when adding tooling', async () => {
+        runResult = await helpers
+            .run(generator)
+            .doInDir((dir) => {
+                writeYearOldProject(dir);
+                const pkgPath = path.join(dir, 'package.json');
+                const original = fs.readFileSync(pkgPath, 'utf8');
+
+                fs.writeFileSync(pkgPath, original.replace(/\n$/, '').replace(/\n/g, '\r\n'));
+            })
+            .withOptions({ ...quiet, 'add-test-tooling': true });
+
+        const raw = fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8');
+
+        assert.ok(!/(^|[^\r])\n/.test(raw), 'every line feed must be preceded by a carriage return');
+        assert.ok(raw.includes('\r\n'));
+        assert.ok(!raw.endsWith('\n'), 'must not gain a final newline');
+        assert.strictEqual(JSON.parse(raw).scripts['test-storybook'], 'test-storybook --url http://127.0.0.1:6006');
+    }).timeout(10000);
+
+    it('keeps LF and the final newline of package.json when adding tooling', async () => {
+        runResult = await helpers
+            .run(generator)
+            .doInDir(writeYearOldProject)
+            .withOptions({
+                ...quiet,
+                'add-test-tooling': true,
+            });
+
+        const raw = fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8');
+
+        assert.ok(!raw.includes('\r'));
+        assert.ok(raw.endsWith('}\n'));
     }).timeout(10000);
 });
 

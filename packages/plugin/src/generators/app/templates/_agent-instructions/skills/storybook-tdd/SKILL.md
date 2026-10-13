@@ -210,21 +210,35 @@ npm run test-storybook
 
 **Unattended runs** (nobody is watching, or the session is headless) have no browser to
 open, so `--ci` is required there. Run Storybook in the background from the project
-root, wait until it serves, run the tests, then stop it. `<port>` is the Storybook port
-from `AGENTS.md`'s Commands section.
+root, wait until it serves, run the tests, then stop that one process. `<port>` is the
+Storybook port from `AGENTS.md`'s Commands section. Run it as one script, or keep the
+`storybook.pid` file between commands if each command gets a fresh shell.
 
 ```bash
-# Unattended run only. The log stays inside the project; *.log is already gitignored.
-npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 &
+# Unattended run only. storybook.log and storybook.pid stay inside the project and are gitignored.
+# If something already listens on <port>, do not start Storybook and do not stop anything:
+# say so in your final summary. Storybook would move to another port and the tests would
+# hit the wrong server.
+if lsof -ti tcp:<port> -sTCP:LISTEN > /dev/null; then echo "port <port> is already in use"; exit 1; fi
+
+# Start Storybook and remember its process id.
+npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 & echo $! > storybook.pid
 
 # Wait up to two minutes for the story index, then run the tests.
 for i in $(seq 1 60); do curl -sf http://127.0.0.1:<port>/index.json > /dev/null && break; sleep 2; done
 npm run test-storybook
 
-# Stop the server listening on this project's Storybook port. Agent tools often run each
-# command in a fresh shell, so stop it by port rather than by job id.
-lsof -ti tcp:<port> -sTCP:LISTEN | xargs -r kill
+# Stop exactly the Storybook this run started, never whatever else is on the port.
+kill "$(cat storybook.pid)" && rm storybook.pid
 ```
+
+Run the stop line even when `npm run test-storybook` fails, and do not use `set -e` in this
+script: a red test is the normal state, and a Storybook left running trips the port check on
+every later run. If `lsof` is not installed, check the port another way before starting, because
+a missing `lsof` would otherwise look like a free port.
+
+Without a POSIX shell (Windows), find the PID with `netstat -ano | findstr :<port>` and stop
+that process tree with `taskkill /PID <pid> /T /F`, only if it is the Storybook you started.
 
 If the wait loop ends without Storybook serving, read `storybook.log`: it names the
 build error. Treat that as a broken build to fix, not as a failing test.

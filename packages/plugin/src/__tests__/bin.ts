@@ -59,16 +59,32 @@ describe('create-plugin bin', function () {
         const result = runBin(['add-plugin-agent', '--help'], dir);
 
         assert.strictEqual(result.status, 0, result.stderr);
-        assert.match(result.stdout, /--skills/);
-        assert.match(result.stdout, /--env-url/);
-        assert.match(result.stdout, /--add-test-tooling/);
+
+        for (const option of [
+            '--skills claude|agents',
+            '--env-url <url>',
+            '--add-test-tooling',
+            '--no-add-test-tooling',
+            '-f, --force',
+            '--skip-install',
+            '-h, --help',
+        ]) {
+            assert.ok(result.stdout.includes(option), `help should list ${option}:\n${result.stdout}`);
+        }
+
+        // Our own usage text, not Yeoman's generated one.
+        assert.doesNotMatch(result.stdout, /yo evoke-platform/);
+        assert.match(result.stdout, /npx @evoke-platform\/plugin add-plugin-agent/);
+        assert.deepStrictEqual(fs.readdirSync(dir), []);
     });
 
     it('prints the same help for -h', () => {
-        const result = runBin(['add-plugin-agent', '-h'], dir);
+        const long = runBin(['add-plugin-agent', '--help'], dir);
+        const short = runBin(['add-plugin-agent', '-h'], dir);
 
-        assert.strictEqual(result.status, 0, result.stderr);
-        assert.match(result.stdout, /--skills/);
+        assert.strictEqual(short.status, 0, short.stderr);
+        assert.strictEqual(short.stdout, long.stdout);
+        assert.match(short.stdout, /--skills/);
     });
 
     it('adds the agent files to a year-old project from the command line', () => {
@@ -114,6 +130,36 @@ describe('create-plugin bin', function () {
             assert.match(result.stderr, /Changes to package\.json were detected/);
             assert.ok(fs.existsSync(record), result.stderr);
             assert.strictEqual(fs.readFileSync(record, 'utf8').trim(), 'install');
+        } finally {
+            fs.rmSync(stubs, { recursive: true, force: true });
+        }
+    });
+
+    it('does not run the package manager install when --skip-install is passed', () => {
+        writeYearOldProject(dir);
+
+        const stubs = fs.mkdtempSync(path.join(os.tmpdir(), 'ait61-npm-stub-'));
+        const record = path.join(stubs, 'npm-args.txt');
+
+        try {
+            fs.writeFileSync(path.join(stubs, 'npm'), `#!/bin/sh\necho "$@" >> "${record}"\n`, { mode: 0o755 });
+
+            const result = runBin(
+                ['add-plugin-agent', '--skills', 'claude', '--env-url', '', '--add-test-tooling', '--skip-install'],
+                dir,
+                {
+                    ...process.env,
+                    PATH: `${stubs}${path.delimiter}${process.env.PATH}`,
+                },
+            );
+
+            assert.strictEqual(result.status, 0, result.stderr);
+            // The tooling was still written to package.json; only the install was skipped.
+            assert.match(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'), /"test-storybook"/);
+            assert.ok(
+                !fs.existsSync(record),
+                `npm was called: ${fs.existsSync(record) && fs.readFileSync(record, 'utf8')}`,
+            );
         } finally {
             fs.rmSync(stubs, { recursive: true, force: true });
         }

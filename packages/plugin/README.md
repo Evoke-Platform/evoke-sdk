@@ -91,13 +91,14 @@ Projects already on Storybook 8 or newer get the agent files but not the tooling
 
 Options for scripts and non-interactive use:
 
-| Option                                         | Effect                                                        |
-| ---------------------------------------------- | ------------------------------------------------------------- |
-| `--skills claude` or `--skills agents`         | Skill folder, instead of the prompt                           |
-| `--env-url <url>`                              | Environment URL, instead of the prompt (empty string allowed) |
-| `--add-test-tooling` / `--no-add-test-tooling` | Answer the tooling question without asking                    |
-| `-f`, `--force`                                | Overwrite conflicting files without asking                    |
-| `-h`, `--help`                                 | List these options                                            |
+| Option                                         | Effect                                                         |
+| ---------------------------------------------- | -------------------------------------------------------------- |
+| `--skills claude` or `--skills agents`         | Skill folder, instead of the prompt                            |
+| `--env-url <url>`                              | Environment URL, instead of the prompt (empty string allowed)  |
+| `--add-test-tooling` / `--no-add-test-tooling` | Answer the tooling question without asking                     |
+| `-f`, `--force`                                | Overwrite conflicting files without asking                     |
+| `--skip-install`                               | Add the tooling but skip the install; run npm install yourself |
+| `-h`, `--help`                                 | List these options                                             |
 
 The plain `npx @evoke-platform/plugin` scaffold takes no options; it prompts for everything.
 

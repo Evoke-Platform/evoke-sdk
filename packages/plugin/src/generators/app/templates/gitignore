@@ -13,4 +13,5 @@ coverage/
 .openapi/
 
 *.log
+storybook.pid
 .DS_Store

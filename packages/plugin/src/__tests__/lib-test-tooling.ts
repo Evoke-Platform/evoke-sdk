@@ -7,7 +7,9 @@ import assert from 'assert';
 import { PackageJson } from '../lib/detect';
 import {
     formatTestToolingReport,
+    hasToolingToAdd,
     inspectTestTooling,
+    mergePackageJson,
     MSW_WORKER_DIRECTORY,
     mswMajorOf,
     mswVersionOf,
@@ -345,5 +347,60 @@ describe('mswMajorOf', () => {
             spec: 'latest',
         });
         assert.deepStrictEqual(mswVersionOf({ devDependencies: { msw: '^1.3.0' } }), { kind: 'major', major: 1 });
+    });
+});
+
+describe('mergePackageJson', () => {
+    const additions = { scripts: { 'test-storybook': 'x' }, msw: { workerDirectory: ['.storybook/public'] } };
+
+    it('adds keys after the existing ones, keeping the indentation', () => {
+        const raw = '{\n\t"name": "a",\n\t"scripts": {\n\t\t"start": "s"\n\t}\n}\n';
+
+        assert.strictEqual(
+            mergePackageJson(raw, additions),
+            '{\n\t"name": "a",\n\t"scripts": {\n\t\t"start": "s",\n\t\t"test-storybook": "x"\n\t},\n' +
+                '\t"msw": {\n\t\t"workerDirectory": [\n\t\t\t".storybook/public"\n\t\t]\n\t}\n}\n',
+        );
+    });
+
+    it('writes CRLF and no final newline when the original did', () => {
+        const merged = mergePackageJson('{\r\n  "name": "a"\r\n}', additions);
+
+        assert.ok(!/(^|[^\r])\n/.test(merged));
+        assert.ok(merged.includes('\r\n'));
+        assert.ok(merged.endsWith('}'));
+    });
+
+    it('keeps a final CRLF when the original ended with one', () => {
+        assert.ok(mergePackageJson('{\r\n  "name": "a"\r\n}\r\n', additions).endsWith('}\r\n'));
+    });
+});
+
+describe('hasToolingToAdd', () => {
+    const complete: PackageJson = {
+        devDependencies: Object.fromEntries(TEST_TOOLING_DEV_DEPENDENCIES.map((name) => [name, '1.0.0'])),
+        scripts: { 'test-storybook': 't', postinstall: 'node setup.js' },
+        msw: { workerDirectory: ['.storybook/public'] },
+    };
+
+    it('is false when only the postinstall differs', () => {
+        assert.strictEqual(
+            hasToolingToAdd(complete, TEMPLATE, () => true),
+            false,
+        );
+    });
+
+    it('is true when a tooling file is missing', () => {
+        assert.strictEqual(
+            hasToolingToAdd(complete, TEMPLATE, (file) => file !== 'src/mocks/evokeHandlers.ts'),
+            true,
+        );
+    });
+
+    it('is true when a package.json key is missing', () => {
+        assert.strictEqual(
+            hasToolingToAdd(YEAR_OLD, TEMPLATE, () => true),
+            true,
+        );
     });
 });

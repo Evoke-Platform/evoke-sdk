@@ -168,6 +168,50 @@ export function planPackageJsonAdditions(pkg: PackageJson, templatePkg: PackageJ
     return additions;
 }
 
+type JsonObject = Record<string, unknown>;
+
+function isJsonObject(value: unknown): value is JsonObject {
+    return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+// Objects merge key by key, anything else (arrays included) replaces. Existing keys keep their
+// position and new keys come last, which is the order extendJSON gave.
+function deepMerge(target: JsonObject, source: JsonObject): JsonObject {
+    const merged: JsonObject = { ...target };
+
+    for (const [key, value] of Object.entries(source)) {
+        const current = merged[key];
+
+        merged[key] = isJsonObject(value) && isJsonObject(current) ? deepMerge(current, value) : value;
+    }
+
+    return merged;
+}
+
+// package.json text with the additions merged in, written the way the file already was:
+// its indentation, its line endings (CRLF when it has any) and a final newline only if it
+// had one. extendJSON would turn CRLF into LF and always add the final newline, which shows
+// up as a whole-file diff on Windows.
+export function mergePackageJson(raw: string, additions: Partial<PackageJson>): string {
+    const merged = deepMerge(JSON.parse(raw) as JsonObject, additions as JsonObject);
+    const indent = /^([ \t]+)"/m.exec(raw)?.[1] ?? 2;
+    const eol = raw.includes('\r\n') ? '\r\n' : '\n';
+
+    return JSON.stringify(merged, null, indent).replace(/\n/g, eol) + (raw.endsWith('\n') ? eol : '');
+}
+
+// True when running the tooling step would write something: a package.json key or a tooling file.
+export function hasToolingToAdd(
+    pkg: PackageJson,
+    templatePkg: PackageJson,
+    fileExists: (relativePath: string) => boolean,
+): boolean {
+    return (
+        Object.keys(planPackageJsonAdditions(pkg, templatePkg)).length > 0 ||
+        TEST_TOOLING_FILES.some((file) => !fileExists(file))
+    );
+}
+
 export function formatTestToolingReport(report: TestToolingReport): string[] {
     return report.items.map((item) => `  [${item.present ? 'x' : ' '}] ${item.label}`);
 }

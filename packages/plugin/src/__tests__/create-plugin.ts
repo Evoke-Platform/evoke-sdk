@@ -224,20 +224,37 @@ describe('create-plugin', () => {
         runResult.assertFileContent('testdir/.claude/skills/build-widget/SKILL.md', '**If no developer can answer**');
         runResult.assertFileContent(
             'testdir/.claude/skills/storybook-tdd/SKILL.md',
-            'npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 &',
+            'npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 & echo $! > storybook.pid',
         );
 
-        // Stop only this project's server, by port. pkill by command line would also kill
-        // every other Storybook dev server on the machine.
+        // The port check must not fail when the port is free (an `lsof ... && exit 1` chain would).
         runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'if lsof -ti tcp:<port> -sTCP:LISTEN > /dev/null; then echo "port <port> is already in use"; exit 1; fi',
+        );
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'Run the stop line even when `npm run test-storybook` fails, and do not use `set -e`',
+        );
+
+        // Stop exactly the process this run started, by the PID it saved. Stopping by port would
+        // kill a developer's other server when Storybook has moved to a free port, and pkill by
+        // command line would kill every other Storybook on the machine.
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'kill "$(cat storybook.pid)" && rm storybook.pid',
+        );
+        runResult.assertFileContent('testdir/.claude/skills/storybook-tdd/SKILL.md', 'taskkill /PID <pid> /T /F');
+        runResult.assertNoFileContent(
             'testdir/.claude/skills/storybook-tdd/SKILL.md',
             'lsof -ti tcp:<port> -sTCP:LISTEN | xargs -r kill',
         );
         runResult.assertNoFileContent('testdir/.claude/skills/storybook-tdd/SKILL.md', 'pkill -f "storybook dev"');
 
-        // The unattended commands log to storybook.log in the project, so the scaffold's
-        // .gitignore must keep it out of commits.
+        // The unattended commands write storybook.log and storybook.pid in the project, so the
+        // scaffold's .gitignore must keep both out of commits.
         runResult.assertFileContent('testdir/.gitignore', '*.log');
+        runResult.assertFileContent('testdir/.gitignore', 'storybook.pid');
     }).timeout(5000);
 
     it('copies skill bodies verbatim', async () => {
