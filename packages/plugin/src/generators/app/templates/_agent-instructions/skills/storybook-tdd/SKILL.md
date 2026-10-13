@@ -224,18 +224,27 @@ if lsof -ti tcp:<port> -sTCP:LISTEN > /dev/null; then echo "port <port> is alrea
 # Start Storybook and remember its process id.
 npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 & echo $! > storybook.pid
 
-# Wait up to two minutes for the story index, then run the tests.
+# Wait up to two minutes for the story index, then run the tests and keep their result.
 for i in $(seq 1 60); do curl -sf http://127.0.0.1:<port>/index.json > /dev/null && break; sleep 2; done
-npm run test-storybook
+npm run test-storybook; test_status=$?
 
 # Stop exactly the Storybook this run started, never whatever else is on the port.
 kill "$(cat storybook.pid)" && rm storybook.pid
+
+# Give it up to ten seconds to let go of the port. If something still listens, say so and stop nothing else.
+for i in $(seq 1 10); do lsof -ti tcp:<port> -sTCP:LISTEN > /dev/null || break; sleep 1; done
+if lsof -ti tcp:<port> -sTCP:LISTEN > /dev/null; then echo "Storybook is still running on port <port>: report it, do not stop anything else"; fi
+
+# The script's result is the test result, so stopping Storybook cannot hide a failure.
+exit "$test_status"
 ```
 
 Run the stop line even when `npm run test-storybook` fails, and do not use `set -e` in this
 script: a red test is the normal state, and a Storybook left running trips the port check on
-every later run. If `lsof` is not installed, check the port another way before starting, because
-a missing `lsof` would otherwise look like a free port.
+every later run. When each command runs in its own shell, the test command's own result is the
+one to read: run `npm run test-storybook` without `; test_status=$?` and leave out the `exit`
+line. If `lsof` is not installed, check the port another way before starting and after
+stopping, because a missing `lsof` would otherwise look like a free port.
 
 Without a POSIX shell (Windows), find the PID with `netstat -ano | findstr :<port>` and stop
 that process tree with `taskkill /PID <pid> /T /F`, only if it is the Storybook you started.

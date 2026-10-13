@@ -31,7 +31,7 @@ const ADD_PLUGIN_AGENT_HELP = [
     'Options:',
     '  --skills claude|agents          Skill folder, instead of the prompt',
     '  --env-url <url>                 Environment URL, instead of the prompt (empty string allowed)',
-    '  --add-test-tooling              Answer the tooling question without asking',
+    '  --add-test-tooling              Answer yes to the tooling question without asking',
     '  --no-add-test-tooling           Answer the tooling question with no, without asking',
     '  -f, --force                     Overwrite conflicting files without asking',
     '  --skip-install                  Add the tooling but skip the install; run npm install yourself',

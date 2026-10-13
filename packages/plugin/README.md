@@ -72,7 +72,8 @@ environment URL. It then writes `AGENTS.md`, `CLAUDE.md`, the eleven skills,
 
 Nothing else in the project is touched. If a file already exists with different content,
 for example a hand-written `CLAUDE.md`, you are asked whether to overwrite it, and can ask to
-see the difference first. `.gitignore` and `package.json` are the exception: the command only
+see the difference first. If you keep your own `CLAUDE.md`, add a line `@AGENTS.md` to it so
+Claude Code reads `AGENTS.md`. `.gitignore` and `package.json` are the exception: the command only
 ever adds lines or keys to them, so it writes them without asking. Running the command a second
 time writes nothing.
 
@@ -87,18 +88,19 @@ needs the MSW `initialize()` call and `mswLoader`, a `MemoryRouter` decorator (S
 loader that calls `resetRequestLog()` before each story. Answering no changes nothing and the
 instructions will reference a test command the project does not have yet.
 
-Projects already on Storybook 8 or newer get the agent files but not the tooling, because the bundled tooling and instructions target Storybook 7. The same applies when the Storybook version cannot be read (for example `latest` or `workspace:*`) and when the project uses MSW 1, because the bundled mock handlers need MSW 2.
+Projects already on Storybook 8 or newer get the agent files but not the tooling, because the bundled tooling and instructions target Storybook 7. The same applies to a project with no Storybook at all, when the Storybook or MSW version cannot be read (for example `latest` or `workspace:*`), and when the project uses MSW 1, because the bundled mock handlers need MSW 2.
 
 Options for scripts and non-interactive use:
 
-| Option                                         | Effect                                                         |
-| ---------------------------------------------- | -------------------------------------------------------------- |
-| `--skills claude` or `--skills agents`         | Skill folder, instead of the prompt                            |
-| `--env-url <url>`                              | Environment URL, instead of the prompt (empty string allowed)  |
-| `--add-test-tooling` / `--no-add-test-tooling` | Answer the tooling question without asking                     |
-| `-f`, `--force`                                | Overwrite conflicting files without asking                     |
-| `--skip-install`                               | Add the tooling but skip the install; run npm install yourself |
-| `-h`, `--help`                                 | List these options                                             |
+| Option                                 | Effect                                                         |
+| -------------------------------------- | -------------------------------------------------------------- |
+| `--skills claude` or `--skills agents` | Skill folder, instead of the prompt                            |
+| `--env-url <url>`                      | Environment URL, instead of the prompt (empty string allowed)  |
+| `--add-test-tooling`                   | Answer yes to the tooling question without asking              |
+| `--no-add-test-tooling`                | Answer no to the tooling question without asking               |
+| `-f`, `--force`                        | Overwrite conflicting files without asking                     |
+| `--skip-install`                       | Add the tooling but skip the install; run npm install yourself |
+| `-h`, `--help`                         | List these options                                             |
 
 The plain `npx @evoke-platform/plugin` scaffold takes no options; it prompts for everything.
 

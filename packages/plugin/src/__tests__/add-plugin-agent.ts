@@ -7,6 +7,7 @@ import assert from 'assert';
 import fs from 'fs';
 import path from 'path';
 import helpers, { RunResult } from 'yeoman-test';
+import { importsAgentsFile } from '../lib/plugin-agent';
 import {
     MID_ERA_CLAUDE_MD,
     MID_ERA_SKILL,
@@ -180,6 +181,113 @@ describe('add-plugin-agent', () => {
         runResult.assertFileContent('CLAUDE.md', '@AGENTS.md');
         runResult.assertNoFileContent('CLAUDE.md', 'Guidance this team wrote by hand');
     }).timeout(10000);
+
+    // Claude Code ignores AGENTS.md when a CLAUDE.md sits beside it unless that CLAUDE.md imports it.
+    // A developer who keeps their own CLAUDE.md has to be told, and the closing message must not
+    // claim an import that is not there.
+    describe('the closing message about the CLAUDE.md import', () => {
+        const warning =
+            'Your CLAUDE.md does not import AGENTS.md, so Claude Code will not read the new instructions. Add this line to it: @AGENTS.md';
+
+        it('warns, and claims no import, when the developer keeps a CLAUDE.md that has none', async () => {
+            const context = helpers
+                .run(generator)
+                .doInDir(writeMidEraProject)
+                .withOptions({ ...quiet, force: false })
+                .withPrompts({ action: 'skip' });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            const output = log.join('\n');
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'CLAUDE.md'), 'utf8'), MID_ERA_CLAUDE_MD);
+            assert.ok(output.includes('does not import AGENTS.md'), output);
+            assert.ok(output.includes(warning), output);
+            assert.ok(output.includes("The project's own CLAUDE.md was kept"), output);
+            assert.ok(!output.includes('that imports it'), output);
+        }).timeout(10000);
+
+        it('keeps saying CLAUDE.md imports AGENTS.md, with no warning, when the import replaced theirs', async () => {
+            const context = helpers
+                .run(generator)
+                .doInDir(writeMidEraProject)
+                .withOptions({ ...quiet, force: true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            const output = log.join('\n');
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'CLAUDE.md'), 'utf8').trim(), '@AGENTS.md');
+            assert.ok(output.includes('a CLAUDE.md that imports it'), output);
+            assert.ok(!output.includes('does not import AGENTS.md'), output);
+        }).timeout(10000);
+
+        it('does not warn when the CLAUDE.md the developer kept has the import among its own lines', async () => {
+            const mine = [
+                '# tabs-unlimited',
+                '',
+                'Guidance this team wrote by hand.',
+                '',
+                '@AGENTS.md',
+                '',
+                'Our own rules, below the import.',
+                '',
+            ].join('\n');
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    writeMidEraProject(dir);
+                    fs.writeFileSync(path.join(dir, 'CLAUDE.md'), mine);
+                })
+                .withOptions({ ...quiet, force: false })
+                .withPrompts({ action: 'skip' });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            const output = log.join('\n');
+
+            // Skip kept their file, so the closing message reads the developer's CLAUDE.md, not the generated one.
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'CLAUDE.md'), 'utf8'), mine);
+            assert.ok(!output.includes('does not import AGENTS.md'), output);
+        }).timeout(10000);
+    });
+
+    // What counts as an import is the way Claude Code writes one: `@AGENTS.md` or `@./AGENTS.md` as a
+    // token of its own, at the start of a line or after whitespace and followed by whitespace or the
+    // end of the file.
+    describe('importsAgentsFile', () => {
+        it('accepts @AGENTS.md and @./AGENTS.md wherever they stand as a token of their own', () => {
+            for (const claudeMd of [
+                '@AGENTS.md\n',
+                '@AGENTS.md',
+                '@./AGENTS.md\n',
+                '# Rules\n\n@AGENTS.md\n\nMore rules.\n',
+                'Read @AGENTS.md first.\n',
+                '# Rules\r\n@AGENTS.md\r\n',
+                '\t@./AGENTS.md',
+            ]) {
+                assert.ok(importsAgentsFile(claudeMd), JSON.stringify(claudeMd));
+            }
+        });
+
+        it('does not take a mention or a look-alike for an import', () => {
+            for (const claudeMd of [
+                '',
+                '# Rules\n\nNo import here.\n',
+                'See AGENTS.md for the rules.\n',
+                'Mail me@AGENTS.md\n',
+                '@AGENTS.mdx\n',
+                '@AGENTS.md.bak\n',
+                '@docs/AGENTS.md\n',
+                '`@AGENTS.md`\n',
+            ]) {
+                assert.ok(!importsAgentsFile(claudeMd), JSON.stringify(claudeMd));
+            }
+        });
+    });
 
     it('writes nothing new on a second run', async () => {
         runResult = await helpers.run(generator).doInDir(writeYearOldProject).withOptions(quiet);

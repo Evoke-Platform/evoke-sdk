@@ -54,6 +54,16 @@ export function validateEnvironmentUrl(value: string): true | string {
     return 'URL must start with https:// or http://';
 }
 
+// Whether a CLAUDE.md pulls AGENTS.md in. Claude Code ignores AGENTS.md when a CLAUDE.md sits
+// beside it, so a developer who keeps a hand-written CLAUDE.md gets the new instructions only if
+// that file imports them. The import is written the way Claude Code writes one, `@AGENTS.md` or
+// `@./AGENTS.md`, as a token of its own: at the start of a line or after whitespace, and followed
+// by whitespace or the end of the file. A hand-written file may hold it among other lines, so it
+// is looked for anywhere and not only as the whole file.
+export function importsAgentsFile(claudeMd: string): boolean {
+    return /(^|\s)@(\.\/)?AGENTS\.md(?=\s|$)/.test(claudeMd);
+}
+
 export type PluginAgentAnswers = {
     projectName: string;
     skills: SkillLocation;

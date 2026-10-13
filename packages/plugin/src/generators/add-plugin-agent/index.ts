@@ -1,6 +1,7 @@
 // Copyright (c) 2023 System Automation Corporation.
 // This file is licensed under the MIT License.
 
+import fs from 'fs';
 import path from 'path';
 import Generator from 'yeoman-generator';
 import { detectPluginProject, PackageJson } from '../../lib/detect';
@@ -11,6 +12,7 @@ import {
     PluginAgentAnswers,
     SKILL_LOCATION_CHOICES,
     SkillLocation,
+    importsAgentsFile,
     isSkillLocation,
     normalizeEnvironmentUrl,
     skillDirectories,
@@ -298,6 +300,17 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
         }
     }
 
+    // What the developer ends up with is the CLAUDE.md on disk. Answering "skip" at the overwrite
+    // prompt leaves Yeoman's in-memory copy holding the new import, so the file is read directly.
+    // A file that cannot be read is not reported on, so this message cannot fail a finished run.
+    _claudeMdLacksImport(): boolean {
+        try {
+            return !importsAgentsFile(fs.readFileSync(this.destinationPath(CLAUDE_IMPORT_FILE), 'utf8'));
+        } catch {
+            return false;
+        }
+    }
+
     end() {
         if (!this.answers) {
             throw new Error('no answers collected');
@@ -305,9 +318,20 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
 
         this.log.writeln();
         this.log.ok(`Plugin Agent (beta) added to ${this.answers.projectName}.`);
-        this.log.writeln(
-            `${INSTRUCTION_FILE}, a ${CLAUDE_IMPORT_FILE} that imports it, skills under ${skillDirectories[this.answers.skills]}/, scripts/fetch-openapi-specs.sh and plans/. Files that already matched were left as they were.`,
-        );
+
+        if (this._claudeMdLacksImport()) {
+            // The developer kept their own CLAUDE.md, and without the import Claude Code never reads AGENTS.md.
+            this.log.writeln(
+                `${INSTRUCTION_FILE}, skills under ${skillDirectories[this.answers.skills]}/, scripts/fetch-openapi-specs.sh and plans/. The project's own ${CLAUDE_IMPORT_FILE} was kept. Files that already matched were left as they were.`,
+            );
+            this.log.writeln(
+                `Your ${CLAUDE_IMPORT_FILE} does not import ${INSTRUCTION_FILE}, so Claude Code will not read the new instructions. Add this line to it: @${INSTRUCTION_FILE}`,
+            );
+        } else {
+            this.log.writeln(
+                `${INSTRUCTION_FILE}, a ${CLAUDE_IMPORT_FILE} that imports it, skills under ${skillDirectories[this.answers.skills]}/, scripts/fetch-openapi-specs.sh and plans/. Files that already matched were left as they were.`,
+            );
+        }
 
         if (this.answers.environmentUrl) {
             this.log.writeln(
