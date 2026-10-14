@@ -142,7 +142,9 @@ describe('create-plugin bin', function () {
             assert.strictEqual(result.status, 0, result.stderr);
             assert.match(result.stderr, /Changes to package\.json were detected/);
             assert.ok(fs.existsSync(record), result.stderr);
-            assert.strictEqual(fs.readFileSync(record, 'utf8').trim(), 'install');
+            // On Windows the npm.cmd stub records its argument with the quotes cmd.exe passed it
+            // ("install"), so compare without them.
+            assert.strictEqual(fs.readFileSync(record, 'utf8').trim().replace(/"/g, ''), 'install');
         } finally {
             fs.rmSync(stubs, { recursive: true, force: true });
         }
