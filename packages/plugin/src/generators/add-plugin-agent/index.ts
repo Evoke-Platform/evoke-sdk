@@ -60,6 +60,19 @@ type Options = {
     skills?: string;
     'env-url'?: string;
     'add-test-tooling'?: boolean;
+    // Set by bin/create-plugin.js from whether a terminal is attached. Only an explicit false means
+    // there is none, so a run that does not set it (yeoman-test, another host) keeps prompting.
+    interactive?: boolean;
+    force?: boolean;
+};
+
+// The part of a mem-fs file the conflict check reads.
+type QueuedFile = {
+    path: string;
+    state?: string;
+    conflicter?: string;
+    contents: Buffer | null;
+    stat?: { mode?: number } | null;
 };
 
 // Adds the Plugin Agent to a plugin project that already exists in the current directory.
@@ -73,7 +86,8 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
     answers: PluginAgentAnswers | undefined;
     report: TestToolingReport = { items: [], complete: true };
     addTestTooling = false;
-    newerStorybookMajor: number | undefined;
+    // The Storybook major the project is on when it is not the one the tooling targets, older or newer.
+    otherStorybookMajor: number | undefined;
     // Why the tooling was not offered when the project's Storybook or MSW cannot take it.
     toolingBlockedBy: string | undefined;
     // Something is missing, but only in a place this command never edits (a postinstall the
@@ -81,6 +95,8 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
     nothingToAdd = false;
     keptOwnHandlers = false;
     addedTestStorybookScript = false;
+    // No terminal, and nothing said whether to add the tooling: it was answered no.
+    toolingQuestionSkipped = false;
 
     constructor(args: string | string[], options: Generator.GeneratorOptions) {
         super(args, options);
@@ -125,30 +141,49 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
         this.projectName = detected.projectName;
         this.projectPkg = detected.pkg;
         this.templatePkg = JSON.parse(this.fs.read(this.templatePath('package.json'))) as PackageJson;
+
+        // Nothing has been written yet, so this stops the run cleanly.
+        if (this._noTerminal() && opts.skills === undefined) {
+            throw new UsageError(
+                'No terminal is attached, so add-plugin-agent cannot ask which tool runs the agent. Pass --skills claude or --skills agents.',
+            );
+        }
+    }
+
+    // Without a terminal a prompt cannot be answered: it crashes on the closed stdin, and by then
+    // Yeoman has written the files it checked before the one it asked about.
+    _noTerminal(): boolean {
+        return (this.options as Options).interactive === false;
     }
 
     async prompting() {
         const opts = this.options as Options;
 
-        const prompted = await this.prompt<{ skills?: SkillLocation; environmentUrl?: string }>([
-            {
-                type: 'list',
-                name: 'skills',
-                message: 'Which tool runs the Plugin Agent (beta)? This only decides where the skills go.',
-                default: 'claude',
-                choices: SKILL_LOCATION_CHOICES,
-                when: opts.skills === undefined,
-            },
-            {
-                type: 'input',
-                name: 'environmentUrl',
-                message: `Evoke environment base URL (optional, set later in ${INSTRUCTION_FILE}):`,
-                default: '',
-                filter: normalizeEnvironmentUrl,
-                validate: validateEnvironmentUrl,
-                when: opts['env-url'] === undefined,
-            },
-        ]);
+        // Without a terminal nothing is asked: --skills was checked in initializing(), and a missing
+        // --env-url is an empty one, the same as an empty answer.
+        let prompted: { skills?: SkillLocation; environmentUrl?: string } = {};
+
+        if (!this._noTerminal()) {
+            prompted = await this.prompt<{ skills?: SkillLocation; environmentUrl?: string }>([
+                {
+                    type: 'list',
+                    name: 'skills',
+                    message: 'Which tool runs the Plugin Agent (beta)? This only decides where the skills go.',
+                    default: 'claude',
+                    choices: SKILL_LOCATION_CHOICES,
+                    when: opts.skills === undefined,
+                },
+                {
+                    type: 'input',
+                    name: 'environmentUrl',
+                    message: `Evoke environment base URL (optional, set later in ${INSTRUCTION_FILE}):`,
+                    default: '',
+                    filter: normalizeEnvironmentUrl,
+                    validate: validateEnvironmentUrl,
+                    when: opts['env-url'] === undefined,
+                },
+            ]);
+        }
 
         this.answers = {
             projectName: this.projectName,
@@ -161,19 +196,19 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
 
         this.report = inspectTestTooling(this.projectPkg, (file) => this.fs.exists(this.destinationPath(file)));
 
-        // The tooling is Storybook 7 packages and would break a newer Storybook, so the
-        // question is never asked and --add-test-tooling is ignored.
+        // The tooling is Storybook 7 packages and would break any other Storybook, older or newer,
+        // so the question is never asked and --add-test-tooling is ignored.
         const storybook = storybookVersionOf(this.projectPkg);
 
-        if (storybook.kind === 'major' && storybook.major > SCAFFOLD_STORYBOOK_MAJOR) {
-            this.newerStorybookMajor = storybook.major;
+        if (storybook.kind === 'major' && storybook.major !== SCAFFOLD_STORYBOOK_MAJOR) {
+            this.otherStorybookMajor = storybook.major;
             this.addTestTooling = false;
 
             return;
         }
 
-        // A declared version that cannot be read could be Storybook 8 or 9, so it is treated
-        // like a newer one. The same goes for an MSW the handlers file cannot compile against.
+        // A declared version that cannot be read could be Storybook 6, 8 or 9, so it is treated
+        // like another major. The same goes for an MSW the handlers file cannot compile against.
         const msw = mswVersionOf(this.projectPkg);
 
         if (storybook.kind === 'absent') {
@@ -207,6 +242,14 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
 
         if (opts['add-test-tooling'] !== undefined) {
             this.addTestTooling = opts['add-test-tooling'];
+
+            return;
+        }
+
+        // The safe answer: it leaves the project's package.json alone. end() says so.
+        if (this._noTerminal()) {
+            this.addTestTooling = false;
+            this.toolingQuestionSkipped = true;
 
             return;
         }
@@ -251,6 +294,52 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
         if (this.addTestTooling) {
             this._writeTestTooling();
         }
+
+        // Everything is still in memory here: Yeoman writes to disk, and asks about each file that
+        // differs, only after this phase. Stopping now leaves the project exactly as it was.
+        if (this._noTerminal() && !(this.options as Options).force) {
+            const conflicts = this._filesNeedingAnAnswer();
+
+            if (conflicts.length > 0) {
+                throw new UsageError(
+                    `No terminal is attached, so add-plugin-agent cannot ask before replacing these files: ${conflicts.join(', ')}. Run it in a terminal to choose for each file, or pass --force to replace them.`,
+                );
+            }
+        }
+    }
+
+    // The files Yeoman would stop to ask about, by its own test (the conflicter's _detectConflict):
+    // a file that is on disk and is a directory, differs in content, or differs in mode. A file marked
+    // as a merge is written without a question, and one that is not on disk is simply created.
+    _filesNeedingAnAnswer(): string[] {
+        const store = (this.fs as unknown as { store: { all(): QueuedFile[] } }).store;
+        const root = this.destinationRoot();
+        const found: string[] = [];
+
+        for (const file of store.all()) {
+            if (file.state !== 'modified' || file.conflicter) {
+                continue;
+            }
+
+            let onDisk: fs.Stats;
+
+            try {
+                onDisk = fs.statSync(file.path);
+            } catch {
+                continue;
+            }
+
+            const differs =
+                onDisk.isDirectory() ||
+                Boolean(file.stat?.mode && file.stat.mode !== onDisk.mode) ||
+                !fs.readFileSync(file.path).equals(file.contents ?? Buffer.alloc(0));
+
+            if (differs) {
+                found.push(path.relative(root, file.path).split(path.sep).join('/'));
+            }
+        }
+
+        return found.sort();
     }
 
     // The generator only appends to this file, so there is nothing for the developer to
@@ -343,19 +432,19 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
             );
         }
 
-        if (this.newerStorybookMajor !== undefined) {
+        if (this.otherStorybookMajor !== undefined) {
             this.log.writeln();
 
             if (this.report.complete) {
                 this.log.writeln(
-                    `This project uses Storybook ${this.newerStorybookMajor} and already has the test tooling. The agent files were added. The existing test tooling was left as it is.`,
+                    `This project uses Storybook ${this.otherStorybookMajor} and already has the test tooling. The agent files were added. The existing test tooling was left as it is.`,
                 );
             } else {
                 this.log.writeln(
-                    `This project uses Storybook ${this.newerStorybookMajor}. The Plugin Agent's test tooling and instructions target Storybook ${SCAFFOLD_STORYBOOK_MAJOR}, so the tooling was not added: its Storybook ${SCAFFOLD_STORYBOOK_MAJOR} packages would break this project's Storybook.`,
+                    `This project uses Storybook ${this.otherStorybookMajor}. The Plugin Agent's test tooling and instructions target Storybook ${SCAFFOLD_STORYBOOK_MAJOR}, so the tooling was not added: its Storybook ${SCAFFOLD_STORYBOOK_MAJOR} packages would break this project's Storybook.`,
                 );
                 this.log.writeln(
-                    `The agent files were added. Interaction tests and npm run test-storybook need setting up for Storybook ${this.newerStorybookMajor} by hand.`,
+                    `The agent files were added. Interaction tests and npm run test-storybook need setting up for Storybook ${this.otherStorybookMajor} by hand.`,
                 );
 
                 if ((this.options as Options)['add-test-tooling'] === true) {
@@ -402,9 +491,17 @@ export default class AddPluginAgentGenerator extends ExistingProjectGenerator {
                     this.log.writeln(line);
                 }
 
-                this.log.writeln(
-                    'The instructions reference `npm run test-storybook`, which this project does not have yet. Re-run with --add-test-tooling to add it.',
-                );
+                const reference =
+                    'The instructions reference `npm run test-storybook`, which this project does not have yet.';
+
+                if (this.toolingQuestionSkipped) {
+                    this.log.writeln(reference);
+                    this.log.writeln(
+                        'No terminal is attached, so the tooling question was answered no. Pass --add-test-tooling to add it.',
+                    );
+                } else {
+                    this.log.writeln(`${reference} Re-run with --add-test-tooling to add it.`);
+                }
             }
         }
 

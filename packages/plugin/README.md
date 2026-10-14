@@ -88,7 +88,7 @@ needs the MSW `initialize()` call and `mswLoader`, a `MemoryRouter` decorator (S
 loader that calls `resetRequestLog()` before each story. Answering no changes nothing and the
 instructions will reference a test command the project does not have yet.
 
-Projects already on Storybook 8 or newer get the agent files but not the tooling, because the bundled tooling and instructions target Storybook 7. The same applies to a project with no Storybook at all, when the Storybook or MSW version cannot be read (for example `latest` or `workspace:*`), and when the project uses MSW 1, because the bundled mock handlers need MSW 2.
+Projects on any Storybook version other than 7 get the agent files but not the tooling, because the bundled tooling and instructions target Storybook 7. The same applies to a project with no Storybook at all, when the Storybook or MSW version cannot be read (for example `latest` or `workspace:*`), and when the project uses MSW 1, because the bundled mock handlers need MSW 2.
 
 Options for scripts and non-interactive use:
 
@@ -101,6 +101,8 @@ Options for scripts and non-interactive use:
 | `-f`, `--force`                        | Overwrite conflicting files without asking                     |
 | `--skip-install`                       | Add the tooling but skip the install; run npm install yourself |
 | `-h`, `--help`                         | List these options                                             |
+
+Without a terminal (for example in a script), pass `--skills`, and pass `--force` if any of the files may already exist with different content; the command stops without writing anything rather than guessing.
 
 The plain `npx @evoke-platform/plugin` scaffold takes no options; it prompts for everything.
 

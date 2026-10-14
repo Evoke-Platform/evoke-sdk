@@ -105,7 +105,8 @@ describe('add-plugin-agent', () => {
             .withOptions({ ...quiet, 'env-url': 'https://acme.example.com/' });
 
         runResult.assertFileContent('AGENTS.md', '# @acme/intake-widgets');
-        runResult.assertFileContent('AGENTS.md', 'Base URL: https://acme.example.com\n');
+        // A git checkout with core.autocrlf=true stores the template with CRLF, and the generated file keeps it.
+        runResult.assertFileContent('AGENTS.md', /Base URL: https:\/\/acme\.example\.com\r?\n/);
     }).timeout(10000);
 
     it('answers the two prompts when no options are given', async () => {
@@ -701,6 +702,71 @@ describe('add-plugin-agent', () => {
         }).timeout(10000);
     });
 
+    // The tooling is Storybook 7 packages, so an older Storybook is as unfit for it as a newer one.
+    describe('on a Storybook older than 7', () => {
+        const writeStorybook6Project = (dir: string) => {
+            writeYearOldProject(dir);
+
+            const pkgPath = path.join(dir, 'package.json');
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+
+            for (const name of Object.keys(pkg.devDependencies)) {
+                if (name === 'storybook' || name.startsWith('@storybook/')) {
+                    pkg.devDependencies[name] = '^6.5.0';
+                }
+            }
+
+            fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + '\n');
+        };
+
+        const tooling = ['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts'];
+
+        it('adds the agent files but not the tooling, even when --add-test-tooling is passed', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    writeStorybook6Project(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ ...quiet, 'add-test-tooling': true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            assert.ok(!fs.existsSync(path.join(runResult.cwd, tooling[0])));
+            assert.ok(!fs.existsSync(path.join(runResult.cwd, tooling[1])));
+            assert.ok(fs.existsSync(path.join(runResult.cwd, 'AGENTS.md')));
+
+            const output = log.join('\n');
+
+            assert.ok(output.includes('This project uses Storybook 6'), output);
+            assert.ok(output.includes("would break this project's Storybook"), output);
+            assert.ok(output.includes('--add-test-tooling was ignored'), output);
+        }).timeout(10000);
+
+        it('never asks the tooling question, so a yes at the prompt adds nothing', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    writeStorybook6Project(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ skills: 'claude', 'env-url': '' })
+                .withPrompts({ addTestTooling: true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            assert.ok(!fs.existsSync(path.join(runResult.cwd, tooling[0])));
+            assert.ok(!fs.existsSync(path.join(runResult.cwd, tooling[1])));
+            assert.ok(log.join('\n').includes('This project uses Storybook 6'), log.join('\n'));
+        }).timeout(10000);
+    });
+
     describe("when the project's versions cannot take the tooling", () => {
         const tooling = ['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts'];
         const edit = (change: (pkg: Record<string, Record<string, string>>) => void) => (dir: string) => {
@@ -1095,6 +1161,205 @@ describe('add-plugin-agent', () => {
         assert.ok(!raw.includes('\r'));
         assert.ok(raw.endsWith('}\n'));
     }).timeout(10000);
+
+    // Run from a script or CI there is no terminal, and a prompt would crash on the closed stdin halfway
+    // through writing. The bin tells the generator with interactive: false; yeoman-test leaves it
+    // undefined, which keeps the prompting behaviour every other test here relies on.
+    describe('without a terminal', () => {
+        const noTerminal = { skills: 'claude', 'env-url': '', 'add-test-tooling': false, interactive: false };
+        const tooling = ['test-runner-jest.config.js', 'src/mocks/evokeHandlers.ts'];
+
+        it('stops before writing anything when --skills is missing', async () => {
+            let projectDir = '';
+            let before: ReturnType<typeof snapshot> = {};
+
+            await assert.rejects(
+                helpers
+                    .run(generator)
+                    .doInDir((dir) => {
+                        projectDir = dir;
+                        writeYearOldProject(dir);
+                        before = snapshot(dir);
+                    })
+                    .withOptions({ 'env-url': '', 'add-test-tooling': false, interactive: false }),
+                {
+                    name: 'UsageError',
+                    message:
+                        'No terminal is attached, so add-plugin-agent cannot ask which tool runs the agent. Pass --skills claude or --skills agents.',
+                },
+            );
+
+            assert.deepStrictEqual(snapshot(projectDir), before);
+            assert.ok(!fs.existsSync(path.join(projectDir, 'AGENTS.md')));
+        }).timeout(10000);
+
+        it('uses an empty environment URL instead of asking when --env-url is missing', async () => {
+            runResult = await helpers
+                .run(generator)
+                .doInDir(writeYearOldProject)
+                .withOptions({ skills: 'claude', 'add-test-tooling': false, interactive: false })
+                .withPrompts({ environmentUrl: 'https://asked.example.com' });
+
+            runResult.assertFileContent('AGENTS.md', 'Base URL: _not set_');
+            runResult.assertNoFileContent('AGENTS.md', 'asked.example.com');
+        }).timeout(10000);
+
+        it('stops before replacing a file that exists with different content, leaving the disk untouched', async () => {
+            let projectDir = '';
+            let before: ReturnType<typeof snapshot> = {};
+
+            await assert.rejects(
+                helpers
+                    .run(generator)
+                    .doInDir((dir) => {
+                        projectDir = dir;
+                        writeMidEraProject(dir);
+                        before = snapshot(dir);
+                    })
+                    .withOptions({ ...noTerminal, force: false })
+                    .withPrompts({ action: 'force' }),
+                {
+                    name: 'UsageError',
+                    message:
+                        'No terminal is attached, so add-plugin-agent cannot ask before replacing these files: .claude/skills/build-widget/SKILL.md, CLAUDE.md. Run it in a terminal to choose for each file, or pass --force to replace them.',
+                },
+            );
+
+            // Yeoman writes to disk only after the writing phase, so the files already queued
+            // (AGENTS.md, the skills, the merged .gitignore) never reached it.
+            assert.deepStrictEqual(snapshot(projectDir), before);
+            assert.strictEqual(fs.readFileSync(path.join(projectDir, 'CLAUDE.md'), 'utf8'), MID_ERA_CLAUDE_MD);
+            assert.strictEqual(fs.readFileSync(path.join(projectDir, '.gitignore'), 'utf8'), 'node_modules/\ndist/\n');
+            assert.ok(!fs.existsSync(path.join(projectDir, 'AGENTS.md')));
+            assert.ok(!fs.existsSync(path.join(projectDir, '.claude/skills/plan-widget')));
+            assert.ok(!fs.existsSync(path.join(projectDir, 'scripts')));
+        }).timeout(10000);
+
+        it('replaces the conflicting files normally when --force is given', async () => {
+            runResult = await helpers
+                .run(generator)
+                .doInDir(writeMidEraProject)
+                .withOptions({ ...noTerminal, force: true });
+
+            runResult.assertFile(agentItems('claude'));
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'CLAUDE.md'), 'utf8').trim(), '@AGENTS.md');
+        }).timeout(10000);
+
+        it('does not count identical files, .gitignore or package.json as conflicts', async () => {
+            runResult = await helpers
+                .run(generator)
+                .doInDir(writeYearOldProject)
+                .withOptions({ ...noTerminal, force: false, 'add-test-tooling': true });
+
+            const projectDir = runResult.cwd;
+            const pkg = JSON.parse(fs.readFileSync(path.join(projectDir, 'package.json'), 'utf8'));
+
+            // The year-old project's .gitignore and package.json both changed, and neither is a conflict.
+            assert.ok(fs.readFileSync(path.join(projectDir, '.gitignore'), 'utf8').includes('.openapi/'));
+            assert.ok(pkg.scripts['test-storybook']);
+
+            // Second run: every agent file now exists and matches, so there is nothing to ask about.
+            const before = snapshot(projectDir);
+            const second = await helpers
+                .run(generator)
+                .cd(projectDir)
+                .withOptions({ ...noTerminal, force: false, 'add-test-tooling': true });
+
+            assert.deepStrictEqual(snapshot(projectDir), before);
+            second.restore();
+        }).timeout(20000);
+
+        it('counts a file with the right content but a different mode as a conflict, as Yeoman does', async function () {
+            // Windows reports one mode for every file, so there is nothing to differ.
+            if (process.platform === 'win32') {
+                this.skip();
+            }
+
+            runResult = await helpers.run(generator).doInDir(writeYearOldProject).withOptions(noTerminal);
+
+            const projectDir = runResult.cwd;
+
+            fs.chmodSync(path.join(projectDir, 'AGENTS.md'), 0o600);
+
+            await assert.rejects(
+                helpers
+                    .run(generator)
+                    .cd(projectDir)
+                    .withOptions({ ...noTerminal, force: false }),
+                { name: 'UsageError', message: /cannot ask before replacing these files: AGENTS\.md\./ },
+            );
+        }).timeout(20000);
+
+        it('answers the tooling question no, and closes by saying so', async () => {
+            let before = '';
+            const context = helpers
+                .run(generator)
+                .doInDir((dir) => {
+                    writeYearOldProject(dir);
+                    before = fs.readFileSync(path.join(dir, 'package.json'), 'utf8');
+                })
+                .withOptions({ skills: 'claude', 'env-url': '', interactive: false })
+                // Would add the tooling if the question were asked.
+                .withPrompts({ addTestTooling: true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            assert.strictEqual(fs.readFileSync(path.join(runResult.cwd, 'package.json'), 'utf8'), before);
+            runResult.assertNoFile(tooling);
+            runResult.assertFile('AGENTS.md');
+
+            const lines = log.join('\n').split('\n');
+
+            assert.ok(
+                lines.includes(
+                    'No terminal is attached, so the tooling question was answered no. Pass --add-test-tooling to add it.',
+                ),
+                lines.join('\n'),
+            );
+            assert.ok(lines.includes('Storybook test tooling was not added. Missing:'), lines.join('\n'));
+            // The advice to pass the option is given once, in that line.
+            assert.ok(!lines.some((line) => line.includes('Re-run with --add-test-tooling')), lines.join('\n'));
+        }).timeout(10000);
+
+        it('adds the tooling when --add-test-tooling is given', async () => {
+            const context = helpers
+                .run(generator)
+                .doInDir(writeYearOldProject)
+                .withOptions({ ...noTerminal, 'add-test-tooling': true });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            runResult.assertFile(tooling);
+            runResult.assertFileContent('package.json', '"test-storybook"');
+            assert.ok(!log.join('\n').includes('the tooling question was answered no'), log.join('\n'));
+        }).timeout(10000);
+
+        it('does not say the question was answered when --no-add-test-tooling was given', async () => {
+            const context = helpers.run(generator).doInDir(writeYearOldProject).withOptions(noTerminal);
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            runResult.assertNoFile(tooling);
+            assert.ok(!log.join('\n').includes('the tooling question was answered no'), log.join('\n'));
+            assert.ok(log.join('\n').includes('Re-run with --add-test-tooling'), log.join('\n'));
+        }).timeout(10000);
+
+        it('does not say the question was answered when it would not have been asked', async () => {
+            const context = helpers
+                .run(generator)
+                .doInDir(writeCurrentProject)
+                .withOptions({ skills: 'claude', 'env-url': '', interactive: false });
+            const log = captureLog(context);
+
+            runResult = await context;
+
+            runResult.assertFile('AGENTS.md');
+            assert.ok(!log.join('\n').includes('the tooling question was answered no'), log.join('\n'));
+        }).timeout(10000);
+    });
 });
 
 // Relative path -> content and mtime for every file under dir, skipping node_modules.

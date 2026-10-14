@@ -76,7 +76,12 @@ if (namespace === ADD_PLUGIN_AGENT && help) {
     env.register(path.resolve(__dirname, '../dist/generators/app'), APP);
     env.register(path.resolve(__dirname, '../dist/generators/add-plugin-agent'), ADD_PLUGIN_AGENT);
 
-    env.run([namespace, ...args]).catch((err) => {
+    // add-plugin-agent has to know whether anyone can answer a prompt: without a terminal, Yeoman's
+    // prompts crash on the closed stdin, after some files are already written. It reads force from
+    // its own options too, because force above only reaches the environment's conflict check.
+    const runOptions = namespace === ADD_PLUGIN_AGENT ? { interactive: Boolean(process.stdin.isTTY), force } : {};
+
+    env.run([namespace, ...args], runOptions).catch((err) => {
         // These two carry a message written for the terminal; anything else is a bug and
         // keeps its stack.
         if (err && (err.name === 'NotAPluginProjectError' || err.name === 'UsageError')) {

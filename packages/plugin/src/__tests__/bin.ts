@@ -16,6 +16,26 @@ function runBin(args: string[], cwd: string, env?: NodeJS.ProcessEnv) {
     return spawnSync(process.execPath, [bin, ...args], { cwd, encoding: 'utf8', timeout: 15000, env });
 }
 
+// A stand-in npm that records its arguments, so no real install runs. It is written twice because
+// a shell script is ignored on Windows, where `npm` resolves to npm.cmd. The environment puts the
+// stub folder first under the PATH key the environment really uses: on Windows that is usually `Path`,
+// and adding a second `PATH` key would leave it undefined which of the two the child sees.
+function stubNpm() {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'ait61-npm-stub-'));
+    const record = path.join(dir, 'npm-args.txt');
+
+    fs.writeFileSync(path.join(dir, 'npm'), `#!/bin/sh\necho "$@" >> "${record}"\n`, { mode: 0o755 });
+    fs.writeFileSync(path.join(dir, 'npm.cmd'), `@echo %*>>"${record}"\r\n`);
+
+    const pathKey = Object.keys(process.env).find((key) => key.toUpperCase() === 'PATH') ?? 'PATH';
+    const env: NodeJS.ProcessEnv = {
+        ...process.env,
+        [pathKey]: `${dir}${path.delimiter}${process.env[pathKey] ?? ''}`,
+    };
+
+    return { dir, record, env };
+}
+
 describe('create-plugin bin', function () {
     this.timeout(20000);
 
@@ -110,20 +130,13 @@ describe('create-plugin bin', function () {
     it('still runs the package manager install when the tooling was added to package.json', () => {
         writeYearOldProject(dir);
 
-        // A stand-in npm that records its arguments, so no real install runs.
-        const stubs = fs.mkdtempSync(path.join(os.tmpdir(), 'ait61-npm-stub-'));
-        const record = path.join(stubs, 'npm-args.txt');
+        const { dir: stubs, record, env } = stubNpm();
 
         try {
-            fs.writeFileSync(path.join(stubs, 'npm'), `#!/bin/sh\necho "$@" >> "${record}"\n`, { mode: 0o755 });
-
             const result = runBin(
                 ['add-plugin-agent', '--skills', 'claude', '--env-url', '', '--add-test-tooling'],
                 dir,
-                {
-                    ...process.env,
-                    PATH: `${stubs}${path.delimiter}${process.env.PATH}`,
-                },
+                env,
             );
 
             assert.strictEqual(result.status, 0, result.stderr);
@@ -138,19 +151,13 @@ describe('create-plugin bin', function () {
     it('does not run the package manager install when --skip-install is passed', () => {
         writeYearOldProject(dir);
 
-        const stubs = fs.mkdtempSync(path.join(os.tmpdir(), 'ait61-npm-stub-'));
-        const record = path.join(stubs, 'npm-args.txt');
+        const { dir: stubs, record, env } = stubNpm();
 
         try {
-            fs.writeFileSync(path.join(stubs, 'npm'), `#!/bin/sh\necho "$@" >> "${record}"\n`, { mode: 0o755 });
-
             const result = runBin(
                 ['add-plugin-agent', '--skills', 'claude', '--env-url', '', '--add-test-tooling', '--skip-install'],
                 dir,
-                {
-                    ...process.env,
-                    PATH: `${stubs}${path.delimiter}${process.env.PATH}`,
-                },
+                env,
             );
 
             assert.strictEqual(result.status, 0, result.stderr);
@@ -176,6 +183,38 @@ describe('create-plugin bin', function () {
 
         assert.strictEqual(result.status, 0, result.stderr);
         assert.strictEqual(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8').trim(), '@AGENTS.md');
+    });
+
+    // spawnSync gives the child a pipe for stdin, so no terminal is attached.
+    it('stops without a terminal before replacing a CLAUDE.md, with a message and no stack', () => {
+        writeYearOldProject(dir);
+        fs.writeFileSync(path.join(dir, 'CLAUDE.md'), '# hand written\n');
+
+        const result = runBin(
+            ['add-plugin-agent', '--skills', 'claude', '--env-url', '', '--no-add-test-tooling'],
+            dir,
+        );
+
+        assert.strictEqual(result.status, 1);
+        assert.match(result.stderr, /cannot ask before replacing these files: CLAUDE\.md/);
+        assert.match(result.stderr, /pass --force to replace them/);
+        assert.doesNotMatch(result.stderr, /^\s+at /m);
+        assert.doesNotMatch(result.stderr, /ERR_USE_AFTER_CLOSE/);
+        assert.ok(!fs.existsSync(path.join(dir, 'AGENTS.md')));
+        assert.ok(!fs.existsSync(path.join(dir, '.claude')));
+        assert.strictEqual(fs.readFileSync(path.join(dir, 'CLAUDE.md'), 'utf8'), '# hand written\n');
+        assert.strictEqual(fs.readFileSync(path.join(dir, '.gitignore'), 'utf8'), 'node_modules/\ndist/\n');
+    });
+
+    it('stops without a terminal when --skills is missing, with a message and no stack', () => {
+        writeYearOldProject(dir);
+
+        const result = runBin(['add-plugin-agent', '--env-url', '', '--no-add-test-tooling'], dir);
+
+        assert.strictEqual(result.status, 1);
+        assert.match(result.stderr, /cannot ask which tool runs the agent\. Pass --skills claude or --skills agents\./);
+        assert.doesNotMatch(result.stderr, /^\s+at /m);
+        assert.ok(!fs.existsSync(path.join(dir, 'AGENTS.md')));
     });
 
     it('honours -f like --force for a conflicting CLAUDE.md', () => {
