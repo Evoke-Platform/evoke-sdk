@@ -92,6 +92,12 @@ git rev-parse --is-inside-work-tree 2>/dev/null
 > 2. **One-shot** — I implement the full plan without stopping. You review the result
 >    at the end.
 
+**If no developer can answer**, do not stop to ask. That is the case when the request
+says nobody is available, or the session runs headless (for example `claude -p` or
+`codex exec`) with no way to reply. Use **One-shot** with no commits, whether or not git
+is available. Record the chosen mode in the plan file's session entry and in your final
+report, so the developer can see what you assumed.
+
 ### Step 3: Carry the mode
 
 Record the developer's choice and follow it through the entire build:
@@ -106,8 +112,8 @@ Record the developer's choice and follow it through the entire build:
     so the developer can review the history or revert individual steps. Do not push.
 -   **Step-by-step** (no git): Pause after each step's validation gate and wait for
     the developer's go-ahead. No commits.
--   **One-shot** (no git): Execute all steps without stopping. Run the full validation
-    gate at the end.
+-   **One-shot** (no git, or any unattended run): Execute all steps without stopping.
+    Run the full validation gate at the end. No commits.
 
 ### Validation gate (per step)
 

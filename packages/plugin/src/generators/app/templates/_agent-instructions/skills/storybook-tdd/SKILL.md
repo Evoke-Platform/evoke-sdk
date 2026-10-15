@@ -43,10 +43,12 @@ first, so this is the default landing spot as long as the container story is nam
 `storySort` — or navigate directly to the intended story URL.
 
 ```text
-http://127.0.0.1:6006/?path=/story/<story-id>&addonPanel=storybook/interactions/panel
+http://127.0.0.1:<port>/?path=/story/<story-id>&addonPanel=storybook/interactions/panel
 ```
 
-Get `<story-id>` from `http://127.0.0.1:6006/index.json`; do not guess it from the file
+`<port>` is the Storybook port from `AGENTS.md`'s Commands section: the `-p` or `--port`
+value in the `storybook` script in `package.json`, or 6006 when the script sets none. Get
+`<story-id>` from `http://127.0.0.1:<port>/index.json`; do not guess it from the file
 name. Do not use `iframe.html` as the human-facing watch surface — a bad id there shows
 a large missing-story error instead of a useful UI. The manager URL keeps the rendered
 component visible while the bottom panel shows `PASS`/`FAIL` and the named steps.
@@ -206,6 +208,50 @@ npm run test-storybook
 > the normal Storybook dev-server command and keep the browser visible so the developer
 > can watch the Interactions panel go red → green in real time.
 
+**Unattended runs** (nobody is watching, or the session is headless) have no browser to
+open, so `--ci` is required there. Run Storybook in the background from the project
+root, wait until it serves, run the tests, then stop that one process. `<port>` is the
+Storybook port from `AGENTS.md`'s Commands section. Run it as one script, or keep the
+`storybook.pid` file between commands if each command gets a fresh shell.
+
+```bash
+# Unattended run only. storybook.log and storybook.pid stay inside the project and are gitignored.
+# If something already listens on <port>, do not start Storybook and do not stop anything:
+# say so in your final summary. Storybook would move to another port and the tests would
+# hit the wrong server.
+if lsof -ti tcp:<port> -sTCP:LISTEN > /dev/null; then echo "port <port> is already in use"; exit 1; fi
+
+# Start Storybook and remember its process id.
+npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 & echo $! > storybook.pid
+
+# Wait up to two minutes for the story index, then run the tests and keep their result.
+for i in $(seq 1 60); do curl -sf http://127.0.0.1:<port>/index.json > /dev/null && break; sleep 2; done
+npm run test-storybook; test_status=$?
+
+# Stop exactly the Storybook this run started, never whatever else is on the port.
+kill "$(cat storybook.pid)" && rm storybook.pid
+
+# Give it up to ten seconds to let go of the port. If something still listens, say so and stop nothing else.
+for i in $(seq 1 10); do lsof -ti tcp:<port> -sTCP:LISTEN > /dev/null || break; sleep 1; done
+if lsof -ti tcp:<port> -sTCP:LISTEN > /dev/null; then echo "Storybook is still running on port <port>: report it, do not stop anything else"; fi
+
+# The script's result is the test result, so stopping Storybook cannot hide a failure.
+exit "$test_status"
+```
+
+Run the stop line even when `npm run test-storybook` fails, and do not use `set -e` in this
+script: a red test is the normal state, and a Storybook left running trips the port check on
+every later run. When each command runs in its own shell, the test command's own result is the
+one to read: run `npm run test-storybook` without `; test_status=$?` and leave out the `exit`
+line. If `lsof` is not installed, check the port another way before starting and after
+stopping, because a missing `lsof` would otherwise look like a free port.
+
+Without a POSIX shell (Windows), find the PID with `netstat -ano | findstr :<port>` and stop
+that process tree with `taskkill /PID <pid> /T /F`, only if it is the Storybook you started.
+
+If the wait loop ends without Storybook serving, read `storybook.log`: it names the
+build error. Treat that as a broken build to fix, not as a failing test.
+
 > **New story files require a dev server restart.** After scaffolding new widget story
 > files while Storybook is already running, webpack HMR will not always discover them.
 > Stop the dev server (`Ctrl+C`) and run `npm run storybook` again before running
@@ -239,10 +285,10 @@ When using browser automation against Storybook:
     `waitUntil: 'load'` is acceptable and avoids the manager's WebSocket traffic.
     It is not the preferred watch surface for red/green work.
 
-In unattended dogfood runs, the harness runs `npm run test-storybook` after the builder
-finishes. The builder should still write play functions before implementation and report
-which red/green checks it performed. If it could not run the CLI loop itself, say so
-plainly; the harness result is the final automated signal.
+In unattended runs, run the loop yourself with the unattended commands above. Write play
+functions before implementation and report which red/green checks you performed. If you
+could not run the CLI loop, say so plainly. When a dogfood harness also runs
+`npm run test-storybook` after you finish, its result is the final automated signal.
 
 ## Regression-first Storybook loop
 

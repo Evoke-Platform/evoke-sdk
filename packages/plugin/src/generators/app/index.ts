@@ -4,37 +4,25 @@
 import chalk from 'chalk';
 import validatePackageName from 'validate-npm-package-name';
 import Generator from 'yeoman-generator';
+import {
+    CLAUDE_IMPORT_FILE,
+    INSTRUCTION_FILE,
+    SKILL_LOCATION_CHOICES,
+    SkillLocation,
+    normalizeEnvironmentUrl,
+    skillDirectories,
+    validateEnvironmentUrl,
+    writePluginAgentFiles,
+} from '../../lib/plugin-agent';
 
-// The instructions are one file for everyone; the skills are not, and cannot be.
-//
-// AGENTS.md is the cross-tool standard stewarded by the Agentic AI Foundation, read by
-// Codex, Cursor, Copilot's coding agent, Gemini CLI and around twenty other tools. Claude
-// Code reads it too, but only when no CLAUDE.md sits beside it, and not at all in sessions
-// where that support is unavailable. So every scaffold gets AGENTS.md plus a CLAUDE.md
-// holding a single `@AGENTS.md` import. That is Anthropic's documented way to share one
-// file, and it keeps working wherever reading AGENTS.md directly does not.
-//
-// Skills are the part that stays split. Claude Code discovers them only under
-// .claude/skills and reads nothing under .agents/, while .agents/skills is the cross-tool
-// convention Codex, Cursor and Copilot settled on. No single directory serves both.
-// Symlinking one at the other would, but Git checks symlinks out as plain text files on
-// Windows without extra setup, which would leave those clones with no skills at all. So
-// the developer picks, and that choice decides only where the skills land.
-type AgentInstructions = 'claude' | 'agents' | 'none';
+// See src/lib/plugin-agent.ts for why instructions are one file and skills are a choice.
+type AgentInstructions = SkillLocation | 'none';
 
 type Answers = {
     projectName: string;
     dirName: string;
     agentInstructions: AgentInstructions;
     environmentUrl: string;
-};
-
-const INSTRUCTION_FILE = 'AGENTS.md';
-const CLAUDE_IMPORT_FILE = 'CLAUDE.md';
-
-const skillDirectories: Record<Exclude<AgentInstructions, 'none'>, string> = {
-    claude: '.claude/skills',
-    agents: '.agents/skills',
 };
 
 export default class AppGenerator extends Generator {
@@ -70,8 +58,10 @@ export default class AppGenerator extends Generator {
                 message: 'Add the Plugin Agent (beta)? AI coding instructions and skills for building Evoke plugins.',
                 default: 'claude',
                 choices: [
-                    { name: 'Yes, for Claude Code — skills in .claude/skills', value: 'claude' },
-                    { name: 'Yes, for Codex, Cursor, Copilot and others — skills in .agents/skills', value: 'agents' },
+                    ...SKILL_LOCATION_CHOICES.map((choice) => ({
+                        name: `Yes, for ${choice.name}`,
+                        value: choice.value,
+                    })),
                     { name: 'No', value: 'none' },
                 ],
             },
@@ -81,12 +71,8 @@ export default class AppGenerator extends Generator {
                 message: 'Evoke environment base URL (optional, set later in instruction file):',
                 default: '',
                 when: (responses: Partial<Answers>) => responses.agentInstructions !== 'none',
-                filter: (value: string) => value.trim().replace(/\/+$/, ''),
-                validate: (value: string) => {
-                    if (!value) return true;
-                    if (/^https?:\/\//.test(value)) return true;
-                    return 'URL must start with https:// or http://';
-                },
+                filter: normalizeEnvironmentUrl,
+                validate: validateEnvironmentUrl,
             },
         ];
 
@@ -110,41 +96,15 @@ export default class AppGenerator extends Generator {
         // registry. It is stored as `gitignore` and renamed here instead.
         this.fs.copy(this.templatePath('gitignore'), this.destinationPath('.gitignore'));
 
-        this._copyAgentInstructions(this.answers);
-    }
+        const choice = this.answers.agentInstructions;
 
-    _copyAgentInstructions(answers: Answers) {
-        const choice = answers.agentInstructions;
-
-        if (choice === 'none') {
-            return;
+        if (choice !== 'none') {
+            writePluginAgentFiles(this, {
+                projectName: this.answers.projectName,
+                skills: choice,
+                environmentUrl: this.answers.environmentUrl,
+            });
         }
-
-        this.fs.copyTpl(
-            this.templatePath('_agent-instructions/INSTRUCTIONS.md'),
-            this.destinationPath(INSTRUCTION_FILE),
-            answers,
-        );
-
-        // A CLAUDE.md that imports AGENTS.md rather than a second copy of it. Claude Code
-        // ignores AGENTS.md whenever a CLAUDE.md sits beside it, so this file is what makes
-        // the shared one reach Claude at all, and it also covers sessions where reading
-        // AGENTS.md directly is unavailable.
-        this.fs.copy(this.templatePath('_agent-instructions/CLAUDE.md'), this.destinationPath(CLAUDE_IMPORT_FILE));
-
-        this.fs.copy(
-            this.templatePath('_agent-instructions/skills/**'),
-            this.destinationPath(skillDirectories[choice]),
-        );
-
-        // The fetch script reads its base URL from the instruction file, and plans/ is
-        // where the planning skills write blueprints. Neither is usable without an
-        // agent choice, so both stay out of a 'none' scaffold.
-        this.fs.copy(this.templatePath('_agent-instructions/scripts/**'), this.destinationPath('scripts'));
-
-        this.fs.copy(this.templatePath('_agent-instructions/plans/**'), this.destinationPath('plans'), {
-            globOptions: { dot: true },
-        });
     }
 
     end() {

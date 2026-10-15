@@ -212,6 +212,102 @@ describe('create-plugin', () => {
         );
     }).timeout(5000);
 
+    it('gives an unattended run a default instead of a question it cannot answer', async () => {
+        // Headless agent runs (claude -p, codex exec) cannot answer build-widget's
+        // execution-mode question or open a browser for Storybook. Without a stated
+        // default they guess, and every run guesses differently.
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        runResult.assertFileContent('testdir/AGENTS.md', '## Unattended Runs');
+        runResult.assertFileContent('testdir/.claude/skills/build-widget/SKILL.md', '**If no developer can answer**');
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'npm run storybook -- --ci --host 127.0.0.1 > storybook.log 2>&1 & echo $! > storybook.pid',
+        );
+
+        // The port check must not fail when the port is free (an `lsof ... && exit 1` chain would).
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'if lsof -ti tcp:<port> -sTCP:LISTEN > /dev/null; then echo "port <port> is already in use"; exit 1; fi',
+        );
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'Run the stop line even when `npm run test-storybook` fails, and do not use `set -e`',
+        );
+
+        // Stop exactly the process this run started, by the PID it saved. Stopping by port would
+        // kill a developer's other server when Storybook has moved to a free port, and pkill by
+        // command line would kill every other Storybook on the machine.
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'kill "$(cat storybook.pid)" && rm storybook.pid',
+        );
+        runResult.assertFileContent('testdir/.claude/skills/storybook-tdd/SKILL.md', 'taskkill /PID <pid> /T /F');
+        runResult.assertNoFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'lsof -ti tcp:<port> -sTCP:LISTEN | xargs -r kill',
+        );
+        runResult.assertNoFileContent('testdir/.claude/skills/storybook-tdd/SKILL.md', 'pkill -f "storybook dev"');
+
+        const skill = fs.readFileSync(
+            path.join(runResult.cwd, 'testdir/.claude/skills/storybook-tdd/SKILL.md'),
+            'utf8',
+        );
+
+        // The test result is kept in `test_status` and is what the script exits with, so a red run is
+        // not reported as green because the last command to run was a kill that worked.
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'npm run test-storybook; test_status=$?',
+        );
+        runResult.assertFileContent('testdir/.claude/skills/storybook-tdd/SKILL.md', 'exit "$test_status"');
+
+        // `status` is a read-only special parameter in zsh, the default shell on macOS. Assigning it
+        // aborts the script after the tests ran and before Storybook is stopped, and exits 1 whatever the
+        // tests did, so the result has to live under another name.
+        runResult.assertNoFileContent('testdir/.claude/skills/storybook-tdd/SKILL.md', /(^|\W)status=/m);
+
+        // Killing the saved PID can reach the npm wrapper and miss Storybook itself, so the recipe
+        // checks the port after stopping and tells the agent to report a Storybook still running.
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'Storybook is still running on port <port>',
+        );
+
+        // Run as one script the result is the exit code; with a fresh shell per command it is the
+        // test command's own. The sentence wraps in the file, so compare with whitespace collapsed.
+        assert.ok(
+            skill.replace(/\s+/g, ' ').includes("the test command's own result is the one to read"),
+            'the recipe must say which result to read when each command runs in its own shell',
+        );
+
+        // Order is the point: keep the result, stop Storybook, check the port, exit with the result.
+        const steps = [
+            'npm run test-storybook; test_status=$?',
+            'kill "$(cat storybook.pid)" && rm storybook.pid',
+            'Storybook is still running on port <port>',
+            'exit "$test_status"',
+        ];
+        const positions = steps.map((step) => skill.indexOf(step));
+
+        assert.ok(
+            positions.every((at) => at >= 0),
+            `a step is missing from the recipe: ${positions}`,
+        );
+        assert.deepStrictEqual(
+            positions,
+            [...positions].sort((a, b) => a - b),
+            'the recipe must run the tests, stop Storybook, check the port, then exit with the test result',
+        );
+
+        // The unattended commands write storybook.log and storybook.pid in the project, so the
+        // scaffold's .gitignore must keep both out of commits.
+        runResult.assertFileContent('testdir/.gitignore', '*.log');
+        runResult.assertFileContent('testdir/.gitignore', 'storybook.pid');
+    }).timeout(5000);
+
     it('copies skill bodies verbatim', async () => {
         runResult = await helpers
             .run(appGenerator)
@@ -277,6 +373,25 @@ describe('create-plugin', () => {
         });
 
         runResult.assertFileContent('testdir/AGENTS.md', 'Base URL: _not set_');
+    }).timeout(5000);
+
+    it('tells the agent to read the Storybook port from package.json instead of assuming 6006', async () => {
+        // Older projects often run Storybook on 3000. Guidance that names 6006 sends an
+        // agent to a port nothing is listening on, and test-storybook fails before any story runs.
+        runResult = await helpers
+            .run(appGenerator)
+            .withPrompts({ projectName: 'test', dirName: 'testdir', agentInstructions: 'claude' });
+
+        runResult.assertFileContent(
+            'testdir/AGENTS.md',
+            'The Storybook port is the `-p` or `--port` value in the `storybook` script',
+        );
+        runResult.assertNoFileContent('testdir/AGENTS.md', 'on port 6006');
+        runResult.assertFileContent(
+            'testdir/.claude/skills/storybook-tdd/SKILL.md',
+            'http://127.0.0.1:<port>/index.json',
+        );
+        runResult.assertNoFileContent('testdir/.claude/skills/storybook-tdd/SKILL.md', '127.0.0.1:6006');
     }).timeout(5000);
 
     it('routes generated instructions to live OpenAPI first', async () => {
