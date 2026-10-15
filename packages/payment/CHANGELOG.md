@@ -2,6 +2,67 @@
 
 All notable changes to this project will be documented in this file. See [commit-and-tag-version](https://github.com/absolute-version/commit-and-tag-version) for commit guidelines.
 
+## [1.2.0](https://github.com/Evoke-Platform/evoke-sdk/compare/payment@1.1.0...payment@1.2.0) (2026-10-15)
+
+### Features
+
+-   add overload method ([30538f3](https://github.com/Evoke-Platform/evoke-sdk/commit/30538f3cdda74d9f7274eee66fbd554a49784f4e))
+-   **CDR-2901:** add allowChildren to widget schema ([cfba304](https://github.com/Evoke-Platform/evoke-sdk/commit/cfba304b4b1c14ddb68aeded92a5b2d5eb1e10fc))
+-   **CDR-2901:** add layoutId and AppLayout model to context package ([c855380](https://github.com/Evoke-Platform/evoke-sdk/commit/c85538053dd3d9547705379be63678821332a883))
+-   **CDR-2901:** add PageContent to PageElement type; add children as optional widget property ([3924619](https://github.com/Evoke-Platform/evoke-sdk/commit/39246194069a46986efb9c08ff8c0b3992d9707b))
+-   **CDR-3293:** add deriveValue definition to widget schema ([5126d88](https://github.com/Evoke-Platform/evoke-sdk/commit/5126d8852e0904f0d63d778c9006d68fa1cb9d50))
+-   **CDR-3293:** add deriveValue definition to widget schema ([f60b311](https://github.com/Evoke-Platform/evoke-sdk/commit/f60b311ec5375bb0857d5305f1d3ee5f78759966))
+-   **CDR-3323:** support valuePath for nested API options in widget api schema ([b8be7f7](https://github.com/Evoke-Platform/evoke-sdk/commit/b8be7f7d3c82c8a635e9a0b07b1e47c8c8419010))
+-   **context/CDR-3255:** add kind to ViewLayoutEntityReference ([9c1ddba](https://github.com/Evoke-Platform/evoke-sdk/commit/9c1ddbaaaa73ba5e7d5ab315249ea6fc1107fdb2))
+-   **plugin/AIT-26:** add agent instruction templates to generator ([63b14bd](https://github.com/Evoke-Platform/evoke-sdk/commit/63b14bde0b9fcee277cfe761db53a8fa84b6781a))
+-   **plugin/AIT-26:** add fetch-openapi-specs script to scaffold ([a400147](https://github.com/Evoke-Platform/evoke-sdk/commit/a400147b31a0236289a00b98f5891dda963a1ab9))
+-   **plugin/AIT-26:** add living widget plan file and Playground-first Storybook defaults ([803c6ae](https://github.com/Evoke-Platform/evoke-sdk/commit/803c6aece281cb7cac4530277d9598a8590a1109))
+-   **plugin/AIT-26:** add reviewer skills and code review integration ([0dd22e9](https://github.com/Evoke-Platform/evoke-sdk/commit/0dd22e94d9b7ab0a58c2ffe2894f55a94d32dfff))
+-   **plugin/AIT-26:** add Storybook interaction test runner guidance ([775091e](https://github.com/Evoke-Platform/evoke-sdk/commit/775091e00072d09bccc996ac2f78a42e58c9e433))
+-   **plugin/AIT-26:** add storybook interaction testing to scaffold ([8f90aed](https://github.com/Evoke-Platform/evoke-sdk/commit/8f90aedbc02b5077403eaa7c9b88c24ec0e0927f))
+-   **plugin/AIT-26:** brand the prompt as the Plugin Agent (beta) ([1e59065](https://github.com/Evoke-Platform/evoke-sdk/commit/1e59065c32925fed86a02146a147e81df1cd1d28))
+-   **plugin/AIT-26:** drop the generic option, which wrote a file nothing reads ([b754822](https://github.com/Evoke-Platform/evoke-sdk/commit/b754822af12dd4ddc74096dc0e8e2ef24b55d272))
+-   **plugin/AIT-26:** install playwright chromium on scaffold postinstall ([2f17795](https://github.com/Evoke-Platform/evoke-sdk/commit/2f17795860331938a46937fd41004dcfd3072bf5))
+-   **plugin/AIT-26:** note scaffolded agent instruction files in success message ([969386b](https://github.com/Evoke-Platform/evoke-sdk/commit/969386b7da55861177d0afc827479d69e3d79188))
+-   **plugin/AIT-26:** prompt for AI coding instructions when scaffolding ([c9e3522](https://github.com/Evoke-Platform/evoke-sdk/commit/c9e3522b1d75f1317a05f791b5bfc7a5c848ccd3))
+-   **plugin/AIT-26:** rename add-widget skill to build-widget ([8c6eb8a](https://github.com/Evoke-Platform/evoke-sdk/commit/8c6eb8a846d6f74d13782fd879dd4de60af46f0a))
+-   **plugin/AIT-26:** share one AGENTS.md; keep the choice only for skills ([8e10538](https://github.com/Evoke-Platform/evoke-sdk/commit/8e10538b6a3c16bc42aeca231316c3e5af3675c3))
+-   **plugin/AIT-26:** ship agent skills with the generic instructions choice ([3c5d691](https://github.com/Evoke-Platform/evoke-sdk/commit/3c5d691cd5e773d037a1a88137e7b62db5e8a4bd))
+-   **plugin/AIT-26:** ship MSW mock layer in scaffold Storybook ([f23c761](https://github.com/Evoke-Platform/evoke-sdk/commit/f23c761c8c09be924dd4fd2712c9bb96b61ac86e))
+-   **plugin/AIT-61:** add-plugin-agent generator for existing plugin projects ([25123ec](https://github.com/Evoke-Platform/evoke-sdk/commit/25123ec8dcab72e3306f8582165c72f503759db4))
+-   **plugin/AIT-61:** detect an existing Evoke plugin project from package.json ([6457234](https://github.com/Evoke-Platform/evoke-sdk/commit/6457234f3e529a4003d81e74da4b634a4369e100))
+-   **plugin/AIT-61:** inspect a project's Storybook test tooling and plan the missing keys ([5e97b69](https://github.com/Evoke-Platform/evoke-sdk/commit/5e97b69fc8cd24009f360267a40e04e59bf77971))
+-   **plugin/AIT-61:** merge missing .gitignore entries without touching existing lines ([6d0bed8](https://github.com/Evoke-Platform/evoke-sdk/commit/6d0bed8cc41fa7bdb53ec0a57d3585ab875f0e2a))
+-   **plugin/AIT-61:** report missing Storybook test tooling and add it on request ([c8b8df2](https://github.com/Evoke-Platform/evoke-sdk/commit/c8b8df2763156c09be86d5e595f2b069d207fe01))
+-   **plugin/AIT-61:** route 'add-plugin-agent' in the create-plugin bin ([f3b7950](https://github.com/Evoke-Platform/evoke-sdk/commit/f3b79506648ac3dca103aa0e4973e57f7888f0a4))
+-   refactor the method signatures ([b796d19](https://github.com/Evoke-Platform/evoke-sdk/commit/b796d19e345bc80aef00eca253ca0b70ad5a3236))
+-   **schema/AIT-26:** add allowChildren to widget schema ([fb016cd](https://github.com/Evoke-Platform/evoke-sdk/commit/fb016cddd02585878b2368e6ecc57f6100da2148))
+-   send param options to getInstance ([90f1deb](https://github.com/Evoke-Platform/evoke-sdk/commit/90f1deb84d477d2f4f069effeb83b61eb5c8348f))
+
+### Bug Fixes
+
+-   **CDR-2943:** use Decorator type ([6716ff8](https://github.com/Evoke-Platform/evoke-sdk/commit/6716ff843a6faae7949e3dae39232d5ee93a8eab))
+-   **CDR-2943:** use Decorator type ([bc53cbb](https://github.com/Evoke-Platform/evoke-sdk/commit/bc53cbb123704ab7795a4c5c629a9ff6fcc18a9d))
+-   **CDR-3032:** bump axios to ^1.16.1 to patch prototype-pollution CVE ([3cfc9cd](https://github.com/Evoke-Platform/evoke-sdk/commit/3cfc9cd141f44cd4091eb34c7cb1a75722d3c39a))
+-   **context/CDR-3348:** resolve subtype notifications to the root object ([69f7818](https://github.com/Evoke-Platform/evoke-sdk/commit/69f7818751040effdb0cbccb50b804b15f896e9b))
+-   **context/CDR-3348:** update log message ([0d33c65](https://github.com/Evoke-Platform/evoke-sdk/commit/0d33c65cea892fda43f80ecb2c40b28803f51d3b))
+-   correct instance options ([e74995c](https://github.com/Evoke-Platform/evoke-sdk/commit/e74995c9ea1df7e0f98956364f350cb7d35b90ac))
+-   **plugin/AIT-26:** add environmentUrl prompt, fix review findings ([8299174](https://github.com/Evoke-Platform/evoke-sdk/commit/82991741b6a5d156c078e85bac91cc274f781c82))
+-   **plugin/AIT-26:** register the MSW worker at a relative URL ([8a925bd](https://github.com/Evoke-Platform/evoke-sdk/commit/8a925bd4ee2fefc4e5a859500a15a424f74bf71e))
+-   **plugin/AIT-26:** remove agentic reviewer from scaffold skills ([063e669](https://github.com/Evoke-Platform/evoke-sdk/commit/063e669cf2f6cbeee0bbc0ace22d0f58bfd7df63))
+-   **plugin/AIT-26:** repair three defects that broke every scaffolded story ([7e891eb](https://github.com/Evoke-Platform/evoke-sdk/commit/7e891eb606fd319730814efab39e68e894ddbdbb))
+-   **plugin/AIT-26:** resolve 6 review findings from agentic instruction audit ([42ba490](https://github.com/Evoke-Platform/evoke-sdk/commit/42ba4908c54ac92fc4bd87b902bf7b35b11c450a))
+-   **plugin/AIT-26:** resolve nine review findings from PR [#791](https://github.com/Evoke-Platform/evoke-sdk/issues/791) ([5eef2a1](https://github.com/Evoke-Platform/evoke-sdk/commit/5eef2a1e5109d71546a566fd5f9c87e86e71d013))
+-   **plugin/AIT-26:** ship the scaffold .gitignore through npm ([203eae7](https://github.com/Evoke-Platform/evoke-sdk/commit/203eae77e381484586cb9920556cefc3c3384a2b))
+-   **plugin/AIT-61:** add agent files but skip Storybook 7 tooling on newer Storybook ([8545d11](https://github.com/Evoke-Platform/evoke-sdk/commit/8545d119f73c35157f28cd93adfdbcdb07002a7a))
+-   **plugin/AIT-61:** address Copilot review on Storybook stop, version guards and setup ([8b8aef9](https://github.com/Evoke-Platform/evoke-sdk/commit/8b8aef93cdf7e095b6f658077e552e82972ada75))
+-   **plugin/AIT-61:** address independent review: safe Storybook stop, accurate tooling messages ([f51ecab](https://github.com/Evoke-Platform/evoke-sdk/commit/f51ecab9be7cb6de236680d70cab943cafb0373f))
+-   **plugin/AIT-61:** address review: Storybook 6 guard, Windows-safe tests, no-terminal runs ([128200b](https://github.com/Evoke-Platform/evoke-sdk/commit/128200b6fb5611dfbe5bc08399bb7634461744b4))
+-   **plugin/AIT-61:** keep existing tooling files and tidy .gitignore and dependency checks ([5fe6a3b](https://github.com/Evoke-Platform/evoke-sdk/commit/5fe6a3bf4d7bb2d53b4e88fbd0f7a492dcde2d7e))
+-   **plugin/AIT-61:** point test-storybook at the project's Storybook port ([cf059ab](https://github.com/Evoke-Platform/evoke-sdk/commit/cf059ab56889190ec361321d2bf25e93ff608d28))
+-   **plugin/AIT-61:** print the full Storybook preview edits and add react-router-dom ([f5cf4e6](https://github.com/Evoke-Platform/evoke-sdk/commit/f5cf4e6ad7b50dd7e712315e2df56c738dbe32ab))
+-   **plugin/AIT-61:** warn on a kept CLAUDE.md without the import, keep the Storybook test result ([1f6aff7](https://github.com/Evoke-Platform/evoke-sdk/commit/1f6aff7348ae1e35e190080169eb2497cd15e64f))
+
 ## 1.0.0 (2025-02-28)
 
 ### ⚠ BREAKING CHANGES
