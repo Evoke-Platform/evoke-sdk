@@ -123,9 +123,9 @@ the container gets one MSW-backed integration story.
 
 The `build-widget` skill requires one presentational component per widget phase (idle,
 loading, in-progress, complete, error). The container uses a discriminated-union `Phase`
-type and renders exactly one component at a time via `switch`. This was added after
-agentic autonomated testing runs showed that unattended agents produce monolithic single-view components
-when not given explicit decomposition guidance.
+type and renders exactly one component at a time via `switch`. Without explicit
+decomposition guidance, agents tend to produce one monolithic component that handles
+every phase.
 
 ### Storybook as the Test Suite
 
@@ -168,7 +168,8 @@ planning-to-implementation transition. Before writing any code, the agent:
 ### Polling Convention
 
 Widgets that poll async operations (import runs, bulk sends) must use a 3-second
-`setTimeout` interval with cleanup on unmount. This was added after a agentic autonomated testing run used 150ms polling — fast enough to overwhelm the API in production.
+`setTimeout` interval with cleanup on unmount. Much shorter intervals send far more
+requests than the API needs to serve.
 
 ## Editing These Templates
 

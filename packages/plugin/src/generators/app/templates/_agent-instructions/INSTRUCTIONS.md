@@ -99,8 +99,8 @@ If the GitHub raw README is unavailable, fall back to the installed package READ
 ## Forms in Widgets
 
 To render an Evoke form inside a widget, invoke the `render-evoke-forms` skill before
-using `FormRenderer` / `FormRendererContainer` — the V2 component props differ from what
-Confluence documents (`hideButtons`, `stickyFooter`, and `onClose` are NOT V2 props).
+using `FormRenderer` / `FormRendererContainer` — `hideButtons`, `stickyFooter`, and
+`onClose` belong to the legacy V1 `Form` and are NOT V2 props.
 
 ## Evoke APIs and Runtime Context
 
@@ -151,7 +151,7 @@ into MUI for: common grid and Dialog sub-components (`GridSortModel`, `GridCellP
 `GridRowParams`, `GridValueFormatterParams`, `DialogTitle`, `DialogContent`,
 `DialogActions`, `DialogContentText`) are typically importable from
 `@evoke-platform/sdk` in the installed version. Verify the installed declarations before
-using them — do not rely on memory or older dogfood runs.
+using them — do not rely on memory or earlier runs.
 
 When checking what a package exports, read its declaration entry and relevant re-exports
 in full. Do not conclude an export is missing from a truncated or partial read.

@@ -1,6 +1,6 @@
 ---
 name: render-evoke-forms
-description: Render an Evoke platform form inside a widget using the V2 components (FormRendererContainer / FormRenderer) — props, formlets, auto-generated forms, sticky footers, and a known Confluence documentation error. Use whenever a widget needs to display or submit an Evoke form, the user mentions FormRenderer, FormRendererContainer, formlets, action forms, or form submission inside a widget.
+description: Render an Evoke platform form inside a widget using the V2 components (FormRendererContainer / FormRenderer) — props, formlets, auto-generated forms, sticky footers, and which V1 props do not exist in V2. Use whenever a widget needs to display or submit an Evoke form, the user mentions FormRenderer, FormRendererContainer, formlets, action forms, or form submission inside a widget.
 ---
 
 # Render Evoke Forms in a Widget
@@ -32,9 +32,8 @@ If a developer asks for "a form", clarify whether they mean an Evoke V2 form ren
 from an object/action/form definition or a custom local UI. For Evoke forms, use V2
 (`FormRendererContainer` / `FormRenderer`) rather than the legacy V1 `Form`.
 
-Known documentation mismatch: the Confluence page "Form V2 and Custom Widgets" lists
-`hideButtons`, `stickyFooter`, and `onClose` as props of these components. **They are
-not** — those belong to the legacy V1 `Form` component or to widget-level settings. With
+`hideButtons`, `stickyFooter`, and `onClose` are **not** props of the V2 components —
+they belong to the legacy V1 `Form` component or to widget-level settings. With
 V2, customize the footer through `renderFooter` (e.g. render `FormRenderer.Footer` with
 `position: 'sticky'` for a sticky footer, or return `null` to hide buttons), and handle
 modal close in the surrounding dialog, not on the form component. The prop types exported
