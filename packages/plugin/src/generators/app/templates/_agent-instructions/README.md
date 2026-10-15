@@ -188,21 +188,3 @@ When modifying templates:
 Template changes don't require TypeScript compilation — they're plain-copied. But
 the `yarn build` step is still needed to update the `dist/` copy that the generator
 actually reads at scaffold time.
-
-## Provenance
-
-These instructions evolved through the AIT-26 agentic autonomated testing "dogfood" campaign: multiple rounds of scaffolding widgets with Claude and Codex agents, comparing the output against attended (human-guided) builds, and patching the instructions to close the gaps.
-
-Key sources of each section:
-
--   **OpenAPI hard rule, multipart upload convention**: friction from early dogfood
-    runs where agents invented API paths that 404'd in production
--   **Component decomposition, poll interval, `var` ban**: findings from a 2×2 dogfood
-    matrix (Claude Sonnet 4.6 × Codex GPT-5.4, BulkEmailFromCriteria × ImportUpload)
-    compared against attended reference implementations
--   **Paced container stories**: developer feedback that play functions executed too fast
-    to follow in the Storybook Interactions panel
--   **Execution mode / git versioning**: added to give developers control over pacing
-    and commit granularity during agent-assisted builds
--   **CriteriaBuilder, FormRenderer, correspondence skills**: extracted from platform
-    widget source code and verified against OpenAPI specs to help teach the agent how to build with some of the more-custom platform components.
