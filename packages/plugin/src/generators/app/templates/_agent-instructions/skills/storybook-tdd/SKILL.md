@@ -193,7 +193,7 @@ Rules of the pattern:
 ## CLI Verification
 
 Use this exact loop when the developer asks for TDD, when writing non-trivial
-presentational components, or in dogfood runs:
+presentational components, or in unattended runs:
 
 ```bash
 # Terminal 1 — attended session: use the normal dev server command; do not add `--ci`
@@ -287,7 +287,7 @@ When using browser automation against Storybook:
 
 In unattended runs, run the loop yourself with the unattended commands above. Write play
 functions before implementation and report which red/green checks you performed. If you
-could not run the CLI loop, say so plainly. When a dogfood harness also runs
+could not run the CLI loop, say so plainly. When an automated runner also runs
 `npm run test-storybook` after you finish, its result is the final automated signal.
 
 ## Regression-first Storybook loop

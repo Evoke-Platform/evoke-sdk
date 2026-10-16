@@ -123,9 +123,9 @@ the container gets one MSW-backed integration story.
 
 The `build-widget` skill requires one presentational component per widget phase (idle,
 loading, in-progress, complete, error). The container uses a discriminated-union `Phase`
-type and renders exactly one component at a time via `switch`. This was added after
-agentic autonomated testing runs showed that unattended agents produce monolithic single-view components
-when not given explicit decomposition guidance.
+type and renders exactly one component at a time via `switch`. Without explicit
+decomposition guidance, agents tend to produce one monolithic component that handles
+every phase.
 
 ### Storybook as the Test Suite
 
@@ -168,7 +168,8 @@ planning-to-implementation transition. Before writing any code, the agent:
 ### Polling Convention
 
 Widgets that poll async operations (import runs, bulk sends) must use a 3-second
-`setTimeout` interval with cleanup on unmount. This was added after a agentic autonomated testing run used 150ms polling — fast enough to overwhelm the API in production.
+`setTimeout` interval with cleanup on unmount. Much shorter intervals send far more
+requests than the API needs to serve.
 
 ## Editing These Templates
 
@@ -188,21 +189,3 @@ When modifying templates:
 Template changes don't require TypeScript compilation — they're plain-copied. But
 the `yarn build` step is still needed to update the `dist/` copy that the generator
 actually reads at scaffold time.
-
-## Provenance
-
-These instructions evolved through the AIT-26 agentic autonomated testing "dogfood" campaign: multiple rounds of scaffolding widgets with Claude and Codex agents, comparing the output against attended (human-guided) builds, and patching the instructions to close the gaps.
-
-Key sources of each section:
-
--   **OpenAPI hard rule, multipart upload convention**: friction from early dogfood
-    runs where agents invented API paths that 404'd in production
--   **Component decomposition, poll interval, `var` ban**: findings from a 2×2 dogfood
-    matrix (Claude Sonnet 4.6 × Codex GPT-5.4, BulkEmailFromCriteria × ImportUpload)
-    compared against attended reference implementations
--   **Paced container stories**: developer feedback that play functions executed too fast
-    to follow in the Storybook Interactions panel
--   **Execution mode / git versioning**: added to give developers control over pacing
-    and commit granularity during agent-assisted builds
--   **CriteriaBuilder, FormRenderer, correspondence skills**: extracted from platform
-    widget source code and verified against OpenAPI specs to help teach the agent how to build with some of the more-custom platform components.
