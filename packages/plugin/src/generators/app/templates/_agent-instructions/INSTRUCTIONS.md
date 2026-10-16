@@ -100,7 +100,8 @@ If the GitHub raw README is unavailable, fall back to the installed package READ
 
 To render an Evoke form inside a widget, invoke the `render-evoke-forms` skill before
 using `FormRenderer` / `FormRendererContainer` — `hideButtons`, `stickyFooter`, and
-`onClose` belong to the legacy V1 `Form` and are NOT V2 props.
+`onClose` are NOT V2 props; they belong to the legacy V1 `Form` or to widget-level
+settings.
 
 ## Evoke APIs and Runtime Context
 
