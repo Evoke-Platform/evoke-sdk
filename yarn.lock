@@ -2487,17 +2487,17 @@ bplist-parser@^0.2.0:
     big-integer "^1.6.44"
 
 brace-expansion@^1.1.7:
-  version "1.1.20"
-  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.20.tgz#6e1f1179d50e3e4b3d8a76205dba0efd899210c2"
-  integrity sha512-5/qk29RyvatwgzNMrvGjkIhKYzpJ0OUnPK+9TU+zS/CMJqzmb+UD0irWu42JfpUvO636fxd8IstgiydZRM/76A==
+  version "1.1.21"
+  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-1.1.21.tgz#edf4fab5c64d051aea5a8def49aba1c7522279f3"
+  integrity sha512-9zeA+KLZNNzglF2TPKRQEDyx6Yby7daAkuy8MiPzpXPsYDWi/DRM8jmwUDxokQjYqBpv5DgPiwD4h4ZZSy1Ujw==
   dependencies:
     balanced-match "^1.0.0"
     concat-map "0.0.1"
 
 brace-expansion@^2.0.1, brace-expansion@^2.0.2:
-  version "2.1.6"
-  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-2.1.6.tgz#1c78490e490181533edbc0647b956f822adbf8da"
-  integrity sha512-pi/WFpBvCBmB/NsURt7hW5sDvuOqvJaDMDai7CrlT9xoehzWRzo/dhQRKqOhpPvlnicVaTzHCbzGnnTgpvMTFw==
+  version "2.1.7"
+  resolved "https://registry.yarnpkg.com/brace-expansion/-/brace-expansion-2.1.7.tgz#14ea3836731823bb24740225ea43b941b436f9d1"
+  integrity sha512-uZbew1NqdmPDTMJ8ah1y+b+9QEJrfkXFk3RcTQw3X0jW/xRUvFKsg1CfQdSYGdTbXZWExtU3J3ccxtnfw1Fi0g==
   dependencies:
     balanced-match "^1.0.0"
 
