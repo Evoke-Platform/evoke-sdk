@@ -178,6 +178,23 @@ context providers:
     `useNotification()` expose app metadata, route params, navigation, and live update
     subscriptions provided by App Viewer.
 
+### Links To App Pages
+
+App Viewer serves each page at `/app/<appId>/<page slug>`. A page with no slug uses its
+page id in that position. A slug can contain route parameters such as `:instanceId`,
+which are replaced with real values. `useApp()` returns the current app, including its
+`id` and its `pages`, each with an `id` and a `slug`. `useApp().findDefaultPageSlugFor(objectId)`
+returns `/<appId>/<slug>` for an object's default page, or `undefined` when it has none.
+
+-   **Navigating within App Viewer:** call the SDK's `useNavigate()` with a path relative
+    to App Viewer's router, plus the route parameters, for example
+    ``navigate(`/${app.id}/${page.slug}`, { instanceId })``. App Viewer's router already
+    sits under `/app`, so do not add it.
+-   **An `href`, including links that open in a new tab:** the browser does not go
+    through App Viewer's router, so add the `/app` prefix yourself:
+    `/app/${app.id}/${page.slug ?? page.id}`, with each `:param` in the slug replaced
+    by its value.
+
 ### Polling Async Operations
 
 When polling an asynchronous operation (import run status, bulk-send progress, report
@@ -401,6 +418,20 @@ The OpenAPI schema for these endpoints typically shows `{ type: object }` with n
 property names — the field name constraint is invisible in the spec. Fetch the resource
 configuration first and extract the slot name before constructing the `FormData`.
 
+**References to deleted records stay in place.**
+
+Deleting a record does not remove references to it from other records. A reference to
+a deleted record can still come back with its `id`, and with `name` set to
+`"(Deleted)"`. The "(Deleted)" label App Viewer shows for such a reference comes from
+that data, not from the UI component library. A widget that needs to detect a deleted
+reference should handle both signs:
+
+-   the reference's `name` is `"(Deleted)"`, or
+-   fetching the referenced record returns 404.
+
+A 403 means the current user cannot see the record, not that it was deleted. Decide
+separately whether the widget hides it or shows it without a link.
+
 ## CriteriaBuilder
 
 For filter/criteria UI, invoke the `build-criteria-filters` skill — CriteriaBuilder
@@ -497,6 +528,9 @@ tool has no skill mechanism, follow the core contract below:
 -   Every presentational component has a Storybook story covering meaningful states, with
     play functions using named `step()` calls.
 -   One container story renders the real widget over MSW.
+-   Each widget folder has a `README.md` for people: what the widget does, its Builder
+    settings, and what it expects in the environment. Write it once the widget passes
+    validation, and update it when settings or behavior change.
 -   Verify with: `npm run build`, `npm run build-storybook`, and
     `npm run test-storybook`.
 
