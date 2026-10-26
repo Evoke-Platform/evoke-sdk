@@ -183,12 +183,16 @@ context providers:
 App Viewer serves each page at `/app/<appId>/<page slug>`. A page with no slug uses its
 page id in that position. A slug can contain route parameters such as `:instanceId`,
 which are replaced with real values. `useApp()` returns the current app, including its
-`id` and its `pages`, each with an `id` and a `slug`. `useApp().findDefaultPageSlugFor(objectId)`
-returns `/<appId>/<slug>` for an object's default page, or `undefined` when it has none.
+`id` and its `pages`, each with an `id` and an optional `slug`.
+
+`useApp().findDefaultPageSlugFor(objectId)` is asynchronous: it returns a
+`Promise<string | undefined>`. Await it before checking or using the result. It resolves
+to `/<appId>/<slug>` for an object's default page, and to `undefined` when the object
+has no default page or that page has no slug.
 
 -   **Navigating within App Viewer:** call the SDK's `useNavigate()` with a path relative
     to App Viewer's router, plus the route parameters, for example
-    ``navigate(`/${app.id}/${page.slug}`, { instanceId })``. App Viewer's router already
+    ``navigate(`/${app.id}/${page.slug ?? page.id}`, { instanceId })``. App Viewer's router already
     sits under `/app`, so do not add it.
 -   **An `href`, including links that open in a new tab:** the browser does not go
     through App Viewer's router, so add the `/app` prefix yourself:

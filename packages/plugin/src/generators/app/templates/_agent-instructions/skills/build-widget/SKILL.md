@@ -465,9 +465,15 @@ developer changed it, leave it alone and do not ask. Ask:
 > `npm run package` includes it in `plugin.zip`, so it would be uploaded to Evoke as
 > "Sample widget" alongside <WidgetName>. Remove it?
 
--   **Yes:** delete `src/widgets/SampleWidget/`, and `src/stories/Sample.stories.tsx`
-    too if it is still there, because it imports the sample widget. Re-run the
-    validation gate and confirm `Widget` no longer appears in `dist/manifest.json`.
+Before asking, check whether `src/stories/Sample.stories.tsx` is still there. If it is
+there and a developer changed it, it holds their work and still imports the sample
+widget. Say so in the question, and do not delete the widget until the developer decides
+what to do with that story.
+
+-   **Yes:** delete `src/widgets/SampleWidget/`. Delete `src/stories/Sample.stories.tsx`
+    only if it is still the untouched stub, or if the developer agreed to remove their
+    changed version. Re-run the validation gate and confirm `Widget` no longer appears
+    in `dist/manifest.json`.
 -   **No:** leave it, and record the answer in this session's entry in the plan file.
     Do not ask again in a later session that finds that note.
 -   **Unattended run:** do not delete it. List it in the final report as a decision for
