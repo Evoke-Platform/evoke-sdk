@@ -318,7 +318,8 @@ object's property list — the platform's own Form widget uses this exact patter
 To let the app builder pick one of the app's pages, use `$_appId`. No property in
 `WidgetProperties.json` holds the app id, and none is needed: the Builder replaces
 `$_appId` with the id of the app that owns the page being edited. The platform's own
-Button widget lists pages this way:
+Button widget lists pages this way in its `pageNavigation` setting. In the example
+below, `targetPageId` is only an example name; choose one that fits the widget:
 
 ```json
 {

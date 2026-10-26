@@ -424,11 +424,12 @@ configuration first and extract the slot name before constructing the `FormData`
 
 **References to deleted records stay in place.**
 
-Deleting a record does not remove references to it from other records. A reference to
-a deleted record can still come back with its `id`, and with `name` set to
-`"(Deleted)"`. The "(Deleted)" label App Viewer shows for such a reference comes from
-that data, not from the UI component library. A widget that needs to detect a deleted
-reference should handle both signs:
+Deleting a record does not remove references to it from other records. When the data
+service reads a record, it fills in each reference with the referenced record. If that
+record no longer exists, the reference comes back as only `{ id, name: "(Deleted)" }`,
+with none of the referenced record's other fields. The "(Deleted)" label App Viewer
+shows for such a reference comes from that data, not from the UI component library. A
+widget that needs to detect a deleted reference should handle both signs:
 
 -   the reference's `name` is `"(Deleted)"`, or
 -   fetching the referenced record returns 404.
