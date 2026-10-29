@@ -152,7 +152,8 @@ Each of these is one atomic commit:
 1. `WidgetProperties.json` + container skeleton (`index.tsx` with phase type and empty switch)
 2. Each presentational component + its story file (one commit per component)
 3. Container story + MSW handlers
-4. Final verification pass (any fixups from the full validation gate)
+4. Final verification pass (any fixups from the full validation gate) + the widget's
+   `README.md` (see "Widget README" below)
 
 Each commit also carries the plan file update for that step (see above). The session
 log's checklist defines the exact boundaries. One step = one commit.
@@ -165,6 +166,7 @@ Create:
 src/widgets/<WidgetName>/
 ├── index.tsx                  # thin container: SDK hooks, state, handlers — no layout JSX
 ├── <WidgetName>.stories.tsx   # container story: real widget over the MSW mock layer
+├── README.md                  # for people: what it does, Builder settings, setup
 ├── WidgetProperties.json
 └── components/                # presentational components: props in, JSX out
     ├── <Name>View.tsx
@@ -313,6 +315,28 @@ object's property list — the platform's own Form widget uses this exact patter
 }
 ```
 
+To let the app builder pick one of the app's pages, use `$_appId`. No property in
+`WidgetProperties.json` holds the app id, and none is needed: the Builder replaces
+`$_appId` with the id of the app that owns the page being edited. The platform's own
+Button widget lists pages this way in its `pageNavigation` setting. In the example
+below, `targetPageId` is only an example name; choose one that fits the widget:
+
+```json
+{
+    "name": "targetPageId",
+    "type": "choices",
+    "displayName": "Target Page",
+    "api": {
+        "url": "/apps/$_appId/pages",
+        "resultMapping": { "value": "id", "label": "name" }
+    }
+}
+```
+
+The saved value is the page id. At runtime, find that page in `useApp().pages` to get
+its slug, then build the link as the project instructions' "Links To App Pages" section
+describes.
+
 `resultMapping` maps over the array the endpoint returns — use sub-resource endpoints
 that return arrays directly (`/objects/$_objectId/effective/properties`,
 `/objects/$_objectId/effective/actions`) rather than trying to extract nested arrays
@@ -411,21 +435,74 @@ plainly in the plan file's runtime quirks and story comments, and keep the conta
 MSW alone solves it. Do not add provider mocks beyond the shipped MSW layer and the
 preview's router decorator unless the developer explicitly asks.
 
-### Remove the scaffold's sample story
+### Remove the scaffold's samples
 
-The generator ships a placeholder story at `src/stories/Sample.stories.tsx` (title
-`Example/SampleWidget`, stories `SampleStory1` and `SampleStory2`). It exists only so a
-freshly generated project has something to open in Storybook. It is not part of the
-widget convention above — real stories live beside the widget they test.
+The generator ships two placeholders so a freshly generated project has something to
+open. Neither is part of the widget convention above.
 
-Once the **first real widget's validation gate passes**, delete that file so the
-developer is not left cleaning up dead scaffold output. Delete it only if it is still
-the untouched stub: the title is still `Example/SampleWidget` and the exports are still
+-   **The sample story** at `src/stories/Sample.stories.tsx` (title
+    `Example/SampleWidget`, stories `SampleStory1` and `SampleStory2`). Real stories
+    live beside the widget they test.
+-   **The sample widget** at `src/widgets/SampleWidget/` (id `Widget`, name
+    `Sample widget`). `manifestgen` adds every folder under `src/widgets/` that has a
+    `WidgetProperties.json` to the manifest, so this placeholder is packaged into
+    `target/plugin.zip` and shows up in the developer's Evoke environment as a widget
+    beside the real one.
+
+Once a **real widget's validation gate passes**, check for both. This applies to
+projects that already had widgets before this session too.
+
+**Sample story:** delete it without asking, but only if it is still the untouched stub:
+the title is still `Example/SampleWidget` and the exports are still
 `SampleStory1`/`SampleStory2` with no meaningful assertions added. If a developer
 repurposed the file, leave it alone and mention it instead.
 
-`src/widgets/SampleWidget/` itself stays — it is a working reference for the
-`index.tsx` + `WidgetProperties.json` pairing.
+**Sample widget:** ask before deleting it, and only when it is still the untouched
+placeholder: the id is still `Widget`, the name is still `Sample widget`, and
+`index.tsx` still only renders `props.message` or `'This is a sample widget'`. If a
+developer changed it, leave it alone and do not ask. Ask:
+
+> The scaffold's sample widget (`src/widgets/SampleWidget/`) is still in this project.
+> `npm run package` includes it in `plugin.zip`, so it would be uploaded to Evoke as
+> "Sample widget" alongside <WidgetName>. Remove it?
+
+Before asking, check whether `src/stories/Sample.stories.tsx` is still there. If it is
+there and a developer changed it, it holds their work and still imports the sample
+widget. Say so in the question, and do not delete the widget until the developer decides
+what to do with that story.
+
+-   **Yes:** delete `src/widgets/SampleWidget/`. Delete `src/stories/Sample.stories.tsx`
+    only if it is still the untouched stub, or if the developer agreed to remove their
+    changed version. Re-run the validation gate and confirm `Widget` no longer appears
+    in `dist/manifest.json`.
+-   **No:** leave it, and record the answer in this session's entry in the plan file.
+    Do not ask again in a later session that finds that note.
+-   **Unattended run:** do not delete it. List it in the final report as a decision for
+    the developer.
+
+## Widget README
+
+Every widget gets a `README.md` in its folder, `src/widgets/<WidgetName>/README.md`.
+Write it without being asked, once the widget's full validation gate passes. The plan
+file is the working record for agents; the README is for the people who configure and
+maintain the widget. Keep it short and cover:
+
+1. **What it does** — one paragraph in plain language.
+2. **Where it goes** — which kind of page hosts it, and whether it needs a Data Source
+   object or a record (`needsDataSource`, `needsInstance`).
+3. **Builder settings** — a table with each setting's display name, what it controls,
+   and whether it is required.
+4. **What it expects in the environment** — objects, properties, actions, forms, or
+   permissions the widget relies on.
+5. **Trying it locally** — `npm run storybook` and the `Playground` story.
+6. **Known limitations** — anything a builder would otherwise find out the hard way.
+
+When a later session changes the widget's settings or behavior, update the README in
+the same commit as the code, alongside the plan file. If the widget already has a
+README the developer wrote, update the parts this session changed and leave the rest.
+
+`manifestgen` only reads `.ts`, `.tsx`, and `WidgetProperties.json` files, so a README
+in the widget folder does not affect the manifest or the package.
 
 ## Review
 
