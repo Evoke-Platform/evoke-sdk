@@ -595,6 +595,13 @@
     oidc-client-ts "^3.3.0"
     uuid "^9.0.1"
 
+"@evoke-platform/payment@^1.0.0":
+  version "1.2.0"
+  resolved "https://registry.npmjs.org/@evoke-platform/payment/-/payment-1.2.0.tgz#01235eb1eb263dbc415c47ddc3e130138b619fb4"
+  integrity sha512-zG/kuhDJjEJ3xDDDdZllyPe+YPCbL2T8B08PJQWfdsyDsE4yUtUeXSjw7wr8A5KlI88kUEZls1pEe+GeUCvfFg==
+  dependencies:
+    express "^4.21.0"
+
 "@evoke-platform/ui-components@^2.5.0":
   version "2.5.0"
   resolved "https://registry.npmjs.org/@evoke-platform/ui-components/-/ui-components-2.5.0.tgz#aac9f65df3ee9a601df92421a915e2fd0a53f336"
@@ -5172,19 +5179,7 @@ grouped-queue@^2.0.0:
   resolved "https://registry.yarnpkg.com/grouped-queue/-/grouped-queue-2.0.0.tgz#a2c6713f2171e45db2c300a3a9d7c119d694dac8"
   integrity sha512-/PiFUa7WIsl48dUeCvhIHnwNmAAzlI/eHoJl0vu3nsFA366JleY7Ff8EVTplZu5kO0MIdZjKTTnzItL61ahbnw==
 
-handlebars@^4.7.7:
-  version "4.7.7"
-  resolved "https://registry.yarnpkg.com/handlebars/-/handlebars-4.7.7.tgz#9ce33416aad02dbd6c8fafa8240d5d98004945a1"
-  integrity sha512-aAcXm5OAfE/8IXkcZvCepKU3VzW1/39Fb5ZuqMtgI/hT8X2YgoMvBY5dLhq/cpOvw7Lk1nK/UF71aLG/ZnVYRA==
-  dependencies:
-    minimist "^1.2.5"
-    neo-async "^2.6.0"
-    source-map "^0.6.1"
-    wordwrap "^1.0.0"
-  optionalDependencies:
-    uglify-js "^3.1.4"
-
-handlebars@^4.7.9:
+handlebars@^4.7.7, handlebars@^4.7.9:
   version "4.7.10"
   resolved "https://registry.npmjs.org/handlebars/-/handlebars-4.7.10.tgz#12419ea1b41391b3ffcf003f2164dcbce090c417"
   integrity sha512-P5VJMVM7qgBn6vjXMw8WG9uVI+ncf2pi72j4de4yz5ZULLj2RGqLYaKOYGsgyrViQ0tePOVlN1tDCCXXtFqXKg==
@@ -6951,7 +6946,7 @@ negotiator@0.6.3, negotiator@^0.6.2, negotiator@^0.6.3:
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.3.tgz#58e323a72fedc0d6f9cd4d31fe49f51479590ccd"
   integrity sha512-+EUsqGPLsM+j/zdChZjsnX51g4XrHFOIXwfnCVPGlQk/k5giakcKsuxCObBRu6DSm9opw/O6slWbJdghQM4bBg==
 
-neo-async@^2.6.0, neo-async@^2.6.2:
+neo-async@^2.6.2:
   version "2.6.2"
   resolved "https://registry.yarnpkg.com/neo-async/-/neo-async-2.6.2.tgz#b4aafb93e3aeb2d8174ca53cf163ab7d7308305f"
   integrity sha512-Yd3UES5mWCSqR+qNT93S3UoYUkqAZ9lLg8a7g9rimsWmYGK8cVToA4/sF3RrshdyV3sAGMXVUmpMYOw+dLpOuw==
