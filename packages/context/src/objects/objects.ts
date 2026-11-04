@@ -343,6 +343,18 @@ export type DisplayConfiguration = {
     relatedObjectId?: string;
 
     /**
+     * Whether a dynamic related object field offers one object type (`relatedObjectId`) or several
+     * (`relatedObjectIds`). A field without it offers one object type.
+     */
+    relatedObjectSelection?: 'single' | 'multiple';
+
+    /**
+     * The objects whose records a dynamic related object field with no `relatedObjectId` can search.
+     * Empty or missing means every root object.
+     */
+    relatedObjectIds?: string[];
+
+    /**
      * The ID of the file object for parameters of type 'file'.
      * This can be either the system File object or one of its subtypes.
      */
