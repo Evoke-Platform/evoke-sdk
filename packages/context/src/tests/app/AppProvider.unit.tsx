@@ -1,11 +1,13 @@
 // Copyright (c) 2025 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 import chai, { expect } from 'chai';
 import dirtyChai from 'dirty-chai';
 import 'global-jsdom/register';
-import { App, AppProvider, Page, useApp, usePage } from '../../app/index.js';
+import sinon, { SinonStub } from 'sinon';
+import { ApiServices } from '../../api/index.js';
+import { App, AppExtended, AppProvider, Page, useApp, usePage } from '../../app/index.js';
 
 chai.use(dirtyChai);
 
@@ -208,5 +210,120 @@ describe('findDefaultPageSlugFor', () => {
         const result = await findDefaultPageSlugFor!('object-2');
 
         expect(result).to.be.undefined();
+    });
+});
+
+describe('findDefaultPageSlugFor across apps', () => {
+    const licensingAppsUrl =
+        'webContent/apps?pages=summary' +
+        '&filter=%7B%22where%22%3A%7B%22id%22%3A%7B%22inq%22%3A%5B%22licensing%22%5D%7D%7D%7D';
+
+    const tasksApp: App = {
+        id: 'tasks',
+        name: 'Tasks',
+        type: 'private',
+        pages: [{ id: 'task/:instanceId', name: 'Task', slug: 'task/:instanceId' }],
+        defaultPages: {
+            task: '/tasks/task/:instanceId',
+            license: '/licensing/license/:instanceId',
+        },
+    };
+
+    const licensingApp: App = {
+        id: 'licensing',
+        name: 'Licensing',
+        type: 'private',
+        pages: [{ id: 'license/:instanceId', name: 'License', slug: 'license-details/:instanceId' }],
+    };
+
+    let getStub: SinonStub;
+
+    beforeEach(() => {
+        getStub = sinon.stub(ApiServices.prototype, 'get') as unknown as SinonStub;
+        getStub.withArgs(licensingAppsUrl).resolves([licensingApp]);
+    });
+
+    afterEach(() => {
+        sinon.restore();
+    });
+
+    function renderApp(app: App) {
+        let findDefaultPageSlugFor: AppExtended['findDefaultPageSlugFor'] | undefined;
+
+        const TestComponent = () => {
+            findDefaultPageSlugFor = useApp().findDefaultPageSlugFor;
+            return null;
+        };
+
+        render(
+            <AppProvider app={app}>
+                <TestComponent />
+            </AppProvider>,
+        );
+
+        return (objectId: string) => findDefaultPageSlugFor!(objectId);
+    }
+
+    it('resolves a default page in the current app without requesting other apps', async () => {
+        const findDefaultPageSlugFor = renderApp({ ...tasksApp, defaultPages: { task: '/tasks/task/:instanceId' } });
+
+        expect(await findDefaultPageSlugFor('task')).to.equal('/tasks/task/:instanceId');
+        sinon.assert.notCalled(getStub);
+    });
+
+    it('resolves a default page in another app to a path in that app', async () => {
+        const findDefaultPageSlugFor = renderApp(tasksApp);
+
+        expect(await findDefaultPageSlugFor('license')).to.equal('/licensing/license-details/:instanceId');
+    });
+
+    it('resolves an old bare page ID as a page in the current app', async () => {
+        const findDefaultPageSlugFor = renderApp({
+            ...tasksApp,
+            defaultPages: { ...tasksApp.defaultPages, task: 'task/:instanceId' },
+        });
+
+        expect(await findDefaultPageSlugFor('task')).to.equal('/tasks/task/:instanceId');
+    });
+
+    it('requests the other apps once, at startup', async () => {
+        const findDefaultPageSlugFor = renderApp(tasksApp);
+
+        await waitFor(() => sinon.assert.calledWith(getStub, licensingAppsUrl));
+        await findDefaultPageSlugFor('license');
+        await findDefaultPageSlugFor('license');
+
+        sinon.assert.calledOnce(getStub.withArgs(licensingAppsUrl));
+    });
+
+    it('resolves nothing when the other app is missing from the response', async () => {
+        getStub.withArgs(licensingAppsUrl).resolves([]);
+        const findDefaultPageSlugFor = renderApp(tasksApp);
+
+        expect(await findDefaultPageSlugFor('license')).to.be.undefined();
+    });
+
+    it('resolves nothing when the page no longer exists in the other app', async () => {
+        getStub.withArgs(licensingAppsUrl).resolves([{ ...licensingApp, pages: [] }]);
+        const findDefaultPageSlugFor = renderApp(tasksApp);
+
+        expect(await findDefaultPageSlugFor('license')).to.be.undefined();
+    });
+
+    it('still resolves current-app default pages when the request for other apps fails', async () => {
+        getStub.withArgs(licensingAppsUrl).rejects(new Error('Network Error'));
+        const findDefaultPageSlugFor = renderApp(tasksApp);
+
+        expect(await findDefaultPageSlugFor('license')).to.be.undefined();
+        expect(await findDefaultPageSlugFor('task')).to.equal('/tasks/task/:instanceId');
+    });
+
+    it("uses the base object's default page in another app for a subtype", async () => {
+        getStub
+            .withArgs('data/objects/permit-license/effective', sinon.match.any)
+            .resolves({ id: 'permit-license', baseObject: { objectId: 'license' } });
+        const findDefaultPageSlugFor = renderApp(tasksApp);
+
+        expect(await findDefaultPageSlugFor('permit-license')).to.equal('/licensing/license-details/:instanceId');
     });
 });

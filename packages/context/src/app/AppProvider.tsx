@@ -1,9 +1,10 @@
 // Copyright (c) 2025 System Automation Corporation.
 // This file is licensed under the MIT License.
 
-import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { createContext, ReactNode, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { useApiServices } from '../api/index.js';
 import { Obj } from '../objects/index.js';
+import { getDefaultPageAppsUrl, parseDefaultPage } from './defaultPages.js';
 
 export type AppType = 'public' | 'portal' | 'private';
 
@@ -149,6 +150,29 @@ function AppProvider(props: AppProviderProps) {
         };
     }, []);
 
+    const otherAppsUrl = useMemo(() => getDefaultPageAppsUrl(app), [app]);
+    const otherApps = useRef<{ url: string; apps: Promise<App[]> }>();
+
+    const loadOtherApps = useCallback((): Promise<App[]> => {
+        if (!otherAppsUrl) {
+            return Promise.resolve([]);
+        }
+
+        if (otherApps.current?.url !== otherAppsUrl) {
+            otherApps.current = {
+                url: otherAppsUrl,
+                // A failed request leaves cross-app default pages unresolved until the referenced apps change.
+                apps: apiServices.get<App[]>(otherAppsUrl).catch(() => []),
+            };
+        }
+
+        return otherApps.current.apps;
+    }, [apiServices, otherAppsUrl]);
+
+    useEffect(() => {
+        void loadOtherApps();
+    }, [loadOtherApps]);
+
     const findDefaultPageSlugFor = useCallback(
         async (objectId: string) => {
             let defaultPageId: string | undefined;
@@ -170,17 +194,20 @@ function AppProvider(props: AppProviderProps) {
             }
 
             let defaultPage: Page | undefined;
+            let defaultPageAppId = app.id;
             if (defaultPageId) {
-                const pageId = defaultPageId.includes('/')
-                    ? defaultPageId.split('/').slice(2).join('/')
-                    : defaultPageId;
-                defaultPage = app.pages?.find((page) => page.id === pageId);
+                const { appId, pageId } = parseDefaultPage(defaultPageId, app.id);
+                const pages =
+                    appId === app.id ? app.pages : (await loadOtherApps()).find((other) => other.id === appId)?.pages;
+
+                defaultPageAppId = appId;
+                defaultPage = pages?.find((page) => page.id === pageId);
             }
             if (defaultPage?.slug) {
-                return `/${app.id}/${defaultPage.slug}`;
+                return `/${defaultPageAppId}/${defaultPage.slug}`;
             }
         },
-        [apiServices, app],
+        [apiServices, app, loadOtherApps],
     );
 
     const appExtended = useMemo<AppExtended>(
