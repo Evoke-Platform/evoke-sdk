@@ -355,6 +355,11 @@ export type DisplayConfiguration = {
     relatedObjectIds?: string[];
 
     /**
+     * The dropdown layout chosen for each root object of `relatedObjectIds`.
+     */
+    relatedObjectViewLayouts?: ViewLayoutEntityReference[];
+
+    /**
      * The ID of the file object for parameters of type 'file'.
      * This can be either the system File object or one of its subtypes.
      */
