@@ -52,7 +52,7 @@ export type SystemObjReference = {
 export type ViewLayoutEntityReference = {
     id: string;
     objectId: string;
-    kind?: 'table' | 'panel';
+    kind?: 'table' | 'panel' | 'dropdown';
 };
 
 type ViewLayoutEntity = {
@@ -353,6 +353,11 @@ export type DisplayConfiguration = {
      * Empty or missing means every root object.
      */
     relatedObjectIds?: string[];
+
+    /**
+     * The dropdown layout chosen for each root object of `relatedObjectIds`.
+     */
+    relatedObjectViewLayouts?: ViewLayoutEntityReference[];
 
     /**
      * The ID of the file object for parameters of type 'file'.
