@@ -52,7 +52,7 @@ export type SystemObjReference = {
 export type ViewLayoutEntityReference = {
     id: string;
     objectId: string;
-    kind?: 'table' | 'panel';
+    kind?: 'table' | 'panel' | 'dropdown';
 };
 
 type ViewLayoutEntity = {
