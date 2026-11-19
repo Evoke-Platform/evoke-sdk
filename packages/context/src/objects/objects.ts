@@ -210,6 +210,17 @@ export type ParameterValidation =
     | CriteriaValidation
     | DocumentParameterValidation;
 
+export type PropertyConverter = {
+    type: 'table';
+    entries: { from: unknown; to: unknown }[];
+};
+
+export type PropertyLink = {
+    targetPropertyId: string;
+    toTarget: PropertyConverter;
+    toSource?: PropertyConverter;
+};
+
 export type Property = {
     id: string;
     name: string;
@@ -229,6 +240,7 @@ export type Property = {
     manyToManyPropertyId?: string;
     textTransform?: 'titleCase' | 'upperCase' | 'lowerCase' | 'sentenceCase';
     protection?: PropertyProtection;
+    propertyLink?: PropertyLink;
 };
 
 export type PropertyProtection = {
